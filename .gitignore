@@ -1,0 +1,98 @@
+# Upstream source checkouts (pinned in third_party/MANIFEST.md, not committed)
+/third_party/laya/
+/third_party/ai-toolkit/
+/third_party/LlamaFactory/
+/third_party/sd-scripts/
+/third_party/DiffSynth-Studio/
+
+# Local runtime / isolated dependency dirs
+/.aitk-pylibs/
+/.pylibs-lf/
+/.venv-aitk/
+/workspace/
+/release/
+_tmp/
+/_runs/
+
+# Fast-measurement campaign scratch (arm json / peak traces / runner scripts).
+# Evidence stays on disk; the raw arm dumps are machine-local, not product.
+/_bench/
+
+# Pre-edit backups and atomic-write temp dirs (keep on disk for rollback, never commit)
+*.bak
+*.tmp
+*.tmpdir/
+
+# Packaging output (pack.py writes here)
+/dist/out/
+
+# Runtime bundle (pack_runtime.py --apply writes here; regenerable, ~3 GiB)
+/dist/runtime/
+/dist/runtime-manifest.json
+
+# Corpora and model weights (shipped as a separate data package, never committed)
+/resources/01-决策模型-业务语料/
+/resources/02-LLM-语料/
+/resources/03-LLM-小模型/
+/resources/04-生图LoRA-图集/
+/resources/05-视频LoRA-图集/
+/resources/07-底模/
+
+# UI local backups and scratch tests
+/design/prototype/_recovery/
+/design/prototype/_tmp/
+
+# Model warehouse: only the guide is committed, never the weights
+/models/*
+!/models/README.md
+
+# Build / caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Model weights and large artifacts (never commit)
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.gguf
+*.onnx
+*.mp4
+*.mov
+*.webm
+
+# Local machine state
+core.json
+token
+token.txt
+*.log
+logs/
+pip-*/
+torchinductor_*/
+Thumbs.db
+Desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+/resources/08-打标工具/
+
+# 第三方语料原始件（许可未明 / 未核，不进仓库）
+/resources/03-客服决策-补充语料/
+
+# 语料版本策略：仓库只收最终版 laya-cs-own 与 cs-decision 的 jsonl；
+# laya-cs-v4..v8 的 train 含 waimai_10k / ChnSentiCorp 挑拣行（两源无许可证），整版本不入库；
+# laya-cs / laya-cs-human 已被 laya-cs-own 取代，仅留开发机。
+/datasets/laya-cs/
+/datasets/laya-cs-human/
+/datasets/laya-cs-v*/
+/datasets/_archive/
+
+# 本地交接件（含对话与分工，不入库）
+HANDOFF*

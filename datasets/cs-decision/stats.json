@@ -1,0 +1,51 @@
+{
+  "total": 765,
+  "train": 649,
+  "val": 116,
+  "negatives": 68,
+  "negatives_in_val": 10,
+  "neg_by_class": {
+    "越界索赔": 12,
+    "辱骂": 12,
+    "极模糊": 12,
+    "二次投诉": 12,
+    "无关请求": 20
+  },
+  "by_action": {
+    "安抚话术": 171,
+    "补发": 20,
+    "退款": 44,
+    "换货": 17,
+    "运费补偿": 12,
+    "发红包": 38,
+    "转人工": 445,
+    "拒绝并解释": 18
+  },
+  "by_emotion": {
+    "平静": 52,
+    "失望": 69,
+    "焦虑": 264,
+    "不满": 280,
+    "愤怒": 28,
+    "威胁投诉": 72
+  },
+  "by_source": {
+    "typed-decisions": 637,
+    "template-bank": 60,
+    "negative": 48,
+    "zh-decision-bench": 12,
+    "massive-zh-CN": 8
+  },
+  "translation_paths": {
+    "phrase": 191,
+    "template": 209
+  },
+  "validated_rows": 765,
+  "json_loads_pass": 765,
+  "sha256": {
+    "train.jsonl": "aea53510fe46703576be2bdbf24cf5c6014f674959556672f1087562d4381a19",
+    "val.jsonl": "3e0a4e6422c6204d74308c4c9392196b2c7d93c6b051756d4305e6b2a5379a46"
+  },
+  "seed": 20261023,
+  "val_ratio": 0.15
+}

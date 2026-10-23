@@ -1,0 +1,24 @@
+{
+  "_readme": [
+    "ModelSmith MCP server — stdio JSON-RPC 2.0 (one JSON object per line).",
+    "1) Start the local core first:  python E:\\视频\\modelsmith\\core\\modelsmith_core.py",
+    "   (default port 8765; --port 0 writes the real port into %LOCALAPPDATA%\\ModelSmith\\core.json)",
+    "2) Then point your MCP client at this file. Replace the two absolute paths below with your own.",
+    "3) The token is read from %LOCALAPPDATA%\\ModelSmith\\token by default; do NOT paste it into this file.",
+    "4) Works with Claude Desktop / Cursor / DSH and any client that speaks MCP over stdio."
+  ],
+  "mcpServers": {
+    "modelsmith": {
+      "command": "C:\\Program Files\\Python312\\python.exe",
+      "args": [
+        "E:\\视频\\modelsmith\\mcp_server\\modelsmith_mcp.py",
+        "--api",
+        "http://127.0.0.1:8765"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      }
+    }
+  }
+}

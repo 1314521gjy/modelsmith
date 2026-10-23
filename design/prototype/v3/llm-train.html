@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>训练工坊 · LLM 训练</title>
+<style>
+:root{--line:rgba(15,23,42,.12);--text:#0F172A;--dim:#55658A;--muted:#9AA6BF;--llm:#3B6FE0;--ok:#0E9F6E}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{overflow:hidden;background:linear-gradient(180deg,#FAFBFD,#EEF2F8);color:var(--text);font-family:"Noto Sans SC","Microsoft YaHei UI",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+.aura{position:fixed;border-radius:50%;pointer-events:none;filter:blur(40px);z-index:0}
+.aura--a{width:620px;height:620px;left:-180px;top:-200px;background:radial-gradient(circle,rgba(122,167,255,.32),transparent 68%)}
+.aura--b{width:660px;height:660px;right:-240px;bottom:-260px;background:radial-gradient(circle,rgba(90,209,165,.28),transparent 68%)}
+.wrap{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:clamp(20px,3vh,44px) clamp(24px,4.5vw,72px)}
+.top{display:flex;align-items:center;justify-content:space-between;height:64px;flex:0 0 auto}
+.left{display:flex;align-items:center;gap:14px}
+.back{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.7);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--text)}
+.back svg{width:22px;height:22px}
+.brand{font-family:"Manrope","Segoe UI",sans-serif;font-weight:700;font-size:19px}
+.brand span{font-family:inherit;font-weight:400;font-size:15px;color:var(--dim);margin-left:10px}
+.chip{height:44px;padding:0 18px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.7);color:var(--dim);font-size:15px}
+.body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;justify-content:center;width:100%;max-width:1060px;margin:0 auto;gap:18px}
+h1{font-size:clamp(40px,4vw,58px);line-height:1.12;font-weight:600;letter-spacing:-.025em;text-align:center}
+.meta{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;font-size:16px;color:var(--dim)}
+.meta b{color:var(--text);font-weight:600}
+.bar{height:14px;border-radius:99px;background:rgba(15,23,42,.10);overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--llm);transition:width .3s linear}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cell{border:1px solid var(--line);border-radius:16px;padding:14px 18px;background:rgba(255,255,255,.72)}
+.k{font-size:14px;color:var(--dim)}
+.v{font-family:"Manrope",sans-serif;font-size:26px;font-weight:600;margin-top:4px}
+.v small{font-size:14px;color:var(--dim);font-weight:400}
+.log{height:150px;overflow:auto;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.7);padding:12px 16px;font-family:"Manrope",monospace;font-size:14px;line-height:1.9;color:var(--dim)}
+.log b{color:var(--text)}
+.done{border:1px solid rgba(14,159,110,.30);border-radius:18px;padding:16px 20px;background:rgba(14,159,110,.07)}
+.done__t{font-size:19px;font-weight:600}
+.pathrow{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+.pathrow code{flex:1;min-width:240px;font-family:"Manrope",monospace;font-size:14px;background:rgba(15,23,42,.06);padding:10px 12px;border-radius:10px;word-break:break-all}
+.mini{height:40px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:14px}
+.foot{flex:0 0 auto;display:flex;justify-content:space-between;gap:14px;padding-top:18px}
+.btn{height:56px;padding:0 28px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.8);font-size:17px;color:var(--text);text-decoration:none;display:inline-flex;align-items:center}
+.btn--primary{background:#0F172A;color:#fff;border-color:#0F172A}
+.btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+
+/* --- training glow (wire adds body.training-glow) --- */
+@media (prefers-reduced-motion: no-preference){
+@keyframes ms-glow-flow{0%{background-position:0% 50%}100%{background-position:220% 50%}}
+body.training-glow .top{background-image:linear-gradient(110deg,rgba(255,255,255,0),rgba(255,255,255,.55),rgba(255,255,255,0));background-size:220% 100%;animation:ms-glow-flow 2.6s linear infinite}
+body.training-glow .bar>i{background-image:linear-gradient(90deg,var(--image,var(--llm,#C97B12)),#F0C987,var(--image,var(--llm,#C97B12)),#FFF0CF,var(--image,var(--llm,#C97B12)));background-size:220% 100%;animation:ms-glow-flow 2.6s linear infinite}
+body.training-glow .stats .cell{box-shadow:0 0 0 1px rgba(201,123,18,.28),0 10px 28px rgba(201,123,18,.12)}
+body.training-glow .bar{box-shadow:0 0 0 1px rgba(201,123,18,.20),0 0 22px rgba(201,123,18,.18)}
+}
+
+/* --- environment panel --- */
+#envPanel{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(15,23,42,.30);backdrop-filter:blur(8px)}
+#envPanel[hidden]{display:none}
+.envcard{width:min(560px,calc(100vw - 40px));max-height:min(70vh,520px);overflow:auto;border-radius:18px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.75);box-shadow:0 24px 70px rgba(15,23,42,.28);padding:20px 22px 18px}
+.envcard__head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.envcard__head b{font-size:15px;letter-spacing:.02em}
+#envClose{width:30px;height:30px;border-radius:9px;border:1px solid rgba(15,23,42,.14);background:rgba(255,255,255,.7);color:#334155;font-size:18px;line-height:1;cursor:pointer}
+#envClose:hover{background:#F1F5F9}
+#envBody{font:12.5px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;color:#334155;white-space:pre-wrap;word-break:break-word}
+.chip[data-env]{cursor:pointer}
+
+</style>
+</head>
+<body>
+<div class="aura aura--a"></div><div class="aura aura--b"></div>
+<div class="wrap">
+  <div class="top">
+    <div class="left">
+      <a class="back" href="llm-data.html" aria-label="返回上一步">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+      </a>
+      <div class="brand">LLM 微调 <span>第 3 步 / 共 3 步</span></div>
+    </div>
+    <div><button class="chip" type="button" data-env="1">环境</button></div>
+  </div>
+
+  <div class="body">
+    <h1 id="title">正在训练</h1>
+    <div class="meta">
+      <span>模型 <b id="mName">—</b></span>
+      <span>数据 <b id="dName">—</b></span>
+      <span>按 epoch 训练</span>
+    </div>
+
+    <div class="bar"><i id="bar"></i></div>
+
+    <div class="stats">
+      <div class="cell"><div class="k">进度（global_step）</div><div class="v" id="step">0 <small>/ —</small></div></div>
+      <div class="cell"><div class="k">loss</div><div class="v" id="loss">—</div></div>
+      <div class="cell"><div class="k">用时</div><div class="v" id="time">0:00</div></div>
+      <div class="cell stat"><div class="k">显存</div><div class="v" id="vramUsed">—</div></div>
+    </div>
+
+    <div class="log" id="log"></div>
+
+    <div class="done" id="done" hidden>
+      <div class="done__t">训练完成 · adapter 在这里</div>
+      <div class="pathrow">
+        <code id="adapterPath">E:\视频\modelsmith\_runs\ui-lf-20261022-180000\adapter_model.safetensors</code>
+        <button class="mini" id="copyAdapter" type="button">复制路径</button>
+      </div>
+      <div class="pathrow">
+        <code id="outPath">E:\视频\modelsmith\_runs\ui-lf-20261022-180000</code>
+        <button class="mini" id="copyOut" type="button">复制目录</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <button class="btn" id="cancel" type="button">取消训练</button>
+    <a class="btn btn--primary" id="next" href="index.html">完成</a>
+  </div>
+</div>
+<script>
+(function(){
+  var qs=new URLSearchParams(location.search);
+  var model=qs.get("model")||"", data=qs.get("data")||"";
+  var mName=document.getElementById("mName"), dName=document.getElementById("dName");
+  mName.textContent=model?model.split(/[\\/]/).filter(Boolean).pop():"—";
+  dName.textContent=data?data.split(/[\\/]/).filter(Boolean).pop():"—";
+
+  var title=document.getElementById("title"), bar=document.getElementById("bar"),
+      stepEl=document.getElementById("step"), lossEl=document.getElementById("loss"),
+      timeEl=document.getElementById("time"), logEl=document.getElementById("log"),
+      doneEl=document.getElementById("done"), cancel=document.getElementById("cancel"),
+      next=document.getElementById("next");
+  var TOTAL=2, step=0, t0=Date.now(), timer=null, finished=false;
+  var losses=[1.8127,1.6421];
+
+  function log(t){ var d=document.createElement("div"); d.innerHTML=t; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; }
+  function mmss(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+  function stepOnce(){
+    if(finished) return;
+    step++;
+    stepEl.innerHTML=step+" <small>/ "+TOTAL+"</small>";
+    var l=losses[step-1]!==undefined?losses[step-1]:(1.6-Math.random()*0.2);
+    lossEl.textContent=l.toFixed(4);
+    bar.style.width=(step/TOTAL*100)+"%";
+    timeEl.textContent=mmss((Date.now()-t0)/1000);
+    log("step "+step+"/"+TOTAL+" · loss "+l.toFixed(4)+" · lr 2e-4");
+    if(step>=TOTAL){ finish(); return; }
+    timer=setTimeout(stepOnce,1400);
+  }
+  function finish(){
+    finished=true; clearTimeout(timer);
+    title.textContent="训练完成";
+    doneEl.hidden=false;
+    next.removeAttribute("aria-disabled");
+    cancel.setAttribute("aria-disabled","true");
+    log("<b>训练完成</b>：adapter_model.safetensors 已写入 _runs\\ui-lf-…");
+    var ts=new Date(); var stamp=ts.getFullYear()+String(ts.getMonth()+1).padStart(2,"0")+String(ts.getDate()).padStart(2,"0")+"-"+String(ts.getHours()).padStart(2,"0")+String(ts.getMinutes()).padStart(2,"0");
+    var out="E:\\视频\\modelsmith\\_runs\\ui-lf-"+stamp;
+    document.getElementById("outPath").textContent=out;
+    document.getElementById("adapterPath").textContent=out+"\\adapter_model.safetensors";
+  }
+  function copy(id,btn){
+    var el=document.getElementById(id);
+    var text=el?el.textContent.trim():"";
+    var flash=function(){ var old=btn.textContent; btn.textContent="已复制 ✓"; setTimeout(function(){btn.textContent=old;},1200); };
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(flash,function(){ flash(); }); } else { flash(); }
+  }
+  document.getElementById("copyAdapter").addEventListener("click",function(){ copy("adapterPath",this); });
+  document.getElementById("copyOut").addEventListener("click",function(){ copy("outPath",this); });
+
+  cancel.addEventListener("click",function(){
+    if(finished) return;
+    finished=true; clearTimeout(timer);
+    title.textContent="已取消";
+    log("<b>已取消</b>：LlamaFactory 没有从断点续训的接线，等价于从头再训。");
+    cancel.setAttribute("aria-disabled","true");
+  });
+
+  log("<b>开始训练</b>：模型 "+mName.textContent+" · 数据 "+dName.textContent+" · max_steps 0（按 epoch）");
+  log("runner: sys.path → .pylibs-lf → LlamaFactory/src → import dill → llamafactory.cli");
+  timer=setTimeout(stepOnce,900);
+})();
+</script>
+
+<div id="envPanel" hidden>
+  <div class="envcard" role="dialog" aria-modal="true" aria-labelledby="envTitle">
+    <div class="envcard__head"><b id="envTitle">环境检测</b><button id="envClose" type="button" aria-label="关闭环境面板">×</button></div>
+    <div id="envBody">核心未连接</div>
+  </div>
+</div>
+<script>
+(function(){var p=document.getElementById("envPanel"),b=document.getElementById("envBody"),c=document.getElementById("envClose");
+function close(){if(p)p.hidden=true;}
+var chips=document.querySelectorAll("[data-env], .chip");
+for(var i=0;i<chips.length;i++){if(String(chips[i].textContent).trim()!=="环境")continue;chips[i].addEventListener("click",function(){if(p)p.hidden=false;});}
+if(c)c.addEventListener("click",close);
+document.addEventListener("keydown",function(e){if(e.key==="Escape")close();});
+})();
+</script>
+
+</body>
+</html>

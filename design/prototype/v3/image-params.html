@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>训练工坊 · 生图参数</title>
+<style>
+:root{--line:rgba(15,23,42,.12);--text:#0F172A;--dim:#55658A;--muted:#9AA6BF;--image:#C97B12}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{overflow:hidden;background:linear-gradient(180deg,#FAFBFD,#EEF2F8);color:var(--text);font-family:"Noto Sans SC","Microsoft YaHei UI",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+.aura{position:fixed;border-radius:50%;pointer-events:none;filter:blur(40px);z-index:0}
+.aura--a{width:620px;height:620px;left:-180px;top:-200px;background:radial-gradient(circle,rgba(240,179,90,.30),transparent 68%)}
+.aura--b{width:660px;height:660px;right:-240px;bottom:-260px;background:radial-gradient(circle,rgba(122,167,255,.24),transparent 68%)}
+.wrap{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:clamp(20px,3vh,44px) clamp(24px,4.5vw,72px)}
+.top{display:flex;align-items:center;justify-content:space-between;height:64px}
+.left{display:flex;align-items:center;gap:14px}
+.back{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.7);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--text)}
+.back svg{width:22px;height:22px}
+.brand{font-family:"Manrope","Segoe UI",sans-serif;font-weight:700;font-size:19px}
+.brand span{font-family:inherit;font-weight:400;font-size:15px;color:var(--dim);margin-left:10px}
+.chip{height:44px;padding:0 18px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.7);color:var(--dim);font-size:15px}
+.body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;justify-content:center;gap:18px;width:100%;max-width:1060px;margin:0 auto}
+h1{font-size:clamp(40px,4.2vw,58px);font-weight:600;letter-spacing:-.025em;text-align:center}
+.sub{font-size:clamp(15.5px,1.15vw,18px);color:var(--dim);text-align:center;margin-top:-6px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cell{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:rgba(255,255,255,.72)}
+.k{font-size:13px;color:var(--dim)}
+.v{font-family:"Manrope",sans-serif;font-size:19px;font-weight:600;margin-top:3px}
+.prompts{display:flex;flex-direction:column;gap:8px}
+.prompts label{font-size:15px;color:var(--dim)}
+.prompts textarea{width:100%;height:110px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.82);padding:14px 18px;font-family:inherit;font-size:16px;line-height:1.7;color:var(--text);resize:vertical}
+.prompts textarea:focus{outline:3px solid rgba(201,123,18,.40);background:#fff}
+.plan{border:1px solid rgba(201,123,18,.28);border-radius:16px;padding:14px 18px;background:rgba(240,179,90,.12);font-size:16px;color:#6F4A0C;line-height:1.7}
+.plan b{color:#4A3005}
+.foot{display:flex;justify-content:space-between;gap:14px;padding-top:16px}
+.btn{height:56px;padding:0 28px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.8);font-size:17px;color:var(--text);text-decoration:none;display:inline-flex;align-items:center}
+.btn--primary{background:#0F172A;color:#fff;border-color:#0F172A}
+
+/* --- art polish (CSS only) --- */
+.card,.cell,.panel,.row{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease,background-color .22s ease}
+.card:hover,.panel:hover,.row:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(15,23,42,.12);border-color:rgba(201,123,18,.34)}
+.card::after,.panel::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.28),rgba(255,255,255,0) 42%,rgba(255,255,255,.16));opacity:.7}
+h1,h2{letter-spacing:-.012em}
+.cell .k{letter-spacing:.035em}
+hr,.divider{background-image:linear-gradient(90deg,rgba(15,23,42,.02),rgba(15,23,42,.16),rgba(15,23,42,.02))}
+
+/* --- environment panel --- */
+#envPanel{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(15,23,42,.30);backdrop-filter:blur(8px)}
+#envPanel[hidden]{display:none}
+.envcard{width:min(560px,calc(100vw - 40px));max-height:min(70vh,520px);overflow:auto;border-radius:18px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.75);box-shadow:0 24px 70px rgba(15,23,42,.28);padding:20px 22px 18px}
+.envcard__head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.envcard__head b{font-size:15px;letter-spacing:.02em}
+#envClose{width:30px;height:30px;border-radius:9px;border:1px solid rgba(15,23,42,.14);background:rgba(255,255,255,.7);color:#334155;font-size:18px;line-height:1;cursor:pointer}
+#envClose:hover{background:#F1F5F9}
+#envBody{font:12.5px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;color:#334155;white-space:pre-wrap;word-break:break-word}
+.chip[data-env]{cursor:pointer}
+
+</style>
+</head>
+<body>
+<div class="aura aura--a"></div><div class="aura aura--b"></div>
+<div class="wrap">
+  <div class="top">
+    <div class="left">
+      <a class="back" href="image-data.html" aria-label="返回上一步">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+      </a>
+      <div class="brand">生图 LoRA <span>第 3 步 / 共 4 步</span></div>
+    </div>
+    <div><button class="chip" type="button" data-env="1">环境</button></div>
+  </div>
+
+  <div class="body">
+    <h1>训练参数</h1>
+    <p class="sub">默认参数已够用；提示词决定训练中每 200 步给你看什么图</p>
+
+    <div class="grid3">
+      <div class="cell"><div class="k">steps</div><input class="v" id="pSteps" type="text" inputmode="numeric" value="3000" aria-label="训练步数" style="width:100%;border:0;background:transparent;font:inherit;color:inherit;padding:0"></div>
+      <div class="cell"><div class="k">分辨率</div><input class="v" id="pRes" type="text" inputmode="numeric" value="1024" aria-label="分辨率" style="width:100%;border:0;background:transparent;font:inherit;color:inherit;padding:0"></div>
+      <div class="cell"><div class="k">每几步出图</div><input class="v" id="pEvery" type="text" inputmode="numeric" value="200" aria-label="每几步出图" style="width:100%;border:0;background:transparent;font:inherit;color:inherit;padding:0"></div>
+    </div>
+
+    <div class="prompts">
+      <label for="prompt1">采样提示词（最多三组，留空则不出图）</label>
+      <textarea id="prompt1" class="promptbox" spellcheck="false" aria-label="采样提示词 1"></textarea>
+      <textarea id="prompt2" class="promptbox" spellcheck="false" aria-label="采样提示词 2"></textarea>
+      <textarea id="prompt3" class="promptbox" spellcheck="false" aria-label="采样提示词 3"></textarea>
+    </div>
+
+    <div class="plan" id="plan"></div>
+  </div>
+
+  <div class="foot">
+    <a class="btn" href="image-data.html">上一步</a>
+    <a class="btn btn--primary" id="start" href="#">开始训练</a>
+  </div>
+</div>
+<script>
+(function(){
+  var boxes=[].slice.call(document.querySelectorAll(".promptbox")), plan=document.getElementById("plan"), start=document.getElementById("start");
+  var qs=new URLSearchParams(location.search);
+  var model=qs.get("model")||"", data=qs.get("data")||"";
+  function lines(){
+    var out=[];
+    boxes.forEach(function(box){
+      var v=String(box.value||"").trim();
+      if(v) out.push(v);
+    });
+    return out;
+  }
+  function render(){
+    var n=lines().length, steps=3000, every=200, events=Math.floor(steps/every), groups=1+events;
+    plan.innerHTML="采样计划：<b>首图 1 组</b> + 每 "+every+" 步出 1 组 × "+events+" 次 = <b>"+groups+" 组</b>"
+      + (n?("，已填 <b>"+n+"/3</b> 组提示词，每组 "+n+" 张 → 共 <b>"+(groups*n)+" 张</b>"):"，三个提示词都留空 → <b>不出采样图</b>");
+  }
+  boxes.forEach(function(box){ box.addEventListener("input",render); });
+  start.addEventListener("click",function(e){
+    e.preventDefault();
+    var ps=encodeURIComponent(lines().join("\n"));
+    location.href="image-train.html?model="+encodeURIComponent(model)+"&data="+encodeURIComponent(data)+"&prompts="+ps;
+  });
+  render();
+})();
+</script>
+
+<div id="envPanel" hidden>
+  <div class="envcard" role="dialog" aria-modal="true" aria-labelledby="envTitle">
+    <div class="envcard__head"><b id="envTitle">环境检测</b><button id="envClose" type="button" aria-label="关闭环境面板">×</button></div>
+    <div id="envBody">核心未连接</div>
+  </div>
+</div>
+<script>
+(function(){var p=document.getElementById("envPanel"),b=document.getElementById("envBody"),c=document.getElementById("envClose");
+function close(){if(p)p.hidden=true;}
+var chips=document.querySelectorAll("[data-env], .chip");
+for(var i=0;i<chips.length;i++){if(String(chips[i].textContent).trim()!=="环境")continue;chips[i].addEventListener("click",function(){if(p)p.hidden=false;});}
+if(c)c.addEventListener("click",close);
+document.addEventListener("keydown",function(e){if(e.key==="Escape")close();});
+})();
+</script>
+
+</body>
+</html>

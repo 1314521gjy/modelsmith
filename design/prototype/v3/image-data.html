@@ -1,0 +1,208 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>训练工坊 · 生图数据</title>
+<style>
+:root{--line:rgba(15,23,42,.12);--text:#0F172A;--dim:#55658A;--muted:#9AA6BF;--image:#C97B12}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{overflow:hidden;background:linear-gradient(180deg,#FAFBFD,#EEF2F8);color:var(--text);font-family:"Noto Sans SC","Microsoft YaHei UI",sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+.aura{position:fixed;border-radius:50%;pointer-events:none;filter:blur(40px);z-index:0}
+.aura--a{width:620px;height:620px;left:-180px;top:-200px;background:radial-gradient(circle,rgba(240,179,90,.30),transparent 68%)}
+.aura--b{width:660px;height:660px;right:-240px;bottom:-260px;background:radial-gradient(circle,rgba(90,209,165,.24),transparent 68%)}
+.wrap{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:clamp(20px,3vh,44px) clamp(24px,4.5vw,72px)}
+.top{display:flex;align-items:center;justify-content:space-between;height:64px}
+.left{display:flex;align-items:center;gap:14px}
+.back{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.7);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--text)}
+.back svg{width:22px;height:22px}
+.brand{font-family:"Manrope","Segoe UI",sans-serif;font-weight:700;font-size:19px}
+.brand span{font-family:inherit;font-weight:400;font-size:15px;color:var(--dim);margin-left:10px}
+.chip{height:44px;padding:0 18px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.7);color:var(--dim);font-size:15px}
+.body{flex:1;overflow:auto;display:flex;flex-direction:column;justify-content:center;gap:20px;width:100%;max-width:1060px;margin:0 auto}
+h1{font-size:clamp(42px,4.4vw,64px);font-weight:600;letter-spacing:-.025em;text-align:center}
+.sub{font-size:clamp(16px,1.2vw,19px);color:var(--dim);text-align:center;margin-top:-6px}
+.row{display:flex;gap:12px}
+.row input{flex:1;height:62px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.82);padding:0 20px;font-family:"Manrope",sans-serif;font-size:16px}
+.row input:focus{outline:3px solid rgba(201,123,18,.45);background:#fff}
+.btn--pick{height:62px;padding:0 24px;border-radius:16px;border:1px solid rgba(201,123,18,.35);background:rgba(201,123,18,.10);color:#8A5A08;font-size:17px;font-weight:600;white-space:nowrap}
+.hint{display:flex;justify-content:center}
+.chip2{height:44px;padding:0 18px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.8);font-size:15px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.cell{border:1px solid var(--line);border-radius:16px;padding:14px 18px;background:rgba(255,255,255,.72)}
+.k{font-size:14px;color:var(--dim)}
+.v{font-family:"Manrope",sans-serif;font-size:21px;font-weight:600;margin-top:4px}
+.foot{display:flex;justify-content:space-between;gap:14px;padding-top:18px}
+.btn{height:56px;padding:0 28px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.8);font-size:17px;color:var(--text);text-decoration:none;display:inline-flex;align-items:center}
+.btn--primary{background:#0F172A;color:#fff;border-color:#0F172A}
+.btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+
+/* --- art polish (CSS only) --- */
+.card,.cell,.panel,.row{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease,background-color .22s ease}
+.card:hover,.panel:hover,.row:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(15,23,42,.12);border-color:rgba(201,123,18,.34)}
+.card::after,.panel::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.28),rgba(255,255,255,0) 42%,rgba(255,255,255,.16));opacity:.7}
+h1,h2{letter-spacing:-.012em}
+.cell .k{letter-spacing:.035em}
+hr,.divider{background-image:linear-gradient(90deg,rgba(15,23,42,.02),rgba(15,23,42,.16),rgba(15,23,42,.02))}
+
+
+/* --- caption edit rows (wire creates .caprow) --- */
+.captionedit__sum,.captionedit__msg{font-size:13px;color:var(--dim)}
+.captionedit__list{max-height:46vh;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.caprow{display:grid;grid-template-columns:120px 1fr 64px;gap:10px;align-items:center}
+.caprow__name{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.caprow__text{width:100%;min-height:38px;resize:vertical;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit}
+.caprow__num{text-align:right;font-size:12px;color:var(--dim)}
+.caprow.is-over .caprow__num{color:#C0392B;font-weight:600}
+.caprow.is-over .caprow__text{border-color:rgba(192,57,43,.55)}
+.caprow.is-missing .caprow__text{border-style:dashed}
+.caprow.is-saved{box-shadow:inset 2px 0 0 var(--laya,#0E9F6E)}
+#captionEditPanel[hidden]{display:none}
+
+/* --- environment panel --- */
+#envPanel{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(15,23,42,.30);backdrop-filter:blur(8px)}
+#envPanel[hidden]{display:none}
+.envcard{width:min(560px,calc(100vw - 40px));max-height:min(70vh,520px);overflow:auto;border-radius:18px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.75);box-shadow:0 24px 70px rgba(15,23,42,.28);padding:20px 22px 18px}
+.envcard__head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.envcard__head b{font-size:15px;letter-spacing:.02em}
+#envClose{width:30px;height:30px;border-radius:9px;border:1px solid rgba(15,23,42,.14);background:rgba(255,255,255,.7);color:#334155;font-size:18px;line-height:1;cursor:pointer}
+#envClose:hover{background:#F1F5F9}
+#envBody{font:12.5px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;color:#334155;white-space:pre-wrap;word-break:break-word}
+.chip[data-env]{cursor:pointer}
+
+
+/* --- caption panel (existing tokens only) --- */
+#btnCaption{align-self:center}
+#captionPanel{margin-top:6px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+#captionPanel[hidden]{display:none}
+#captionPanel .row{display:flex;flex-wrap:wrap;gap:12px}
+#captionPanel .row>*{flex:1 1 220px}
+#captionPanel select,#captionPanel textarea{border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.82);padding:12px 16px;font:inherit;color:var(--text)}
+#captionPanel textarea{min-height:88px;resize:vertical}
+#captionPanel .captionline{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:15px;color:var(--dim)}
+#captionResult{font-size:14px;color:var(--dim);min-height:1.6em}
+
+</style>
+</head>
+<body>
+<div class="aura aura--a"></div><div class="aura aura--b"></div>
+<div class="wrap">
+  <div class="top">
+    <div class="left">
+      <a class="back" href="image.html" aria-label="返回上一步">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+      </a>
+      <div class="brand">生图 LoRA <span>第 2 步 / 共 4 步</span></div>
+    </div>
+    <div><button class="chip" type="button" data-env="1">环境</button></div>
+  </div>
+
+  <div class="body">
+    <h1>选择图片文件夹</h1>
+
+    <div class="row" data-pick="dir">
+      <input id="dataPath" type="text" spellcheck="false" placeholder="粘贴图片文件夹的绝对路径" aria-label="图片文件夹路径">
+      <button class="btn--pick" id="browseBtn" type="button">打开文件夹…</button>
+      <input id="folderPick" type="file" webkitdirectory directory hidden>
+    </div>
+
+    <div class="hint"><button class="chip2" id="sampleBtn" type="button">用示例图集（smoke-synthetic，4 张）</button></div>
+
+
+    <div class="hint"><button id="btnCaption" type="button" class="chip">自动打标</button><button id="btnCaptionEdit" type="button" class="chip">查看/编辑字幕</button></div>
+
+    <div id="captionPanel" hidden class="cell">
+      <div class="row">
+        <select id="captionBackend"><option value="">加载中…</option></select>
+        <input id="captionTrigger" type="text" placeholder="触发词，可留空">
+      </div>
+      <textarea id="captionPrompt" placeholder="描述提示词，可留空用默认"></textarea>
+      <div class="captionline">
+        <select id="captionLang"><option value="en">英文</option><option value="zh">中文</option></select>
+        <label><input type="checkbox" id="captionOverwrite"> 覆盖已有字幕</label>
+        <button id="captionRun" type="button" class="btn--pick">开始打标</button>
+      </div>
+      <div id="captionResult"></div>
+    </div>
+
+    <div id="captionEditPanel" hidden class="cell">
+      <div id="captionEditSummary" class="captionedit__sum"></div>
+      <div id="captionEditList" class="captionedit__list"></div>
+      <div class="row"><button id="captionEditSaveAll" type="button" class="chip">全部保存</button>
+        <span id="captionEditMsg" class="captionedit__msg"></span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <a class="btn" href="image.html">上一步</a>
+    <a class="btn btn--primary" id="next" href="#" aria-disabled="true">下一步：训练参数</a>
+  </div>
+</div>
+<script>
+(function(){
+  var inp=document.getElementById("dataPath"), nx=document.getElementById("next"),
+      browse=document.getElementById("browseBtn"), folder=document.getElementById("folderPick"),
+      sample=document.getElementById("sampleBtn"),
+      nImg=document.getElementById("nImg"), metaState=document.getElementById("metaState");
+  var qs=new URLSearchParams(location.search);
+  var model=qs.get("model")||"";
+  var SAMPLE="E:\\视频\\modelsmith\\resources\\04-生图LoRA-图集\\smoke-synthetic";
+
+  function sync(){
+    var v=inp.value.trim();
+    if(v.length>4){ nx.removeAttribute("aria-disabled"); } else { nx.setAttribute("aria-disabled","true"); }
+    window.__imageData=v;
+    if(!v){ nImg.textContent="—"; metaState.textContent="—"; return; }
+    if(v.toLowerCase().indexOf("smoke-synthetic")>=0){ nImg.textContent="4 张"; metaState.textContent="有"; }
+    else { nImg.textContent="—"; metaState.textContent="—"; }
+  }
+  inp.addEventListener("input",sync);
+  inp.addEventListener("paste",function(){ setTimeout(sync,0); });
+  if(sample) sample.addEventListener("click",function(){ inp.value=SAMPLE; sync(); });
+  if(browse&&folder){
+    browse.addEventListener("click",function(){ folder.click(); });
+    folder.addEventListener("change",function(){
+      var f=folder.files&&folder.files[0]; if(!f) return;
+      var name=(f.webkitRelativePath||"").split("/")[0]||f.name;
+      if(name.toLowerCase()==="smoke-synthetic"){ inp.value=SAMPLE; sync(); }
+      else { inp.value=""; sync(); inp.placeholder="已选文件夹 "+name+" —— 请粘贴完整路径"; inp.focus(); }
+      folder.value="";
+    });
+  }
+  nx.addEventListener("click",function(e){
+    e.preventDefault(); if(nx.getAttribute("aria-disabled")==="true") return;
+    location.href="image-params.html?model="+encodeURIComponent(model||window.__imageModel||"")+"&data="+encodeURIComponent(window.__imageData||"");
+  });
+  sync();
+})();
+</script>
+
+
+<script>
+(function(){var b=document.getElementById("btnCaption"),p=document.getElementById("captionPanel");
+var b2=document.getElementById("btnCaptionEdit"),p2=document.getElementById("captionEditPanel");
+if(b&&p)b.addEventListener("click",function(){p.hidden=!p.hidden;});
+if(b2&&p2)b2.addEventListener("click",function(){p2.hidden=!p2.hidden;});
+})();
+</script>
+
+<div id="envPanel" hidden>
+  <div class="envcard" role="dialog" aria-modal="true" aria-labelledby="envTitle">
+    <div class="envcard__head"><b id="envTitle">环境检测</b><button id="envClose" type="button" aria-label="关闭环境面板">×</button></div>
+    <div id="envBody">核心未连接</div>
+  </div>
+</div>
+<script>
+(function(){var p=document.getElementById("envPanel"),b=document.getElementById("envBody"),c=document.getElementById("envClose");
+function close(){if(p)p.hidden=true;}
+var chips=document.querySelectorAll("[data-env], .chip");
+for(var i=0;i<chips.length;i++){if(String(chips[i].textContent).trim()!=="环境")continue;chips[i].addEventListener("click",function(){if(p)p.hidden=false;});}
+if(c)c.addEventListener("click",close);
+document.addEventListener("keydown",function(e){if(e.key==="Escape")close();});
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+/* art.css — ModelSmith 美术覆盖层（P-art / MiMo 2.6 Pro）
+ * 用法：Lead 用脚本把本文件整体追加到 prototype/index.html 原 </style> 之后（同在 <style> 内）。
+ * 零外链、零 link/import 规则、零外部字体/图片；不改 DOM，只用现有选择器覆盖。
+ * infinite 只允许：.aura ×2（breathe 24s/32s）+ .icn ×1（float）。
+ */
+:root{
+  /* 色板（token 校准，值与 DESIGN-SPEC §1 一致） */
+  --bg:#080B10;
+  --bg2:#0D1219;
+  --glass:rgba(255,255,255,.055);
+  --glass-hi:rgba(255,255,255,.075);
+  --line:rgba(255,255,255,.12);
+  --line-strong:rgba(255,255,255,.22);
+  --text:#E8EEF7;
+  --dim:#93A1B5;
+  --laya:#5AD1A5;
+  --llm:#7AA7FF;
+  --image:#F0B35A;
+  --video:#C08CFF;
+  --danger:#E06C75;
+  --warn:#E8B04B;
+  --focus:#A9C6FF;
+  /* 形状三档：面板 24 / 控件 12 / 小签 8（次级 20/10 见 ART-NOTES 登记） */
+  --r-panel:24px;
+  --r-ctrl:12px;
+  --r-tag:8px;
+  --r-sub:20px;
+  --r-sub-ctrl:10px;
+  /* 布局与间距 */
+  --w-max:1120px;
+  --col-steps:200px;
+  --col-side:260px;
+  --sp-1:8px;
+  --sp-2:16px;
+  --sp-3:24px;
+  --sp-4:32px;
+  --sp-5:48px;
+  /* 动效 */
+  --t-fast:120ms;
+  --t-step:200ms;
+  --t-enter:260ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  /* 字体栈（不引外部字体；Noto Sans SC / Manrope 缺席时回落本机字体） */
+  --cn:"Noto Sans SC","Microsoft YaHei UI","Microsoft YaHei",sans-serif;
+  --en:"Manrope","Segoe UI",sans-serif;
+}
+
+/* ============ 1 字阶（display / h1 / h2 / body / small / data） ============ */
+body{font-family:var(--cn);font-size:14px;line-height:22px;font-weight:400;color:var(--text)}
+.hero h1{font-family:var(--cn);font-size:28px;line-height:34px;font-weight:600;letter-spacing:0}
+.flow__title,.run h2,.done-page h2,.center h2{font-family:var(--cn);font-size:22px;line-height:30px;font-weight:600;letter-spacing:0}
+.card__title,.aside h3,.drawer__head h3{font-size:15px;line-height:21px;font-weight:600}
+.hero p,.center .lead,.done-page .sum{font-size:14px;line-height:22px}
+.card__sub,.field label,.est .k,.aside .note,.pop .row,.pop p,.tool .desc,.done-page .sum{color:var(--dim)}
+.card__sub{font-size:12.5px;line-height:18px}
+.small,.dot,.field .msg,.tn-lbl,.vram .lbl,.run__prog .lbl,.readouts .ro .k{font-size:12.5px;line-height:18px}
+.est .v,.readouts .ro .v,.dropzone .path,.path,.log,.cfgbox,.tool .nm{font-variant-numeric:tabular-nums}
+.est .v{font-family:var(--en);font-size:13px;line-height:16px;font-weight:500}
+.readouts .ro .v{font-family:var(--en);font-size:18px;line-height:22px;font-weight:600}
+.brand{letter-spacing:-.01em}
+
+/* ============ 2 焦点环（统一 2px var(--focus)，offset 2；指针点击不显环） ============ */
+.skip:focus-visible,.chip:focus-visible,.backbtn:focus-visible,.card:focus-visible,
+.seg button:focus-visible,.dropzone:focus-visible,.step-item:focus-visible,
+.btn:focus-visible,.xbtn:focus-visible,.switch:focus-visible,
+.field select:focus-visible,.field input:focus-visible,details.adv summary:focus-visible{
+  outline:2px solid var(--focus);
+  outline-offset:2px;
+}
+.center h2:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+/* 字段 focus-visible 同时提亮描边（与环并存，状态差可见） */
+.field select:focus-visible,.field input:focus-visible{border-color:var(--focus)}
+
+/* ============ 3 毛玻璃与层级（光晕 0 < 内容 1 < 操作条 20 < 抽屉/浮层 40 < skip 60） ============ */
+.aura{z-index:0}
+.panel,.card-box,.aside,.actionbar,header.top{
+  backdrop-filter:blur(18px) saturate(1.15);
+  -webkit-backdrop-filter:blur(18px) saturate(1.15);
+}
+main#main{position:relative;z-index:1}
+.actionbar{z-index:20}
+.scrim{z-index:39}
+.drawer,.pop{z-index:40}
+.skip{z-index:60}
+.pop,.drawer{box-shadow:0 8px 32px rgba(0,0,0,.45)}
+.card{box-shadow:none;background:transparent}
+
+/* ============ 4 两块光晕（α ≤ .12，只做明度层次；24s / 32s 呼吸） ============ */
+@keyframes breathe{from{opacity:.05}to{opacity:.085}}
+.aura{pointer-events:none;border-radius:50%}
+.aura--a{background:radial-gradient(circle,var(--laya),transparent 68%);animation:breathe 24s ease-in-out infinite alternate}
+.aura--b{background:radial-gradient(circle,var(--video),transparent 68%);animation:breathe 32s ease-in-out infinite alternate}
+
+/* ============ 5 四卡入场（70ms 错峰，fade + 8px + blur 1px→0，总 490ms ≤ 700ms） ============ */
+@keyframes enter{from{opacity:0;transform:translateY(8px);filter:blur(1px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+.card{opacity:0;transform:translateY(8px);filter:blur(1px);
+  transition:transform var(--t-fast) var(--ease),background var(--t-fast),border-color var(--t-fast),color var(--t-fast)}
+.card.in{animation:enter var(--t-enter) var(--ease) forwards}
+.grid2 .card:nth-child(1){animation-delay:0ms}
+.grid2 .card:nth-child(2){animation-delay:70ms}
+.grid2 .card:nth-child(3){animation-delay:140ms}
+.grid2 .card:nth-child(4){animation-delay:210ms}
+/* hover 抬升 2px + 底色 .055→.075 + 描边转 --line-strong */
+.card:hover,.card:focus-within{background:var(--glass-hi);transform:translateY(-2px);border-color:var(--line-strong)}
+
+/* ============ 6 图标漂浮（6–10px，7/8.5/7.5/9s 错档；hover/focus-within 暂停） ============ */
+@keyframes float{from{transform:translateY(-6px)}to{transform:translateY(6px)}}
+.icn{color:var(--dim);animation:float 7s ease-in-out infinite alternate}
+.card:nth-child(1) .icn{animation-duration:7s;animation-delay:0ms}
+.card:nth-child(2) .icn{animation-duration:8.5s;animation-delay:600ms}
+.card:nth-child(3) .icn{animation-duration:7.5s;animation-delay:1200ms}
+.card:nth-child(4) .icn{animation-duration:9s;animation-delay:1800ms}
+.card:hover .icn,.card:focus-within .icn{animation-play-state:paused;color:var(--c)}
+/* 现有 DOM 的四个 <svg class="icn"> 均同时带 .icn 与 .icn-slot 两种类，重复同一速写只为数出同一条 float */
+.card__icon.icn-slot .icn{animation:float 7s ease-in-out alternate}
+
+/* ============ 7 进程缝（纯 CSS，用现有 DOM：nav.steps::before 2px 线 + 当前步高亮） ============ */
+nav.steps{position:sticky;top:88px;display:flex;flex-direction:column;gap:2px}
+nav.steps::before{
+  content:"";position:absolute;left:11px;top:6px;bottom:6px;width:2px;
+  background:var(--line);
+}
+.step-item{position:relative}
+.step-item .num{position:relative;z-index:1;background:var(--bg)}
+.step-item[aria-current="step"] .num{border-color:var(--c);color:var(--c)}
+.step-item.done .num{border-color:var(--c);background:var(--c);color:var(--bg)}
+.step-item[aria-current="step"]{color:var(--text);background:var(--glass)}
+
+/* ============ 8 圆角分档（面板 24 / 控件 12 / 小签 8；次级 20/10 已在 ART-NOTES 登记） ============ */
+.panel,.pop,.drawer{border-radius:var(--r-panel)}
+.aside,.card-box{border-radius:var(--r-sub)}
+.chip,.btn,.seg button,.dropzone,.field select,.field input,.log,.path,.cfgbox,details.adv,.step-item,.backbtn,.skip{border-radius:var(--r-ctrl)}
+.xbtn{border-radius:var(--r-sub-ctrl)}
+.dot::before,.done-page .badge::before{border-radius:50%}
+.vram .bar,.run__prog .bar{border-radius:var(--r-tag)}
+
+/* ============ 9 读数对齐（tabular-nums，不用等宽字体做界面标签） ============ */
+.est .v,.readouts .ro .v,.dropzone .path,.path,.log,.cfgbox,.tool .nm,.vram .lbl .en{
+  font-variant-numeric:tabular-nums;
+}
+
+/* ============ 10 组件状态：default / hover / focus-visible / disabled / error ============ */
+/* 入口卡 */
+.card{background:transparent}
+.card .icn{color:var(--dim)}
+.card:hover .icn,.card:focus-within .icn{color:var(--c)}
+/* 主按钮（该线色 α.14 底 + α.45 描边） */
+.btn--start{background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent);color:var(--text)}
+.btn--start:hover{background:color-mix(in srgb,var(--c) 20%,transparent)}
+.btn--primary{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);color:var(--text)}
+.btn--primary:hover{background:rgba(255,255,255,.2)}
+/* 次按钮 */
+.btn--ghost{background:transparent;border:1px solid var(--line);color:var(--dim)}
+.btn--ghost:hover{color:var(--text);border-color:var(--line-strong)}
+/* disabled */
+.btn--primary[aria-disabled=true],.btn[aria-disabled=true],.btn--start[aria-disabled=true],.btn--ghost[aria-disabled=true]{opacity:.4;cursor:not-allowed}
+.switch[aria-checked=false]{background:var(--line)}
+.field select:disabled,.field input:disabled{background:transparent;color:var(--dim);cursor:not-allowed}
+/* 字段 default */
+.field select,.field input[type=text],.field input[type=number]{
+  background:var(--bg2);border:1px solid var(--line);height:40px;color:var(--text)}
+.field select:hover,.field input:hover{border-color:var(--line-strong)}
+/* 分段控件 */
+.seg button{border:1px solid var(--line);color:var(--dim)}
+.seg button:hover{border-color:var(--line-strong);color:var(--text)}
+.seg button[aria-pressed=true]{border-color:var(--c);color:var(--text)}
+/* 拖放区 */
+.dropzone{border:1px dashed var(--line);min-height:96px}
+.dropzone:hover{border-style:solid;border-color:var(--line-strong)}
+/* error：1px --danger + 字段下文案 + aria-invalid */
+.field.err select,.field.err input,.field.err .seg button,.dropzone.err{border-color:var(--danger)}
+.field .msg{color:var(--danger);font-size:12.5px;margin-top:8px}
+.field.err .msg{display:block}
+/* 状态点（颜色 + 文字双通道） */
+.dot{display:inline-flex;align-items:center;gap:7px}
+.dot--ok{color:var(--laya)}
+.dot--idle{color:var(--dim)}
+.dot--fail{color:var(--danger)}
+
+/* ============ 11 reduced-motion 真分支：漂浮/入场/光晕全停，状态差保持可见 ============ */
+@media (prefers-reduced-motion:reduce){
+  .aura,.icn,.card,.card.in,.step-body{animation:none!important}
+  .aura{opacity:.06}
+  .icn{transform:none!important}
+  .card{opacity:1;transform:none;filter:none}
+  .card:hover,.card:focus-within{transform:none}
+  *{transition-duration:.001ms!important}
+  /* 状态差不许被压掉 */
+  .btn--primary[aria-disabled=true],.btn[aria-disabled=true],.btn--start[aria-disabled=true],.btn--ghost[aria-disabled=true]{opacity:.4}
+  .field.err select,.field.err input,.field.err .seg button,.dropzone.err{border-color:var(--danger)}
+  .field.err .msg{display:block}
+  .card:hover .icn,.card:focus-within .icn{color:var(--c)}
+  .seg button[aria-pressed=true]{border-color:var(--c)}
+}
+
+
+
+

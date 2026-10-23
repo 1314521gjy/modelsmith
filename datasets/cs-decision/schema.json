@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cs-decision SFT output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "emotion",
+    "emotion_level",
+    "intent",
+    "action",
+    "reply"
+  ],
+  "properties": {
+    "emotion": {
+      "type": "string",
+      "enum": [
+        "不满",
+        "失望",
+        "威胁投诉",
+        "平静",
+        "愤怒",
+        "焦虑"
+      ]
+    },
+    "emotion_level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "intent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "安抚话术",
+        "补发",
+        "退款",
+        "换货",
+        "运费补偿",
+        "发红包",
+        "转人工",
+        "拒绝并解释"
+      ]
+    },
+    "reply": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

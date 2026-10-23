@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModelSmith 训练工作台</title>
+<style>
+:root{
+  --bg:#080B10; --bg2:#0D1219;
+  --glass:rgba(255,255,255,.055); --glass-hi:rgba(255,255,255,.075);
+  --line:rgba(255,255,255,.12); --line-strong:rgba(255,255,255,.22);
+  --text:#E8EEF7; --dim:#93A1B5;
+  --laya:#5AD1A5; --llm:#7AA7FF; --image:#F0B35A; --video:#C08CFF;
+  --danger:#E06C75; --focus:#A9C6FF;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --cn:"Noto Sans SC","Microsoft YaHei UI",sans-serif;
+  --en:"Manrope","Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:var(--cn);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;position:relative;overflow-x:hidden}
+.en,.data{font-family:var(--en);font-variant-numeric:tabular-nums}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+a{color:inherit;text-decoration:none}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip{position:absolute;left:16px;top:-60px;z-index:60;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 16px;transition:top .15s}
+.skip:focus-visible{top:16px}
+
+.aura{position:fixed;z-index:0;border-radius:50%;pointer-events:none;opacity:.07}
+.aura--a{width:520px;height:520px;left:-140px;top:-120px;background:radial-gradient(circle,var(--laya),transparent 68%);animation:breathe 24s ease-in-out infinite alternate}
+.aura--b{width:600px;height:600px;right:-160px;bottom:-200px;background:radial-gradient(circle,var(--video),transparent 68%);opacity:.05;animation:breathe 32s ease-in-out infinite alternate}
+@keyframes breathe{from{opacity:.05}to{opacity:.085}}
+
+header.top{position:sticky;top:0;z-index:20;background:rgba(8,11,16,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}
+.top__in{max-width:1120px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.brand{font-family:var(--en);font-weight:700;font-size:15px;letter-spacing:-.01em}
+.brand small{font-family:var(--cn);font-weight:400;color:var(--dim);margin-left:8px;font-size:12.5px}
+.top__acts{display:flex;gap:6px}
+.chip{height:36px;padding:0 14px;border-radius:12px;border:1px solid var(--line);color:var(--dim);font-size:13px;display:inline-flex;align-items:center;transition:color .12s,border-color .12s,background .12s}
+.chip:hover{color:var(--text);border-color:var(--line-strong);background:var(--glass)}
+
+main{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ---------- HOME ---------- */
+.hero{padding:56px 0 24px}
+.hero h1{font-family:var(--cn);font-size:28px;line-height:34px;font-weight:600;letter-spacing:0}
+.hero p{color:var(--dim);font-size:14px;margin-top:8px;max-width:46ch}
+
+.panel{background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:24px;overflow:hidden;margin-bottom:64px}
+.grid2{display:grid;grid-template-columns:1fr 1fr}
+.card{position:relative;padding:32px;min-height:188px;display:flex;flex-direction:column;gap:14px;text-align:left;background:transparent;transition:transform .12s var(--ease),background .12s;opacity:0;transform:translateY(8px)}
+.card.in{animation:enter .26s var(--ease) forwards}
+@keyframes enter{to{opacity:1;transform:translateY(0)}}
+.grid2 .card:nth-child(1),.grid2 .card:nth-child(2){border-bottom:1px solid var(--line)}
+.grid2 .card:nth-child(1),.grid2 .card:nth-child(3){border-right:1px solid var(--line)}
+.card:hover,.card:focus-within{background:var(--glass-hi);transform:translateY(-2px)}
+.card:hover .icn,.card:focus-within .icn{animation-play-state:paused;color:var(--c)}
+.card:hover .card__title,.card:focus-within .card__title{color:var(--text)}
+.card__icon{color:var(--dim)}
+.icn{width:32px;height:32px;display:block;animation:float 7s ease-in-out infinite alternate}
+.card:nth-child(1) .icn{animation-duration:7s;animation-delay:0ms}
+.card:nth-child(2) .icn{animation-duration:8.5s;animation-delay:600ms}
+.card:nth-child(3) .icn{animation-duration:7.5s;animation-delay:1200ms}
+.card:nth-child(4) .icn{animation-duration:9s;animation-delay:1800ms}
+@keyframes float{from{transform:translateY(-6px)}to{transform:translateY(6px)}}
+.card__title{font-size:15px;line-height:21px;font-weight:600;color:var(--text)}
+.card__sub{font-size:12.5px;line-height:18px;color:var(--dim)}
+.dot{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--dim)}
+.dot::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.dot--ok{color:var(--laya)}
+.dot--idle{color:var(--dim)}
+.dot--fail{color:var(--danger)}
+
+/* ---------- FLOW ---------- */
+.flow{display:none;padding:24px 0 120px}
+.flow.active{display:block}
+.flow__head{display:flex;align-items:center;gap:12px;padding:16px 0 24px}
+.backbtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;color:var(--dim);transition:.12s}
+.backbtn:hover{color:var(--text);border-color:var(--line-strong)}
+.flow__title{font-size:22px;line-height:30px;font-weight:600}
+
+.body3{display:grid;grid-template-columns:200px minmax(0,1fr) 260px;gap:32px;align-items:start}
+
+nav.steps{position:sticky;top:88px;display:flex;flex-direction:column;gap:2px}
+.step-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;color:var(--dim);font-size:13px;text-align:left;width:100%;transition:.12s}
+.step-item .num{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--en);font-size:12px;flex-shrink:0}
+.step-item[aria-current="step"]{color:var(--text);background:var(--glass)}
+.step-item[aria-current="step"] .num{border-color:var(--c);color:var(--c)}
+.step-item.done .num{border-color:var(--c);background:var(--c);color:var(--bg)}
+.step-item.done .num svg{width:12px;height:12px}
+
+.center{max-width:560px}
+.center h2{font-size:22px;line-height:30px;font-weight:600;outline:none}
+.center .lead{color:var(--dim);margin:8px 0 24px;font-size:14px}
+.step-body{animation:fade .2s var(--ease)}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12.5px;color:var(--dim);margin-bottom:8px}
+.field select,.field input[type=text],.field input[type=number]{width:100%;height:40px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:0 14px;font-family:var(--cn);font-size:14px;transition:border-color .12s}
+.field select:hover,.field input:hover{border-color:var(--line-strong)}
+.field select:focus-visible,.field input:focus-visible{border-color:var(--focus)}
+.field.err select,.field.err input,.dropzone.err{border-color:var(--danger)}
+.field .msg{display:none;color:var(--danger);font-size:12.5px;margin-top:8px}
+.field.err .msg{display:block}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--line);color:var(--dim);font-size:13px;transition:.12s}
+.seg button:hover{border-color:var(--line-strong);color:var(--text)}
+.seg button[aria-pressed=true]{border-color:var(--c);color:var(--text);background:rgba(255,255,255,.04)}
+.dropzone{border:1px dashed var(--line);border-radius:12px;min-height:96px;padding:20px;display:flex;flex-direction:column;gap:8px;justify-content:center;align-items:flex-start;color:var(--dim);transition:.12s;background:var(--bg2)}
+.dropzone:hover{border-style:solid;border-color:var(--line-strong);background:rgba(255,255,255,.04)}
+.dropzone .path{color:var(--text);font-family:var(--en);font-size:13px;word-break:break-all}
+details.adv{margin-top:24px;border:1px solid var(--line);border-radius:12px;padding:0 16px}
+details.adv summary{height:44px;display:flex;align-items:center;color:var(--dim);font-size:13px;cursor:pointer;list-style:none}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary::before{content:"+";margin-right:8px;font-family:var(--en)}
+details.adv[open] summary::before{content:"–"}
+details.adv .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-bottom:16px}
+.checkline{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.checkline:last-child{border-bottom:none}
+.checkline .ci{flex-shrink:0;margin-top:2px}
+
+.aside{position:sticky;top:88px;background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:20px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.aside h3{font-size:15px;font-weight:600;margin-bottom:16px}
+.est{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}
+.est:last-child{border-bottom:none}
+.est .k{font-size:12.5px;color:var(--dim)}
+.est .v{font-size:13px;font-weight:500;font-family:var(--en);font-variant-numeric:tabular-nums}
+.aside .note{font-size:12px;color:var(--dim);margin-top:14px;line-height:18px}
+
+.actionbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(8,11,16,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line)}
+.actionbar__in{max-width:1120px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.btn{height:44px;padding:0 22px;border-radius:12px;font-size:14px;display:inline-flex;align-items:center;transition:.12s}
+.btn--ghost{border:1px solid var(--line);color:var(--dim)}
+.btn--ghost:hover{color:var(--text);border-color:var(--line-strong)}
+.btn--primary{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);color:var(--text)}
+.btn--primary:hover{background:rgba(255,255,255,.2)}
+.btn--primary[aria-disabled=true]{opacity:.4;cursor:not-allowed}
+.btn--start{background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
+.btn--start:hover{background:color-mix(in srgb,var(--c) 20%,transparent)}
+.btn--danger{border:1px solid var(--danger);color:var(--danger)}
+.btn--danger:hover{background:color-mix(in srgb,var(--danger) 14%,transparent)}
+
+/* ---------- RUN ---------- */
+.run{display:none;padding:24px 0 40px}
+.run.active{display:block}
+.run h2{font-size:22px;line-height:30px;font-weight:600}
+.run__status{color:var(--dim);margin:8px 0 24px;font-size:13px}
+.timeline{display:flex;align-items:center;gap:0;margin:24px 0;overflow-x:auto;padding-bottom:4px}
+.tl-node{display:flex;align-items:center;gap:10px;flex:1;min-width:max-content}
+.tl-node .tn-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);flex-shrink:0}
+.tl-node.done .tn-dot{background:var(--c);border-color:var(--c)}
+.tl-node.cur .tn-dot{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 24%,transparent)}
+.tl-node .tn-lbl{font-size:12.5px;color:var(--dim)}
+.tl-node.cur .tn-lbl,.tl-node.done .tn-lbl{color:var(--text)}
+.tl-line{flex:1;height:2px;background:var(--line);min-width:20px}
+.tl-node.done .tl-line{background:var(--c)}
+.run__grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+.card-box{background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:20px}
+.card-box h4{font-size:13px;color:var(--dim);font-weight:500;margin-bottom:12px}
+.losschart svg{width:100%;height:150px;display:block}
+.vram{margin-top:8px}
+.vram .bar{height:10px;background:var(--bg2);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.vram .bar i{display:block;height:100%;background:var(--c);width:0;transition:width .24s linear}
+.vram .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:8px}
+.vram .lbl .en{color:var(--text)}
+.log{height:180px;overflow-y:auto;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px;font-family:var(--en);font-size:12px;line-height:20px;color:var(--dim)}
+.log .ln{white-space:pre-wrap;word-break:break-all}
+.log .ln b{color:var(--text);font-weight:500}
+.run__prog{margin-top:24px}
+.run__prog .bar{height:8px;background:var(--bg2);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.run__prog .bar i{display:block;height:100%;background:var(--c);width:0;transition:width .24s linear}
+.run__prog .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:8px}
+.readouts{display:flex;gap:24px;flex-wrap:wrap;margin-top:24px}
+.readouts .ro .k{font-size:12px;color:var(--dim)}
+.readouts .ro .v{font-size:18px;font-weight:600;font-family:var(--en);font-variant-numeric:tabular-nums}
+
+/* ---------- DONE ---------- */
+.done-page{display:none;padding:48px 0 80px;text-align:left}
+.done-page.active{display:block}
+.done-page .badge{display:inline-flex;align-items:center;gap:8px;color:var(--laya);font-size:13px;margin-bottom:16px}
+.done-page .badge::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}
+.done-page h2{font-size:22px;line-height:30px;font-weight:600;margin-bottom:8px}
+.done-page .sum{color:var(--dim);max-width:52ch;margin-bottom:24px}
+.path{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px;font-family:var(--en);font-size:13px;word-break:break-all;margin-bottom:8px}
+.path small{display:block;font-family:var(--cn);color:var(--dim);font-size:12px;margin-bottom:6px}
+.done__acts{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+
+/* ---------- DRAWER ---------- */
+.scrim{position:fixed;inset:0;z-index:39;background:rgba(0,0,0,.4);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+.scrim.open{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:40;width:420px;max-width:100vw;background:var(--bg2);border-left:1px solid var(--line);border-radius:24px 0 0 24px;box-shadow:0 8px 32px rgba(0,0,0,.45);transform:translateX(100%);transition:transform .16s var(--ease);padding:24px;overflow-y:auto}
+.drawer.open{transform:translateX(0)}
+.drawer__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.drawer__head h3{font-size:15px;font-weight:600}
+.xbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);color:var(--dim);display:grid;place-items:center}
+.xbtn:hover{color:var(--text);border-color:var(--line-strong)}
+.drawer .mcp{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+.drawer .mcp .t{font-size:13px}
+.switch{width:36px;height:20px;border-radius:20px;background:var(--line);position:relative;transition:.12s;flex-shrink:0}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--text);transition:.12s}
+.switch[aria-checked=true]{background:var(--c)}
+.switch[aria-checked=true]::after{left:18px}
+.drawer h5{font-size:12.5px;color:var(--dim);font-weight:500;margin:20px 0 8px}
+.tool{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px}
+.tool .nm{font-family:var(--en)}
+.tool .desc{color:var(--dim);font-size:12px}
+.cfgbox{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px;font-family:var(--en);font-size:12px;color:var(--dim);white-space:pre;overflow-x:auto;margin:8px 0}
+
+@media (max-width:900px){
+  .body3{grid-template-columns:1fr;gap:24px}
+  .aside{position:static}
+  nav.steps{position:static;flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  .run__grid{grid-template-columns:1fr}
+  .drawer{width:100%;border-radius:24px 0 0 0}
+}
+@media (max-width:640px){
+  .top__in{padding:0 16px}
+  main{padding:0 16px}
+  .grid2{grid-template-columns:1fr}
+  .grid2 .card{border-bottom:1px solid var(--line)}
+  .grid2 .card:last-child{border-bottom:none}
+  .grid2 .card:nth-child(1),.grid2 .card:nth-child(3){border-right:none}
+  .brand small{display:none}
+  .hero{padding:32px 0 16px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .aura{animation:none!important;opacity:.06}
+  .icn{animation:none!important;transform:none!important}
+  .card{opacity:1;transform:none;animation:none!important}
+  .step-body{animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="aura aura--a" aria-hidden="true"></div>
+<div class="aura aura--b" aria-hidden="true"></div>
+
+<a href="#main" class="skip">跳到主要内容</a>
+
+<header class="top">
+  <div class="top__in">
+    <div class="brand">ModelSmith<small>本地训练工作台</small></div>
+    <div class="top__acts">
+      <button class="chip" type="button">环境</button>
+      <button class="chip" type="button">设置</button>
+      <button class="chip" type="button" id="agentBtn" aria-haspopup="dialog">Agent 接入</button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- HOME -->
+  <section id="home" aria-label="入口">
+    <div class="hero">
+      <h1>选择一条训练线</h1>
+    </div>
+    <div class="panel">
+      <div class="grid2" id="cards">
+        <button class="card" data-flow="decision" style="--c:var(--laya)">
+          <span class="card__icon icn-slot">
+            <svg class="icn" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="24" cy="8" r="3"/><circle cx="16" cy="24" r="3"/><path d="M10.5 10l3.5 11M21.5 10l-3.5 11M11 8h10"/></svg>
+          </span>
+          <span class="card__title">决策模型训练</span>
+          <span class="card__sub">Laya · 博弈与策略网络训练</span>
+          <span class="dot dot--ok">就绪</span>
+        </button>
+        <button class="card" data-flow="llm" style="--c:var(--llm)">
+          <span class="card__icon icn-slot">
+            <svg class="icn" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="9" width="22" height="14" rx="3"/><path d="M11 15v3M16 14v5M21 15v3"/><circle cx="11" cy="13" r=".6"/><circle cx="21" cy="13" r=".6"/></svg>
+          </span>
+          <span class="card__title">LLM 微调</span>
+          <span class="card__sub">对话与指令模型的 LoRA / QLoRA</span>
+          <span class="dot dot--ok">就绪</span>
+        </button>
+        <button class="card" data-flow="image" style="--c:var(--image)">
+          <span class="card__icon icn-slot">
+            <svg class="icn" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="7" width="22" height="18" rx="3"/><circle cx="12" cy="14" r="2.5"/><path d="M6 22l6-5 4 3 5-6 6 6"/></svg>
+          </span>
+          <span class="card__title">生图 LoRA 训练</span>
+          <span class="card__sub">FLUX / SDXL 风格与角色定制</span>
+          <span class="dot dot--idle">未检测</span>
+        </button>
+        <button class="card" data-flow="video" style="--c:var(--video)">
+          <span class="card__icon icn-slot">
+            <svg class="icn" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="8" width="17" height="16" rx="3"/><path d="M22 14l5-3v10l-5-3"/></svg>
+          </span>
+          <span class="card__title">视频 LoRA 训练</span>
+          <span class="card__sub">Wan / H3 / LTX 动态风格</span>
+          <span class="dot dot--fail">失败</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FLOW (built by JS) -->
+  <section id="flow" class="flow" aria-label="训练流程">
+    <div class="flow__head">
+      <button class="backbtn" id="flowBack" aria-label="返回入口">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <h1 class="flow__title" id="flowTitle"></h1>
+    </div>
+    <div class="body3">
+      <nav class="steps" id="stepBar" aria-label="步骤"></nav>
+      <div class="center" id="stepCenter" aria-live="polite"></div>
+      <aside class="aside" aria-label="本次预计">
+        <h3>本次预计</h3>
+        <div class="est"><span class="k">显存</span><span class="v" id="estVram">—</span></div>
+        <div class="est"><span class="k">步数</span><span class="v" id="estSteps">—</span></div>
+        <div class="est"><span class="k">时长</span><span class="v" id="estTime">—</span></div>
+        <div class="est"><span class="k">产物</span><span class="v" id="estOut">—</span></div>
+        <p class="note">预估基于当前参数与本机 RTX 4090，实际以运行日志为准。</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- RUN -->
+  <section id="run" class="run" aria-label="训练中">
+    <div class="flow__head">
+      <h2 id="runTitle">训练进行中</h2>
+    </div>
+    <p class="run__status" id="runStatus" aria-live="polite">准备阶段…</p>
+    <div class="timeline" id="timeline"></div>
+    <div class="run__grid">
+      <div class="card-box">
+        <h4>Loss 曲线</h4>
+        <div class="losschart" id="losschart"></div>
+        <div class="vram">
+          <h4 style="margin-top:24px">显存占用</h4>
+          <div class="bar"><i id="vramBar"></i></div>
+          <div class="lbl"><span>24 GB 上限</span><span class="en" id="vramVal">0.0 GB</span></div>
+        </div>
+      </div>
+      <div class="card-box">
+        <h4>运行日志</h4>
+        <div class="log" id="log" role="log" aria-live="off"></div>
+      </div>
+    </div>
+    <div class="run__prog">
+      <div class="bar"><i id="progBar"></i></div>
+      <div class="lbl"><span id="progStep">step 0 / 0</span><span class="en" id="eta">剩余 --:--</span></div>
+    </div>
+    <div class="readouts">
+      <div class="ro"><div class="k">当前 Loss</div><div class="v" id="roLoss">—</div></div>
+      <div class="ro"><div class="k">学习率</div><div class="v" id="roLr">—</div></div>
+      <div class="ro"><div class="k">速度</div><div class="v" id="roSpeed">—</div></div>
+    </div>
+    <div class="done__acts">
+      <button class="btn btn--danger" id="cancelBtn" type="button">取消训练</button>
+    </div>
+  </section>
+
+  <!-- DONE -->
+  <section id="done" class="done-page" aria-label="训练完成">
+    <div class="badge">训练完成</div>
+    <h2 id="doneTitle">产物已生成</h2>
+    <p class="sum" id="doneSum"></p>
+    <div class="path"><small>产物路径</small><span id="donePath"></span></div>
+    <div class="done__acts">
+      <button class="btn btn--ghost" id="openFolder" type="button">打开文件夹</button>
+      <button class="btn btn--start" id="retrain" type="button" style="--c:var(--laya)">再训一次</button>
+      <button class="btn btn--ghost" id="doneBack" type="button">返回首页</button>
+    </div>
+  </section>
+</main>
+
+<!-- DRAWER -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Agent 接入" hidden>
+  <div class="drawer__head">
+    <h3>Agent 接入</h3>
+    <button class="xbtn" id="drawerClose" aria-label="关闭抽屉">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="mcp">
+    <span class="t">MCP 服务</span>
+    <button class="switch" id="mcpSwitch" role="switch" aria-checked="true" aria-label="MCP 服务开关"></button>
+  </div>
+  <div class="mcp"><span class="t">连接状态</span><span class="dot dot--ok" style="font-family:var(--en)">已连接 · localhost:8712</span></div>
+  <h5>工具列表</h5>
+  <div id="tools"></div>
+  <h5>客户端配置</h5>
+  <div class="cfgbox" id="cfgBox">{
+  "mcpServers": {
+    "modelsmith": {
+      "host": "localhost",
+      "port": 8712,
+      "path": "/mcp",
+      "transport": "streamable_http"
+    }
+  }
+}</div>
+  <button class="btn btn--ghost" id="copyCfg" type="button" style="width:100%">复制配置</button>
+</aside>
+
+<div class="actionbar" id="actionbar" hidden>
+  <div class="actionbar__in">
+    <button class="btn btn--ghost" id="prevBtn" type="button">上一步</button>
+    <button class="btn btn--primary btn--start" id="nextBtn" type="button">下一步</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+var REDUCE = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---- flow definitions (per UI-BRIEF §4) ---- */
+var FLOWS = {
+  decision: {
+    title:"决策模型训练", accent:"var(--laya)", out:"决策权重 .pt",
+    steps:[
+      {k:"底座", type:"select", field:"base", label:"选择底座网络", opts:["Laya-Policy-S","Laya-Policy-M","Laya-Value-XL"], est:{vram:"6.2 GB",steps:"1,200",time:"约 24 分钟",out:"policy.pt"}},
+      {k:"数据", type:"path", field:"data", label:"训练数据（JSONL / 文件夹）", hint:"拖放或粘贴目录路径", est:{vram:"6.2 GB",steps:"1,200",time:"约 24 分钟",out:"policy.pt"}},
+      {k:"体检", type:"check", field:"check", label:"数据体检", est:{vram:"6.2 GB",steps:"1,200",time:"约 24 分钟",out:"policy.pt"}},
+      {k:"参数", type:"params", field:"params", label:"训练参数", est:{vram:"7.1 GB",steps:"1,800",time:"约 38 分钟",out:"policy.pt"},
+        adv:[{n:"epochs",d:"8"},{n:"learning_rate",d:"3e-4"},{n:"batch_size",d:"64"},{n:"max_len",d:"512"}]},
+      {k:"预估开跑", type:"review", field:"review", label:"确认并开始训练", est:{vram:"7.1 GB",steps:"1,800",time:"约 38 分钟",out:"policy.pt"}}
+    ]
+  },
+  llm: {
+    title:"LLM 微调", accent:"var(--llm)", out:"adapter",
+    steps:[
+      {k:"模型", type:"select", field:"model", label:"选择底座模型", opts:["Qwen2.5-7B-Instruct","GLM-4-9B","Llama-3.1-8B"], est:{vram:"14.0 GB",steps:"900",time:"约 52 分钟",out:"adapter/"}},
+      {k:"方法", type:"seg", field:"method", label:"微调方法", opts:["LoRA","QLoRA"], est:{vram:"11.0 GB",steps:"900",time:"约 44 分钟",out:"adapter/"}},
+      {k:"数据", type:"seg", field:"dtype", label:"数据格式", opts:["chat","instruction"], est:{vram:"11.0 GB",steps:"900",time:"约 44 分钟",out:"adapter/"}},
+      {k:"体检", type:"check", field:"check", label:"数据体检", est:{vram:"11.0 GB",steps:"900",time:"约 44 分钟",out:"adapter/"}},
+      {k:"参数", type:"params", field:"params", label:"训练参数", est:{vram:"12.4 GB",steps:"1,350",time:"约 66 分钟",out:"adapter/"},
+        adv:[{n:"rank",d:"16"},{n:"alpha",d:"32"},{n:"learning_rate",d:"2e-4"},{n:"epochs",d:"3"}]},
+      {k:"预估开跑", type:"review", field:"review", label:"确认并开始训练", est:{vram:"12.4 GB",steps:"1,350",time:"约 66 分钟",out:"adapter/"}}
+    ]
+  },
+  image: {
+    title:"生图 LoRA 训练", accent:"var(--image)", out:"LoRA .safetensors",
+    steps:[
+      {k:"架构", type:"seg", field:"arch", label:"生成架构", opts:["FLUX","Z-Image","Qwen-Image","SDXL"], est:{vram:"10.2 GB",steps:"2,000",time:"约 40 分钟",out:"lora.safetensors"}},
+      {k:"底模", type:"select", field:"base", label:"底模权重", opts:["flux1-dev.safetensors","sd_xl_base_1.0.safetensors"], est:{vram:"10.2 GB",steps:"2,000",time:"约 40 分钟",out:"lora.safetensors"}},
+      {k:"数据", type:"gallery", field:"data", label:"图片文件夹（缩略图墙 / caption 检查）", hint:"拖放图片目录", est:{vram:"10.6 GB",steps:"2,000",time:"约 42 分钟",out:"lora.safetensors"}},
+      {k:"参数", type:"params", field:"params", label:"训练参数", est:{vram:"11.8 GB",steps:"3,000",time:"约 68 分钟",out:"lora.safetensors"},
+        adv:[{n:"resolution",d:"1024"},{n:"rank",d:"32"},{n:"learning_rate",d:"1e-4"},{n:"steps",d:"3000"}]},
+      {k:"预估开跑", type:"review", field:"review", label:"确认并开始训练", est:{vram:"11.8 GB",steps:"3,000",time:"约 68 分钟",out:"lora.safetensors"}}
+    ]
+  },
+  video: {
+    title:"视频 LoRA 训练", accent:"var(--video)", out:"LoRA .safetensors",
+    steps:[
+      {k:"架构", type:"seg", field:"arch", label:"生成架构", opts:["Wan","H3","LTX"], est:{vram:"18.0 GB",steps:"1,500",time:"约 2 小时 10 分",out:"video_lora.safetensors"}},
+      {k:"底模", type:"select", field:"base", label:"底模权重", opts:["wan2.1-t2v-14b","h3-13b","ltx-video-2b"], est:{vram:"18.0 GB",steps:"1,500",time:"约 2 小时 10 分",out:"video_lora.safetensors"}},
+      {k:"数据", type:"path", field:"data", label:"视频 + caption", hint:"拖放含 caption 的视频文件夹", est:{vram:"18.4 GB",steps:"1,500",time:"约 2 小时 10 分",out:"video_lora.safetensors"}},
+      {k:"参数", type:"params", field:"params", label:"训练参数", est:{vram:"20.6 GB",steps:"2,200",time:"约 3 小时 05 分",out:"video_lora.safetensors"},
+        adv:[{n:"frames",d:"33"},{n:"resolution",d:"720p"},{n:"rank",d:"16"},{n:"learning_rate",d:"5e-5"},{n:"steps",d:"2200"}]},
+      {k:"预估开跑", type:"review", field:"review", label:"确认并开始训练", est:{vram:"20.6 GB",steps:"2,200",time:"约 3 小时 05 分",out:"video_lora.safetensors"}}
+    ]
+  }
+};
+
+var PHASES = ["准备","加载权重","前向计算","反向传播","保存产物"];
+
+var home = document.getElementById("home");
+var flow = document.getElementById("flow");
+var run = document.getElementById("run");
+var done = document.getElementById("done");
+var actionbar = document.getElementById("actionbar");
+var stepBar = document.getElementById("stepBar");
+var stepCenter = document.getElementById("stepCenter");
+var flowTitle = document.getElementById("flowTitle");
+var prevBtn = document.getElementById("prevBtn");
+var nextBtn = document.getElementById("nextBtn");
+
+var state = { flow:null, step:0, data:{} };
+var cardsPlayed = false;
+
+/* ---- home entrance (once per session) ---- */
+function playCards(){
+  if(cardsPlayed || REDUCE){ document.querySelectorAll(".card").forEach(function(c){c.style.opacity=1;c.style.transform="none";}); return; }
+  cardsPlayed = true;
+  document.querySelectorAll(".card").forEach(function(c,i){
+    setTimeout(function(){ c.classList.add("in"); }, i*70);
+  });
+}
+
+function show(el){
+  [home,flow,run,done].forEach(function(s){ s.classList.remove("active"); s.style.display="none"; });
+  el.style.display="";
+  el.classList.add("active");
+}
+
+/* ---- enter flow ---- */
+function enterFlow(key){
+  state.flow = key; state.step = 0; state.data = {};
+  var f = FLOWS[key];
+  flow.style.setProperty("--c", f.accent);
+  flowTitle.textContent = f.title;
+  buildSteps();
+  renderStep();
+  show(flow);
+  actionbar.hidden = false;
+  window.scrollTo(0,0);
+}
+
+function buildSteps(){
+  var f = FLOWS[state.flow];
+  stepBar.innerHTML="";
+  f.steps.forEach(function(s,i){
+    var b=document.createElement("button");
+    b.className="step-item"; b.type="button";
+    b.innerHTML='<span class="num">'+(i+1)+'</span><span>'+s.k+'</span>';
+    b.addEventListener("click",function(){ if(i<=state.step){ state.step=i; renderStep(); } });
+    stepBar.appendChild(b);
+  });
+}
+
+function markSteps(){
+  var items = stepBar.children;
+  for(var i=0;i<items.length;i++){
+    items[i].classList.remove("done");
+    items[i].removeAttribute("aria-current");
+    if(i<state.step){ items[i].classList.add("done"); items[i].querySelector(".num").innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="3"><path d="M5 13l4 4 10-10"/></svg>'; }
+    else { items[i].querySelector(".num").textContent = (i+1); }
+    if(i===state.step){ items[i].setAttribute("aria-current","step"); }
+  }
+}
+
+function setEst(){
+  var s = FLOWS[state.flow].steps[state.step];
+  document.getElementById("estVram").textContent=s.est.vram;
+  document.getElementById("estSteps").textContent=s.est.steps;
+  document.getElementById("estTime").textContent=s.est.time;
+  document.getElementById("estOut").textContent=s.est.out;
+}
+
+/* ---- render current step (center) ---- */
+function renderStep(){
+  var f=FLOWS[state.flow], s=f.steps[state.step];
+  markSteps(); setEst();
+  var body;
+  if(s.type==="select") body=sel(s);
+  else if(s.type==="seg") body=seg(s);
+  else if(s.type==="path") body=pathZone(s);
+  else if(s.type==="gallery") body=gallery(s);
+  else if(s.type==="check") body=check(s);
+  else if(s.type==="params") body=params(s);
+  else if(s.type==="review") body=review(s);
+
+  stepCenter.innerHTML='<div class="step-body"><h2 tabindex="-1" id="stepH1" aria-label="第 '+(state.step+1)+' 步，共 '+f.steps.length+' 步：'+s.label+'">'+s.label+'</h2>'+body+'</div>';
+  var h=document.getElementById("stepH1"); if(h) h.focus();
+  wireStep(s);
+
+  // buttons
+  prevBtn.style.visibility = state.step===0 ? "hidden" : "visible";
+  var isReview = s.type==="review";
+  nextBtn.textContent = isReview ? "开始训练" : "下一步";
+  nextBtn.className = "btn "+(isReview?"btn--primary btn--start":"btn--primary");
+  var ok = validate(s);
+  nextBtn.setAttribute("aria-disabled", ok?"false":"true");
+}
+
+function fieldShell(s,inner){
+  return '<div class="field" data-field="'+s.field+'"><label>'+s.label+'</label>'+inner+'<span class="msg">请完成此项后再继续</span></div>';
+}
+function sel(s){
+  var opts=s.opts.map(function(o){return '<option>'+o+'</option>';}).join("");
+  return fieldShell(s,'<select>'+opts+'</select>');
+}
+function seg(s){
+  var btns=s.opts.map(function(o,i){return '<button type="button" aria-pressed="'+(i===0)+'">'+o+'</button>';}).join("");
+  return fieldShell(s,'<div class="seg" role="group">'+btns+'</div>');
+}
+function pathZone(s){
+  return fieldShell(s,'<div class="dropzone" tabindex="0" role="button"><span class="path">E:\\数据\\'+state.flow+'\\</span><span style="font-size:12px">拖放文件夹到此，或点击选择</span></div>');
+}
+function gallery(s){
+  var cells='';
+  for(var i=0;i<8;i++){ cells+='<svg viewBox="0 0 40 40" width="100%" height="100%" aria-hidden="true"><rect x="3" y="3" width="34" height="26" rx="3" fill="none" stroke="var(--line)" stroke-width="1.5"/><rect x="8" y="31" width="24" height="3" rx="1.5" fill="var(--line)"/></svg>'; }
+  var wall='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">'+cells+'</div>';
+  return fieldShell(s,'<div class="dropzone" style="display:block;padding:16px">'+wall+'<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--dim)"><span>48 张 · 已生成 caption</span><span class="checkline" style="border:none;padding:0;display:inline">caption 抽检 <b style="color:var(--c)">通过</b></span></div></div>');
+}
+function check(s){
+  var items=[["格式合法","ok","全部样本可解析"],["空标签 / 重复","ok","未发现异常"],["分辨率分布","warn","6 张低于 512，建议剔除"],["caption 覆盖率","ok","100% 已标注"]];
+  var rows=items.map(function(it){
+    var cls=it[1]==="ok"?"dot--ok":"dot--fail";
+    var lbl=it[1]==="ok"?"通过":"注意";
+    var icon=it[1]==="ok"
+      ?'<svg class="ci" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--c)" stroke-width="2"><path d="M5 13l4 4 10-10"/></svg>'
+      :'<svg class="ci" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--danger)" stroke-width="2"><path d="M12 8v5M12 16v.5"/><circle cx="12" cy="12" r="9"/></svg>';
+    return '<div class="checkline">'+icon+'<div style="flex:1"><div style="font-size:13.5px">'+it[0]+'</div><div style="font-size:12px;color:var(--dim)">'+it[2]+'</div></div><span class="dot '+cls+'">'+lbl+'</span></div>';
+  }).join("");
+  return fieldShell(s,'<div class="card-box" style="padding:8px 16px;background:var(--bg2)">'+rows+'</div>');
+}
+function params(s){
+  var main=fieldShell(s,'<div class="dropzone" style="min-height:0;padding:0;border:none;background:none;display:block">'+advGrid(s.adv)+'</div>');
+  var adv='<details class="adv"><summary>高级参数</summary><div class="row2">'+
+    s.adv.map(function(a){return '<div class="field"><label>'+a.n+'</label><input type="text" value="'+a.d+'"></div>';}).join("")+
+    '</div></details>';
+  return main+adv;
+}
+function advGrid(adv){
+  return '<div class="row2" style="padding:0">'+adv.slice(0,2).map(function(a){return '<div class="field"><label>'+a.n+'</label><input type="text" value="'+a.d+'"></div>';}).join("")+'</div>';
+}
+function review(s){
+  var f=FLOWS[state.flow];
+  return '<div class="card-box" style="background:var(--bg2)">'+
+    '<div class="est"><span class="k">显存</span><span class="v">'+s.est.vram+'</span></div>'+
+    '<div class="est"><span class="k">步数</span><span class="v">'+s.est.steps+'</span></div>'+
+    '<div class="est"><span class="k">预计时长</span><span class="v">'+s.est.time+'</span></div>'+
+    '<div class="est"><span class="k">产物</span><span class="v">'+s.est.out+'</span></div>'+
+    '<div class="est" style="border:none"><span class="k">输出目录</span><span class="v" style="font-size:12px;word-break:break-all">E:\\output\\'+state.flow+'\\run_01</span></div>'+
+    '</div><p class="lead">确认无误后点击「开始训练」，本机将串行执行。</p>';
+}
+
+function validate(s){
+  if(s.type==="review") return true;
+  if(s.type==="check") return true;
+  if(s.type==="params") return true;
+  if(s.type==="select"||s.type==="seg") return true;
+  if(s.type==="path"||s.type==="gallery") return true;
+  return true;
+}
+
+function wireStep(s){
+  if(s.type==="seg"){
+    stepCenter.querySelectorAll(".seg button").forEach(function(b){
+      b.addEventListener("click",function(){
+        b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed","false");});
+        b.setAttribute("aria-pressed","true");
+        renderStep();
+      });
+    });
+  }
+  if(s.type==="path"||s.type==="gallery"){
+    var dz=stepCenter.querySelector(".dropzone");
+    if(dz){ dz.addEventListener("click",function(){ var p=dz.querySelector(".path"); if(p) p.textContent="E:\\数据\\"+state.flow+"\\dataset_01 \u2713"; }); }
+  }
+}
+
+prevBtn.addEventListener("click",function(){ if(state.step>0){ state.step--; renderStep(); } });
+nextBtn.addEventListener("click",function(){
+  if(nextBtn.getAttribute("aria-disabled")==="true") return;
+  var f=FLOWS[state.flow];
+  if(state.step>=f.steps.length-1){ startRun(); return; }
+  state.step++; renderStep();
+});
+
+document.getElementById("flowBack").addEventListener("click",goHome);
+function goHome(){
+  show(home); actionbar.hidden=true;
+  window.scrollTo(0,0);
+}
+
+document.getElementById("cards").addEventListener("click",function(e){
+  var c=e.target.closest(".card"); if(c) enterFlow(c.getAttribute("data-flow"));
+});
+
+/* ---- RUN simulation ---- */
+var runTimer, stepNo=0, totalSteps=0, lossPts=[], phaseIdx=0;
+function startRun(){
+  var f=FLOWS[state.flow];
+  run.style.setProperty("--c", f.accent);
+  document.getElementById("runTitle").textContent=f.title+" · 训练中";
+  actionbar.hidden=true;
+  show(run);
+  stepNo=0; lossPts=[]; phaseIdx=0;
+  totalSteps=parseInt(f.steps[f.steps.length-1].est.steps.replace(/,/g,""),10)||1000;
+  var sample=Math.min(totalSteps,240);
+  buildTimeline();
+  document.getElementById("log").innerHTML="";
+  addLog("加载底模权重…");
+  addLog("设备 <b>CUDA:0</b> · RTX 4090 24GB");
+  addLog("开始训练，共 <b>"+totalSteps.toLocaleString()+"</b> steps");
+  run._sample=sample;
+  if(REDUCE){ drawLoss([0.9]); }
+  tick();
+}
+function tick(){
+  var maxDrawn=Math.min(totalSteps,48);
+  stepNo+=Math.ceil(totalSteps/48);
+  if(stepNo>totalSteps) stepNo=totalSteps;
+  var t=stepNo/totalSteps;
+  var loss=0.9*Math.exp(-3.2*t)+0.05+(Math.random()*0.06-0.03);
+  if(loss<0.02) loss=0.02;
+  lossPts.push(loss);
+  if(lossPts.length>maxDrawn){ lossPts=lossPts.slice(-maxDrawn); }
+  drawLoss(lossPts);
+  // vram
+  var vgb=8+Math.random()*3+t*4; if(vgb>23.5) vgb=23.5;
+  document.getElementById("vramBar").style.width=(vgb/24*100)+"%";
+  document.getElementById("vramVal").textContent=vgb.toFixed(1)+" GB";
+  // progress
+  document.getElementById("progBar").style.width=(t*100)+"%";
+  document.getElementById("progStep").textContent="step "+stepNo.toLocaleString()+" / "+totalSteps.toLocaleString();
+  var remain=Math.max(0,(1-t)*1800);
+  document.getElementById("eta").textContent="剩余 "+fmt(remain);
+  document.getElementById("roLoss").textContent=loss.toFixed(4);
+  document.getElementById("roLr").textContent=(2e-4*(1-t)+5e-5).toExponential(1);
+  document.getElementById("roSpeed").textContent=(12+Math.random()*4).toFixed(1)+" it/s";
+  // phase
+  var np=Math.min(PHASES.length-1,Math.floor(t*PHASES.length));
+  if(np!==phaseIdx){ phaseIdx=np; setPhase(np); addLog("阶段切换 <b>"+PHASES[np]+"</b>"); }
+  document.getElementById("runStatus").textContent="第 "+(stepNo)+" / "+totalSteps+" 步 · 阶段："+PHASES[phaseIdx]+" · 已用时 "+fmt(1800-remain);
+  if(t>=1){ finishRun(); return; }
+  runTimer=setTimeout(tick,700);
+}
+function fmt(sec){ var m=Math.floor(sec/60), s=Math.floor(sec%60); return (m<10?"0":"")+m+":"+(s<10?"0":"")+s; }
+function buildTimeline(){
+  var tl=document.getElementById("timeline"); tl.innerHTML="";
+  PHASES.forEach(function(p,i){
+    if(i>0){ var ln=document.createElement("span"); ln.className="tl-line"; tl.appendChild(ln); }
+    var n=document.createElement("div"); n.className="tl-node"; n.setAttribute("data-i",i);
+    n.innerHTML='<span class="tn-dot"></span><span class="tn-lbl">'+p+'</span>';
+    tl.appendChild(n);
+  });
+  setPhase(0);
+}
+function setPhase(idx){
+  var nodes=document.querySelectorAll(".tl-node");
+  nodes.forEach(function(n,i){ n.classList.remove("done","cur"); if(i<idx)n.classList.add("done"); else if(i===idx)n.classList.add("cur"); });
+  var lines=document.querySelectorAll(".tl-line");
+  lines.forEach(function(l,i){ if(i<idx) l.style.background="var(--c)"; else l.style.background="var(--line)"; });
+}
+function drawLoss(pts){
+  var w=560,h=150,pad=18;
+  var max=Math.max.apply(null,pts), min=Math.min.apply(null,pts);
+  var y=function(v){ return h-pad-((v-min)/(max-min||1))*(h-pad*2); };
+  var x=function(i){ return pad+(i/(Math.max(1,pts.length-1)))*(w-pad*2); };
+  var d=pts.map(function(v,i){ return (i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1); }).join(" ");
+  var dots=pts.length? '<circle cx="'+x(pts.length-1).toFixed(1)+'" cy="'+y(pts[pts.length-1]).toFixed(1)+'" r="3" fill="var(--c)"/>' : "";
+  document.getElementById("losschart").innerHTML='<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'+
+    '<line x1="'+pad+'" y1="'+(h-pad)+'" x2="'+(w-pad)+'" y2="'+(h-pad)+'" stroke="var(--line)"/>'+
+    '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(h-pad)+'" stroke="var(--line)"/>'+
+    '<path d="'+d+'" fill="none" stroke="var(--c)" stroke-width="2"/>'+dots+'</svg>';
+}
+function addLog(msg){
+  var log=document.getElementById("log");
+  var atBottom=log.scrollTop+log.clientHeight>=log.scrollHeight-6;
+  var div=document.createElement("div"); div.className="ln"; div.textContent="["+now()+"] ";
+  var span=document.createElement("span"); span.innerHTML=msg; div.appendChild(span);
+  log.appendChild(div);
+  if(atBottom||log.children.length<3) log.scrollTop=log.scrollHeight;
+}
+function now(){ var d=new Date(); return d.toTimeString().slice(0,8); }
+
+document.getElementById("cancelBtn").addEventListener("click",function(){
+  clearTimeout(runTimer);
+  addLog("<b>已取消</b>，清理显存…");
+  document.getElementById("runStatus").textContent="训练已取消";
+  setTimeout(goHome,600);
+});
+
+function finishRun(){
+  clearTimeout(runTimer);
+  addLog("保存产物…");
+  addLog("<b>完成</b>");
+  setPhase(PHASES.length-1);
+  var node=document.querySelector('.tl-node[data-i="'+(PHASES.length-1)+'"]'); if(node){ node.classList.remove("cur"); node.classList.add("done"); }
+  setTimeout(showDone,500);
+}
+function showDone(){
+  var f=FLOWS[state.flow];
+  done.style.setProperty("--c", f.accent);
+  document.getElementById("doneTitle").textContent=f.title+" · 完成";
+  document.getElementById("doneSum").textContent="本次共训练 "+totalSteps.toLocaleString()+" 步，产物已写入本地输出目录，可直接在对应推理端加载。";
+  document.getElementById("donePath").textContent="E:\\output\\"+state.flow+"\\run_01\\"+f.out;
+  show(done);
+  window.scrollTo(0,0);
+}
+document.getElementById("doneBack").addEventListener("click",goHome);
+document.getElementById("retrain").addEventListener("click",function(){ enterFlow(state.flow); });
+document.getElementById("openFolder").addEventListener("click",function(){ this.textContent="已在资源管理器中打开"; });
+
+/* ---- DRAWER ---- */
+var drawer=document.getElementById("drawer"), scrim=document.getElementById("scrim");
+var agentBtn=document.getElementById("agentBtn"), lastFocus=null;
+var TOOLS=[["train.start","启动一条训练流程"],["train.status","读取当前训练进度"],["dataset.check","对目录跑数据体检"],["lora.export","导出 LoRA / adapter"],["env.snapshot","读取本机 CUDA / 显存快照"]];
+(function(){
+  document.getElementById("tools").innerHTML=TOOLS.map(function(t){
+    return '<div class="tool"><span class="nm">'+t[0]+'</span><span class="desc">'+t[1]+'</span></div>';
+  }).join("");
+})();
+function openDrawer(){
+  lastFocus=document.activeElement;
+  drawer.hidden=false; scrim.classList.add("open"); drawer.classList.add("open");
+  drawer.style.setProperty("--c","var(--llm)");
+  var first=drawer.querySelector("button,[role=switch],[href]"); if(first) first.focus();
+}
+function closeDrawer(){
+  drawer.classList.remove("open"); scrim.classList.remove("open");
+  drawer.hidden=true;
+  if(lastFocus) lastFocus.focus();
+}
+agentBtn.addEventListener("click",openDrawer);
+document.getElementById("drawerClose").addEventListener("click",closeDrawer);
+scrim.addEventListener("click",closeDrawer);
+document.addEventListener("keydown",function(e){
+  if(drawer.hidden) return;
+  if(e.key==="Escape"){ closeDrawer(); return; }
+  if(e.key==="Tab"){
+    var f=drawer.querySelectorAll('button,[role=switch],[href],input,select,[tabindex]:not([tabindex="-1"])');
+    var list=Array.prototype.filter.call(f,function(x){return !x.disabled && x.offsetParent!==null;});
+    if(!list.length) return;
+    var first=list[0], last=list[list.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
+});
+document.getElementById("mcpSwitch").addEventListener("click",function(){
+  var on=this.getAttribute("aria-checked")==="true";
+  this.setAttribute("aria-checked", on?"false":"true");
+});
+document.getElementById("copyCfg").addEventListener("click",function(){
+  var txt=document.getElementById("cfgBox").textContent;
+  var btn=this;
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){btn.textContent="已复制";},function(){btn.textContent="复制失败";}); }
+  else { btn.textContent="已复制"; }
+});
+
+/* init */
+show(home);
+playCards();
+</script>
+</body>
+</html>

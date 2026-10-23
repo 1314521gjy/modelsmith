@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>训练工坊 · LLM 微调</title>
+<style>
+:root{
+  --line:rgba(15,23,42,.12); --text:#0F172A; --dim:#55658A; --muted:#9AA6BF;
+  --llm:#3B6FE0; --ease:cubic-bezier(.22,.61,.36,1);
+  --cn:"Noto Sans SC","Microsoft YaHei UI",sans-serif;
+  --en:"Manrope","Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{overflow:hidden;background:linear-gradient(180deg,#FAFBFD,#EEF2F8);color:var(--text);font-family:var(--cn);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+.aura{position:fixed;border-radius:50%;pointer-events:none;filter:blur(40px);z-index:0}
+.aura--a{width:620px;height:620px;left:-180px;top:-200px;background:radial-gradient(circle,rgba(122,167,255,.38),transparent 68%)}
+.aura--b{width:660px;height:660px;right:-240px;bottom:-260px;background:radial-gradient(circle,rgba(90,209,165,.30),transparent 68%)}
+.wrap{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;padding:clamp(20px,3vh,44px) clamp(24px,4.5vw,72px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px;flex:0 0 auto}
+.left{display:flex;align-items:center;gap:14px}
+.back{width:48px;height:48px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.7);display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--text)}
+.back svg{width:22px;height:22px}
+.brand{font-family:var(--en);font-weight:700;font-size:19px}
+.brand span{font-family:var(--cn);font-weight:400;font-size:15px;color:var(--dim);margin-left:10px}
+.acts{display:flex;gap:10px}
+.chip{height:44px;padding:0 18px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.7);color:var(--dim);font-size:15px}
+.body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;justify-content:center;width:100%;max-width:1060px;margin:0 auto;gap:20px}
+h1{font-size:clamp(42px,4.4vw,64px);line-height:1.12;font-weight:600;letter-spacing:-.025em;text-align:center}
+.sub{font-size:clamp(16px,1.2vw,19px);color:var(--dim);text-align:center;margin-top:-6px}
+.pickrow{display:flex;gap:12px;margin-top:10px}
+.pickrow select{flex:1;height:62px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.82);padding:0 18px;font-family:var(--cn);font-size:17px;color:var(--text)}
+.pickrow select:focus{outline:3px solid rgba(59,111,224,.45);outline-offset:1px;background:#fff}
+.btn--pick{height:62px;padding:0 24px;border-radius:16px;border:1px solid rgba(59,111,224,.35);background:rgba(59,111,224,.10);color:#2F5FD0;font-size:17px;font-weight:600;white-space:nowrap}
+.btn--pick:hover{background:rgba(59,111,224,.18)}
+.field{display:flex;gap:12px}
+.field input{flex:1;height:62px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.82);padding:0 20px;font-family:var(--en);font-size:16px;color:var(--text)}
+.field input:focus{outline:3px solid rgba(59,111,224,.45);outline-offset:1px;background:#fff}
+.field input::placeholder{color:var(--muted)}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:6px}
+.cell{border:1px solid var(--line);border-radius:16px;padding:14px 18px;background:rgba(255,255,255,.72)}
+.k{font-size:14px;color:var(--dim)}
+.v{font-family:var(--en);font-size:21px;font-weight:600;margin-top:4px}
+.foot{flex:0 0 auto;display:flex;justify-content:space-between;gap:14px;padding-top:18px}
+.btn{height:56px;padding:0 28px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.8);font-size:17px;color:var(--text);text-decoration:none;display:inline-flex;align-items:center}
+.btn--primary{background:#0F172A;color:#fff;border-color:#0F172A}
+.btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+
+/* --- environment panel --- */
+#envPanel{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(15,23,42,.30);backdrop-filter:blur(8px)}
+#envPanel[hidden]{display:none}
+.envcard{width:min(560px,calc(100vw - 40px));max-height:min(70vh,520px);overflow:auto;border-radius:18px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.75);box-shadow:0 24px 70px rgba(15,23,42,.28);padding:20px 22px 18px}
+.envcard__head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.envcard__head b{font-size:15px;letter-spacing:.02em}
+#envClose{width:30px;height:30px;border-radius:9px;border:1px solid rgba(15,23,42,.14);background:rgba(255,255,255,.7);color:#334155;font-size:18px;line-height:1;cursor:pointer}
+#envClose:hover{background:#F1F5F9}
+#envBody{font:12.5px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;color:#334155;white-space:pre-wrap;word-break:break-word}
+.chip[data-env]{cursor:pointer}
+
+</style>
+</head>
+<body>
+<div class="aura aura--a"></div><div class="aura aura--b"></div>
+<div class="wrap">
+  <div class="top">
+    <div class="left">
+      <a class="back" href="index.html" aria-label="返回训练线选择">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+      </a>
+      <div class="brand">LLM 微调 <span>第 1 步 / 共 3 步</span></div>
+    </div>
+    <div class="acts"><button class="chip" type="button" data-env="1">环境</button></div>
+  </div>
+
+  <div class="body">
+    <h1>选择 LLM 模型</h1>
+    <p class="sub">选一个模型当起点，参数用默认</p>
+
+    <div class="pickrow">
+      <select id="modelSel" aria-label="从本机模型里选择">
+        <option value="">从本机模型里选…</option>
+      </select>
+      <button class="btn--pick" id="browseBtn" type="button">打开文件夹…</button>
+      <input id="folderPick" type="file" webkitdirectory directory hidden>
+    </div>
+
+    <div class="field">
+      <input id="modelPath" type="text" spellcheck="false" autocomplete="off"
+             placeholder="或粘贴绝对路径：E:\视频\modelsmith\models\Qwen2.5-0.5B-Instruct" aria-label="模型文件夹路径">
+      <button class="btn--pick" id="pasteBtn" type="button">粘贴</button>
+    </div>
+
+    <div class="grid4">
+      <div class="cell"><div class="k">对话模板</div><div class="v">qwen</div></div>
+      <div class="cell"><div class="k">微调方式</div><div class="v">LoRA</div></div>
+      <div class="cell"><div class="k">rank / alpha</div><div class="v">8 / 16</div></div>
+      <div class="cell"><div class="k">进度单位</div><div class="v">global_step</div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <a class="btn" href="index.html">上一步</a>
+    <a class="btn btn--primary" id="next" href="#" aria-disabled="true">下一步：选择数据</a>
+  </div>
+</div>
+
+<script>
+// 由 tools\scan_models.py 生成，勿手改
+window.MS_MODELS = [
+  {
+    "name": "Qwen2.5-0.5B-Instruct",
+    "path": "E:\\视频\\modelsmith\\resources\\03-LLM-小模型\\Qwen2.5-0.5B-Instruct",
+    "kind": "llm",
+    "size_gb": 0.93
+  },
+  {
+    "name": "sd15",
+    "path": "E:\\视频\\modelsmith\\resources\\07-底模\\sd15",
+    "kind": "diffusion",
+    "size_gb": 1.99
+  },
+  {
+    "name": "laya",
+    "path": "E:\\视频\\拉亚决策模型\\models\\laya",
+    "kind": "laya",
+    "size_gb": 2.21
+  },
+  {
+    "name": "Qwen-Image-2.1",
+    "path": "E:\\临时文件夹\\Qwen-Image-2.1",
+    "kind": "diffusion",
+    "size_gb": 31.07
+  }
+];
+
+</script>
+<script>
+(function(){
+  var inp=document.getElementById("modelPath"), nx=document.getElementById("next"),
+      pb=document.getElementById("pasteBtn"), sel=document.getElementById("modelSel"),
+      browse=document.getElementById("browseBtn"), folder=document.getElementById("folderPick");
+  var MODELS=(window.MS_MODELS||[]).filter(function(m){ return m.kind==="llm"; });
+
+  function clean(v){
+    v=String(v||"").trim();
+    if((v.charAt(0)==='"'&&v.charAt(v.length-1)==='"')||(v.charAt(0)==="'"&&v.charAt(v.length-1)==="'")) v=v.slice(1,-1);
+    return v;
+  }
+  function sync(){
+    var v=clean(inp.value);
+    if(v!==inp.value) inp.value=v;
+    if(v.length>4) nx.removeAttribute("aria-disabled"); else nx.setAttribute("aria-disabled","true");
+    window.__llmModelPath=v;
+  }
+
+  if(sel){
+    MODELS.forEach(function(m){
+      var o=document.createElement("option");
+      o.value=m.path;
+      o.textContent=m.name+"  ·  "+m.size_gb+" GB";
+      sel.appendChild(o);
+    });
+    if(!MODELS.length){
+      var o=document.createElement("option");
+      o.value=""; o.textContent="models\ 里没扫到模型（放进去后刷新）";
+      sel.appendChild(o);
+    }
+    sel.addEventListener("change",function(){ if(sel.value){ inp.value=sel.value; sync(); } });
+  }
+
+  if(browse && folder){
+    browse.addEventListener("click",function(){ folder.click(); });
+    folder.addEventListener("change",function(){
+      var f=folder.files && folder.files[0];
+      if(!f) return;
+      var rel=f.webkitRelativePath||"";
+      var name=rel.split("/")[0]||f.name;
+      var hit=MODELS.filter(function(m){ return m.name.toLowerCase()===name.toLowerCase(); })[0];
+      if(hit){ inp.value=hit.path; sync(); }
+      else { inp.value=""; sync(); inp.placeholder="已选文件夹 "+name+" —— 请粘贴它的完整路径"; inp.focus(); }
+      folder.value="";
+    });
+  }
+
+  inp.addEventListener("input",sync);
+  inp.addEventListener("paste",function(){ setTimeout(sync,0); });
+  inp.addEventListener("keydown",function(e){ if(e.key==="Enter" && clean(inp.value).length>4){ location.href="llm-data.html"; } });
+  if(pb) pb.addEventListener("click",function(){
+    if(navigator.clipboard && navigator.clipboard.readText){
+      navigator.clipboard.readText().then(function(t){ inp.value=t; inp.focus(); sync(); }, function(){ inp.focus(); });
+    } else { inp.focus(); }
+  });
+  nx.addEventListener("click",function(e){ e.preventDefault(); if(nx.getAttribute("aria-disabled")==="true") return; location.href="llm-data.html"; });
+  sync();
+})();
+</script>
+
+<div id="envPanel" hidden>
+  <div class="envcard" role="dialog" aria-modal="true" aria-labelledby="envTitle">
+    <div class="envcard__head"><b id="envTitle">环境检测</b><button id="envClose" type="button" aria-label="关闭环境面板">×</button></div>
+    <div id="envBody">核心未连接</div>
+  </div>
+</div>
+<script>
+(function(){var p=document.getElementById("envPanel"),b=document.getElementById("envBody"),c=document.getElementById("envClose");
+function close(){if(p)p.hidden=true;}
+var chips=document.querySelectorAll("[data-env], .chip");
+for(var i=0;i<chips.length;i++){if(String(chips[i].textContent).trim()!=="环境")continue;chips[i].addEventListener("click",function(){if(p)p.hidden=false;});}
+if(c)c.addEventListener("click",close);
+document.addEventListener("keydown",function(e){if(e.key==="Escape")close();});
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModelSmith 训练工作台</title>
+<style>
+:root{
+  --bg:#080B10; --bg2:#0D1219;
+  --glass:rgba(255,255,255,.055); --glass-hi:rgba(255,255,255,.075);
+  --line:rgba(255,255,255,.38); --line-strong:rgba(255,255,255,.55);
+  --text:#E8EEF7; --dim:#93A1B5;
+  --laya:#5AD1A5; --llm:#7AA7FF; --image:#F0B35A; --video:#C08CFF;
+  --danger:#E06C75; --warn:#E8B04B; --focus:#A9C6FF;
+  --r-panel:24px; --r-ctrl:12px; --r-tag:8px;
+  --w-max:1120px; --col-steps:200px; --col-side:260px;
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px;
+  --t-fast:120ms; --t-step:200ms; --t-enter:260ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --cn:"Noto Sans SC","Microsoft YaHei UI",sans-serif;
+  --en:"Manrope","Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:var(--cn);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;position:relative;overflow-x:hidden}
+.en,.data{font-family:var(--en);font-variant-numeric:tabular-nums}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+a{color:inherit;text-decoration:none}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip{position:absolute;left:16px;top:-60px;z-index:60;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:10px 16px;transition:top .15s}
+.skip:focus-visible{top:16px}
+
+.aura{position:fixed;z-index:0;border-radius:50%;pointer-events:none;opacity:.07}
+.aura--a{width:520px;height:520px;left:-140px;top:-120px;background:radial-gradient(circle,var(--laya),transparent 68%);animation:breathe 24s ease-in-out infinite alternate}
+.aura--b{width:600px;height:600px;right:-160px;bottom:-200px;background:radial-gradient(circle,var(--video),transparent 68%);opacity:.05;animation:breathe 32s ease-in-out infinite alternate}
+@keyframes breathe{from{opacity:.05}to{opacity:.085}}
+
+header.top{position:sticky;top:0;z-index:20;background:rgba(8,11,16,.72);backdrop-filter:blur(18px) saturate(1.15);-webkit-backdrop-filter:blur(18px) saturate(1.15);border-bottom:1px solid var(--line)}
+.top__in{max-width:1120px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.brand{font-family:var(--en);font-weight:700;font-size:15px;letter-spacing:-.01em}
+.brand small{font-family:var(--cn);font-weight:400;color:var(--dim);margin-left:8px;font-size:12.5px}
+.top__acts{display:flex;gap:6px}
+.chip{height:40px;padding:0 14px;border-radius:12px;border:1px solid var(--line);color:var(--dim);font-size:13px;display:inline-flex;align-items:center;transition:color .12s,border-color .12s,background .12s}
+.chip:hover{color:var(--text);border-color:var(--line-strong);background:var(--glass)}
+.chip[aria-expanded=true]{color:var(--text);border-color:var(--line-strong);background:var(--glass)}
+.pop{position:fixed;top:72px;right:max(24px,calc((100% - 1120px)/2 + 24px));z-index:40;width:320px;max-width:calc(100vw - 48px);background:var(--bg2);border:1px solid var(--line);border-radius:var(--r-panel);padding:var(--sp-4);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.pop[hidden]{display:none}
+.pop h4{font-size:13px;margin-bottom:var(--sp-2)}
+.pop .row{display:flex;justify-content:space-between;gap:var(--sp-3);font-size:12.5px;color:var(--dim);padding:4px 0;border-bottom:1px solid var(--line)}
+.pop .row:last-of-type{border-bottom:none}
+.pop .row b{color:var(--text);font-weight:500}
+.pop p{font-size:12px;color:var(--dim);margin-top:var(--sp-3);line-height:1.6}
+
+main{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ---------- HOME ---------- */
+.hero{padding:56px 0 24px}
+.hero h1{font-family:var(--cn);font-size:28px;line-height:34px;font-weight:600;letter-spacing:0}
+.hero p{color:var(--dim);font-size:14px;margin-top:8px;max-width:46ch}
+
+.panel{background:var(--glass);backdrop-filter:blur(18px) saturate(1.15);-webkit-backdrop-filter:blur(18px) saturate(1.15);border:1px solid var(--line);border-radius:24px;overflow:hidden;margin-bottom:64px}
+.grid2{display:grid;grid-template-columns:1fr 1fr}
+.card{position:relative;padding:32px;min-height:188px;display:flex;flex-direction:column;gap:14px;text-align:left;background:transparent;transition:transform .12s var(--ease),background .12s;opacity:0;transform:translateY(8px)}
+.card.in{animation:enter .26s var(--ease) forwards}
+@keyframes enter{to{opacity:1;transform:translateY(0)}}
+.grid2 .card:nth-child(1),.grid2 .card:nth-child(2){border-bottom:1px solid var(--line)}
+.grid2 .card:nth-child(1),.grid2 .card:nth-child(3){border-right:1px solid var(--line)}
+.card:hover,.card:focus-within{background:var(--glass-hi);transform:translateY(-2px)}
+.card:hover .icn,.card:focus-within .icn{animation-play-state:paused;color:var(--c)}
+.card:hover .card__title,.card:focus-within .card__title{color:var(--text)}
+.card__icon{color:var(--dim)}
+.icn{width:32px;height:32px;display:block;animation:float 7s ease-in-out infinite alternate}
+.card:nth-child(1) .icn{animation-duration:7s;animation-delay:0ms}
+.card:nth-child(2) .icn{animation-duration:8.5s;animation-delay:600ms}
+.card:nth-child(3) .icn{animation-duration:7.5s;animation-delay:1200ms}
+.card:nth-child(4) .icn{animation-duration:9s;animation-delay:1800ms}
+@keyframes float{from{transform:translateY(-6px)}to{transform:translateY(6px)}}
+.card__title{font-size:15px;line-height:21px;font-weight:600;color:var(--text)}
+.card__sub{font-size:12.5px;line-height:18px;color:var(--dim)}
+.dot{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--dim)}
+.dot::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.dot--ok{color:var(--laya)}
+.dot--idle{color:var(--dim)}
+.dot--fail{color:var(--danger)}
+
+/* ---------- FLOW ---------- */
+.flow{display:none;padding:24px 0 120px}
+.flow.active{display:block}
+.flow__head{display:flex;align-items:center;gap:12px;padding:16px 0 24px}
+.backbtn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;color:var(--dim);transition:.12s}
+.backbtn:hover{color:var(--text);border-color:var(--line-strong)}
+.flow__title{font-size:22px;line-height:30px;font-weight:600}
+
+.body3{display:grid;grid-template-columns:200px minmax(0,1fr) 260px;gap:32px;align-items:start}
+
+nav.steps{position:sticky;top:88px;display:flex;flex-direction:column;gap:2px;border-left:2px solid var(--line);padding-left:2px}
+.step-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;color:var(--dim);font-size:13px;text-align:left;width:100%;transition:.12s}
+.step-item .num{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--en);font-size:12px;flex-shrink:0}
+.step-item[aria-current="step"]{color:var(--text);background:var(--glass);border-left:2px solid var(--c);margin-left:-4px;padding-left:14px}
+.step-item[aria-current="step"] .num{border-color:var(--c);color:var(--c)}
+.step-item.done .num{border-color:var(--c);background:var(--c);color:var(--bg)}
+.step-item.done .num svg{width:12px;height:12px}
+
+.center{max-width:560px}
+.center h2{font-size:22px;line-height:30px;font-weight:600;outline:none}
+.center .lead{color:var(--dim);margin:8px 0 24px;font-size:14px}
+.step-body{animation:fade .2s var(--ease)}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12.5px;color:var(--dim);margin-bottom:8px}
+.field select,.field input[type=text],.field input[type=number]{width:100%;height:40px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:0 14px;font-family:var(--cn);font-size:14px;transition:border-color .12s}
+.field select:hover,.field input:hover{border-color:var(--line-strong)}
+.field select:focus-visible,.field input:focus-visible{border-color:var(--focus)}
+.field select[disabled],.field input[disabled],.seg button[disabled],.dropzone[aria-disabled=true]{opacity:.4;cursor:not-allowed;border-color:var(--line);color:var(--dim);background:transparent}
+.field.err select,.field.err input,.dropzone.err{border-color:var(--danger)}
+.field .msg{display:none;color:var(--danger);font-size:12.5px;margin-top:8px}
+.field.err .msg{display:block}
+.field.err .seg button{border-color:var(--danger)}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--line);color:var(--dim);font-size:13px;transition:.12s}
+.seg button:hover{border-color:var(--line-strong);color:var(--text)}
+.seg button[aria-pressed=true]{border-color:var(--c);color:var(--text);background:rgba(255,255,255,.04)}
+.dropzone{border:1px dashed var(--line);border-radius:12px;min-height:96px;padding:20px;display:flex;flex-direction:column;gap:8px;justify-content:center;align-items:flex-start;color:var(--dim);transition:.12s;background:var(--bg2)}
+.dropzone:hover{border-style:solid;border-color:var(--line-strong);background:rgba(255,255,255,.04)}
+.dropzone:focus-visible{border-color:var(--focus);border-style:solid}
+.dropzone.err{background:color-mix(in srgb,var(--danger) 7%,var(--bg2))}
+.dropzone .path{color:var(--text);font-family:var(--en);font-size:13px;word-break:break-all}
+details.adv{margin-top:24px;border:1px solid var(--line);border-radius:12px;padding:0 16px}
+details.adv summary{height:44px;display:flex;align-items:center;color:var(--dim);font-size:13px;cursor:pointer;list-style:none}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary::before{content:"+";margin-right:8px;font-family:var(--en)}
+details.adv[open] summary::before{content:"–"}
+details.adv .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-bottom:16px}
+.checkline{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)}
+.checkline:last-child{border-bottom:none}
+.checkline .ci{flex-shrink:0;margin-top:2px}
+
+.aside{position:sticky;top:88px;background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:20px;backdrop-filter:blur(18px) saturate(1.15);-webkit-backdrop-filter:blur(18px) saturate(1.15)}
+.aside h3{font-size:15px;font-weight:600;margin-bottom:16px}
+.est{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}
+.est:last-child{border-bottom:none}
+.est .k{font-size:12.5px;color:var(--dim)}
+.est .v{font-size:13px;font-weight:500;font-family:var(--en);font-variant-numeric:tabular-nums}
+.aside .note{font-size:12px;color:var(--dim);margin-top:14px;line-height:18px}
+
+.actionbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(8,11,16,.82);backdrop-filter:blur(18px) saturate(1.15);-webkit-backdrop-filter:blur(18px) saturate(1.15);border-top:1px solid var(--line)}
+.actionbar__in{max-width:1120px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.btn{height:44px;padding:0 22px;border-radius:12px;font-size:14px;display:inline-flex;align-items:center;transition:.12s}
+.btn--ghost{border:1px solid var(--line);color:var(--dim)}
+.btn--ghost:hover{color:var(--text);border-color:var(--line-strong)}
+.btn--primary{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);color:var(--text)}
+.btn--primary:hover{background:rgba(255,255,255,.2)}
+.btn--primary[aria-disabled=true]{opacity:.4;cursor:not-allowed}
+.btn--start{background:color-mix(in srgb,var(--c) 14%,transparent);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
+.btn--start:hover{background:color-mix(in srgb,var(--c) 20%,transparent)}
+.btn--danger{border:1px solid var(--danger);color:var(--danger)}
+.btn--danger:hover{background:color-mix(in srgb,var(--danger) 14%,transparent)}
+
+/* ---------- RUN ---------- */
+.run{display:none;padding:24px 0 40px}
+.run.active{display:block}
+.run h2{font-size:22px;line-height:30px;font-weight:600}
+.run__status{color:var(--dim);margin:8px 0 24px;font-size:13px}
+.timeline{display:flex;align-items:center;gap:0;margin:24px 0;overflow-x:auto;padding-bottom:4px}
+.tl-node{display:flex;align-items:center;gap:10px;flex:1;min-width:max-content}
+.tl-node .tn-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);flex-shrink:0}
+.tl-node.done .tn-dot{background:var(--c);border-color:var(--c)}
+.tl-node.cur .tn-dot{border-color:var(--c);box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 24%,transparent)}
+.tl-node .tn-lbl{font-size:12.5px;color:var(--dim)}
+.tl-node.cur .tn-lbl,.tl-node.done .tn-lbl{color:var(--text)}
+.tl-line{flex:1;height:2px;background:var(--line);min-width:20px}
+.tl-node.done .tl-line{background:var(--c)}
+.run__grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+.card-box{background:var(--glass);border:1px solid var(--line);border-radius:20px;padding:20px}
+.card-box h4{font-size:13px;color:var(--dim);font-weight:500;margin-bottom:12px}
+.losschart svg{width:100%;height:150px;display:block}
+.vram{margin-top:8px}
+.vram .bar{height:10px;background:var(--bg2);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.vram .bar i{display:block;height:100%;background:var(--c);width:0;transition:width .24s linear}
+.vram .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:8px}
+.vram .lbl .en{color:var(--text)}
+.log{height:180px;overflow-y:auto;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px;font-family:var(--en);font-size:12px;line-height:20px;color:var(--dim)}
+.log .ln{white-space:pre-wrap;word-break:break-all}
+.log .ln b{color:var(--text);font-weight:500}
+.run__prog{margin-top:24px}
+.run__prog .bar{height:8px;background:var(--bg2);border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.run__prog .bar i{display:block;height:100%;background:var(--c);width:0;transition:width .24s linear}
+.run__prog .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:8px}
+.readouts{display:flex;gap:24px;flex-wrap:wrap;margin-top:24px}
+.readouts .ro .k{font-size:12px;color:var(--dim)}
+.readouts .ro .v{font-size:18px;font-weight:600;font-family:var(--en);font-variant-numeric:tabular-nums}
+
+/* ---------- DONE ---------- */
+.done-page{display:none;padding:48px 0 80px;text-align:left}
+.done-page.active{display:block}
+.done-page .badge{display:inline-flex;align-items:center;gap:8px;color:var(--laya);font-size:13px;margin-bottom:16px}
+.done-page .badge::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}
+.done-page h2{font-size:22px;line-height:30px;font-weight:600;margin-bottom:8px}
+.done-page .sum{color:var(--dim);max-width:52ch;margin-bottom:24px}
+.path{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px;font-family:var(--en);font-size:13px;word-break:break-all;margin-bottom:8px}
+.path small{display:block;font-family:var(--cn);color:var(--dim);font-size:12px;margin-bottom:6px}
+.done__acts{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+
+/* ---------- DRAWER ---------- */
+.scrim{position:fixed;inset:0;z-index:39;background:rgba(0,0,0,.4);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+.scrim.open{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:40;width:420px;max-width:100vw;background:var(--bg2);border-left:1px solid var(--line);border-radius:24px 0 0 24px;box-shadow:0 8px 32px rgba(0,0,0,.45);transform:translateX(100%);transition:transform .16s var(--ease);padding:24px;overflow-y:auto}
+.drawer.open{transform:translateX(0)}
+.drawer__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.drawer__head h3{font-size:15px;font-weight:600}
+.xbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);color:var(--dim);display:grid;place-items:center}
+.xbtn:hover{color:var(--text);border-color:var(--line-strong)}
+.drawer .mcp{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+.drawer .mcp .t{font-size:13px}
+.switch{width:36px;height:20px;border-radius:20px;background:var(--line);position:relative;transition:.12s;flex-shrink:0}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--text);transition:.12s}
+.switch[aria-checked=true]{background:var(--c)}
+.switch[aria-checked=true]::after{left:18px}
+.switch[aria-disabled=true]{opacity:.4;cursor:not-allowed}
+.drawer h5{font-size:12.5px;color:var(--dim);font-weight:500;margin:20px 0 8px}
+.tool{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px}
+.tool .nm{font-family:var(--en)}
+.tool .desc{color:var(--dim);font-size:12px}
+.cfgbox{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px;font-family:var(--en);font-size:12px;color:var(--dim);white-space:pre;overflow-x:auto;margin:8px 0}
+
+@media (max-width:1100px){
+  .body3{grid-template-columns:var(--col-steps) minmax(0,1fr)}
+  .aside{position:static;grid-column:1 / -1;grid-row:2}
+  .run__grid{grid-template-columns:minmax(0,1fr) 280px}
+}
+@media (max-width:900px){
+  .body3{grid-template-columns:1fr;gap:24px}
+  .aside{position:static;grid-column:auto;grid-row:auto}
+  nav.steps{position:static;flex-direction:row;overflow-x:auto;padding-bottom:4px;padding-left:0;border-left:none;border-bottom:2px solid var(--line)}
+  nav.steps .step-item{width:auto;flex:0 0 auto}
+  nav.steps .step-item[aria-current="step"]{border-left:none;border-bottom:2px solid var(--c);margin-left:0;margin-bottom:-2px;padding-left:12px}
+  .run__grid{grid-template-columns:1fr}
+  .drawer{width:100%;border-radius:24px 0 0 0}
+}
+@media (max-width:899px){
+  .grid2{grid-template-columns:1fr}
+  .grid2 .card{border-bottom:1px solid var(--line)}
+  .grid2 .card:last-child{border-bottom:none}
+  .grid2 .card:nth-child(1),.grid2 .card:nth-child(3){border-right:none}
+}
+@media (max-width:640px){
+  .top__in{padding:0 16px}
+  main{padding:0 16px}
+  .grid2{grid-template-columns:1fr}
+  .grid2 .card{border-bottom:1px solid var(--line)}
+  .grid2 .card:last-child{border-bottom:none}
+  .grid2 .card:nth-child(1),.grid2 .card:nth-child(3){border-right:none}
+  .brand small{display:none}
+  .hero{padding:32px 0 16px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  .aura{animation:none!important;opacity:.06}
+  .icn{animation:none!important;transform:none!important}
+  .card{opacity:1;transform:none;animation:none!important}
+  .step-body{animation:none!important}
+  .vram .bar i,.run__prog .bar i{transition:none!important}
+  .drawer{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="aura aura--a" aria-hidden="true"></div>
+<div class="aura aura--b" aria-hidden="true"></div>
+
+<a href="#main" class="skip">跳到主要内容</a>
+
+<header class="top">
+  <div class="top__in">
+    <div class="brand">ModelSmith<small>本地训练工作台</small></div>
+    <div class="top__acts">
+      <button class="chip" type="button" id="envBtn" aria-expanded="false" aria-controls="envPop">环境</button>
+      <button class="chip" type="button" id="setBtn" aria-expanded="false" aria-controls="setPop">设置</button>
+      <button class="chip" type="button" id="agentBtn" aria-haspopup="dialog">Agent 接入</button>
+    </div>
+  </div>
+</header>
+
+<div class="pop" id="envPop" hidden>
+  <h4>本机环境</h4>
+  <div class="row"><span>GPU</span><b>未检测</b></div>
+  <div class="row"><span>CUDA</span><b>未检测</b></div>
+  <div class="row"><span>内存</span><b>未检测</b></div>
+  <p>原型未接后端：读数待本机探针接入后由环境接口填充。</p>
+</div>
+<div class="pop" id="setPop" hidden>
+  <h4>设置</h4>
+  <div class="row"><span>输出目录</span><b>E:\output</b></div>
+  <div class="row"><span>训练并发</span><b>1（串行）</b></div>
+  <div class="row"><span>遥测上传</span><b>关闭</b></div>
+  <p>原型未接后端：以上设置为只读展示，不会写盘。</p>
+</div>
+
+<main id="main">
+  <!-- HOME -->
+  <section id="home" aria-label="入口">
+    <div class="hero">
+      <h1>今天想训练什么？</h1>
+    </div>
+    <div class="panel">
+      <div class="grid2" id="cards">
+        <button class="card" data-flow="decision" style="--c:var(--laya)">
+          <span class="card__icon icn-slot">
+            <svg class="icn" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 5.5v6.5"/><path d="M16 12c0 4-5 4.6-5 8.2"/><path d="M16 12c0 4 5 4.6 5 8.2"/><circle cx="11" cy="23.5" r="1.75"/><circle cx="21" cy="23.5" r="1.75"/><path d="M23.5 7.2v2.8M22.1 8.6h2.8"/></svg>
+          </span>
+          <span class="card__title">决策模型训练</span>
+          <span class="card__sub">Laya 博弈与策略网络训练</span>
+          <span class="dot dot--ok">就绪</span>
+        </button>
+        <button class="card" data-flow="llm" style="--c:var(--llm)">
+          <span class="card__icon icn-slot">
+            <svg class="icn" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7.5h18"/><path d="M7 12.5h12"/><path d="M7 17.5h15"/><path d="M11 22.5h14"/><path d="M7 22.5h1.5"/><rect x="5" y="4.5" width="22" height="23" rx="3.5"/></svg>
+          </span>
+          <span class="card__title">LLM 微调</span>
+          <span class="card__sub">对话与指令模型的 LoRA / QLoRA</span>
+          <span class="dot dot--ok">就绪</span>
+        </button>
+        <button class="card" data-flow="image" style="--c:var(--image)">
+          <span class="card__icon icn-slot">
+            <svg class="icn" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="6.5" width="23" height="19" rx="3"/><circle cx="16" cy="16" r="4.6"/><circle cx="16" cy="16" r="1.4"/><path d="M16 8.2v1.6M16 22.2v1.6M8.2 16h1.6M22.2 16h1.6"/><path d="M10.2 10.6l1.1 1.1M20.7 20.3l1.1 1.1M21.8 10.6l-1.1 1.1M11.3 20.3l-1.1 1.1"/><path d="M24.4 27.2h.01M20.6 27.2h.01M16.8 27.2h.01M13 27.2h.01M9.2 27.2h.01M5.4 27.2h.01"/></svg>
+          </span>
+          <span class="card__title">生图 LoRA 训练</span>
+          <span class="card__sub">FLUX / SDXL 风格与角色定制</span>
+          <span class="dot dot--idle">未检测</span>
+        </button>
+        <button class="card" data-flow="video" aria-disabled="true" tabindex="-1" data-disabled="1" style="--c:var(--video)">
+          <span class="card__icon icn-slot">
+            <svg class="icn" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="7.5" width="12" height="9" rx="2"/><rect x="18" y="7.5" width="12" height="9" rx="2"/><rect x="4" y="19" width="12" height="9" rx="2"/><rect x="18" y="19" width="12" height="9" rx="2"/><path d="M6.5 22.2h7M6.5 24.6h4.5"/><path d="M22 19.8v7.4l6-3.7z"/></svg>
+          </span>
+          <span class="card__title">视频 LoRA 训练</span>
+          <span class="card__sub">Wan / H3 / LTX 动态风格</span>
+          <span class="dot dot--idle">暂未开放</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FLOW (built by JS) -->
+  <section id="flow" class="flow" aria-label="训练流程">
+    <div class="flow__head">
+      <button class="backbtn" id="flowBack" aria-label="返回入口">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <h1 class="flow__title" id="flowTitle"></h1>
+    </div>
+    <div class="body3">
+      <nav class="steps" id="stepBar" aria-label="步骤"></nav>
+      <div class="center" id="stepCenter" aria-live="polite"></div>
+      <aside class="aside" aria-label="本次预计">
+        <h3>本次预计</h3>
+        <div class="est"><span class="k">显存</span><span class="v" id="estVram">—</span></div>
+        <div class="est"><span class="k">步数</span><span class="v" id="estSteps">—</span></div>
+        <div class="est"><span class="k">时长</span><span class="v" id="estTime">—</span></div>
+        <div class="est"><span class="k">产物</span><span class="v" id="estOut">—</span></div>
+        <p class="note" id="estNote">预估基于当前可见参数（未改动的项用界面默认值）与本机 32GB 上限，实际以运行日志为准。</p>
+        <p class="note" id="estWarn" hidden style="color:var(--warn);border:1px solid var(--warn);border-radius:10px;padding:8px 10px">警告：显存预估超出本机 32GB（31.5GB 上限），需降分辨率 / 减帧数 / 减 batch。</p>
+      </aside>
+    </div>
+  </section>
+
+  <!-- RUN -->
+  <section id="run" class="run" aria-label="训练中">
+    <h1 class="sr-only">训练进行中</h1>
+    <div class="flow__head">
+      <h2 id="runTitle">训练进行中</h2>
+    </div>
+    <p class="run__status" id="simNote">模拟运行，未连接训练后端（读数为演示数据）</p>
+    <p class="run__status" id="runStatus" aria-live="polite">准备阶段…</p>
+    <div class="timeline" id="timeline"></div>
+    <div class="run__grid">
+      <div class="card-box">
+        <h4>Loss 曲线</h4>
+        <div class="losschart" id="losschart"></div>
+        <div class="vram">
+          <h4 style="margin-top:24px">显存占用</h4>
+          <div class="bar"><i id="vramBar"></i></div>
+          <div class="lbl"><span>本机 GPU（未检测）</span><span class="en" id="vramVal">0.0 GB</span></div>
+        </div>
+      </div>
+      <div class="card-box">
+        <h4>运行日志</h4>
+        <div class="log" id="log" role="log" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="card-box" id="runSamplesBox" hidden>
+      <h4>采样图（每 sample_every 一组）</h4>
+      <div id="runSamples"></div>
+    </div>
+    <div class="run__prog">
+      <div class="bar"><i id="progBar"></i></div>
+      <div class="lbl"><span id="progStep">step 0 / 0</span><span class="en" id="eta">剩余 --:--</span></div>
+    </div>
+    <div class="readouts">
+      <div class="ro"><div class="k">当前 Loss</div><div class="v" id="roLoss">—</div></div>
+      <div class="ro"><div class="k">学习率</div><div class="v" id="roLr">—</div></div>
+      <div class="ro"><div class="k">速度</div><div class="v" id="roSpeed">—</div></div>
+    </div>
+    <div class="done__acts">
+      <button class="btn btn--ghost" id="runHomeBtn" type="button">返回首屏（训练继续）</button>
+      <button class="btn btn--danger" id="cancelBtn" type="button">取消训练</button>
+    </div>
+  </section>
+
+  <!-- DONE -->
+  <section id="done" class="done-page" aria-label="训练完成">
+    <h1 class="sr-only">训练完成</h1>
+    <div class="badge">训练完成</div>
+    <h2 id="doneTitle">产物已生成</h2>
+    <p class="sum" id="doneSum"></p>
+    <div id="doneExtra"></div>
+    <div class="path"><small>产物路径</small><span id="donePath"></span></div>
+    <div class="done__acts">
+      <button class="btn btn--ghost" id="openFolder" type="button">打开文件夹</button>
+      <button class="btn btn--start" id="retrain" type="button" style="--c:var(--laya)">再训一次</button>
+      <button class="btn btn--ghost" id="doneBack" type="button">返回首页</button>
+    </div>
+  </section>
+</main>
+
+<!-- DRAWER -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Agent 接入" hidden>
+  <div class="drawer__head">
+    <h3>Agent 接入</h3>
+    <button class="xbtn" id="drawerClose" aria-label="关闭抽屉">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="mcp">
+    <span class="t">MCP 服务</span>
+    <button class="switch" id="mcpSwitch" role="switch" aria-checked="false" aria-label="MCP 服务开关"></button>
+  </div>
+  <div class="mcp"><span class="t">连接状态</span><span class="dot dot--idle">未连接</span></div>
+  <h5>工具列表</h5>
+  <div id="tools"></div>
+  <h5>客户端配置</h5>
+  <div class="cfgbox" id="cfgBox">{
+  "mcpServers": {
+    "modelsmith": {
+      "command": "modelsmith-mcp.exe",
+      "args": ["--autostart"]
+    }
+  }
+}</div>
+  <button class="btn btn--ghost" id="copyCfg" type="button" style="width:100%">复制配置</button>
+</aside>
+
+<div class="actionbar" id="actionbar" hidden>
+  <div class="actionbar__in">
+    <button class="btn btn--ghost" id="prevBtn" type="button">上一步</button>
+    <button class="btn btn--primary btn--start" id="nextBtn" type="button">下一步</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+var REDUCE = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---- live mode (core service; token is only sent in headers) ---- */
+var LIVE = !!window.__MS_TOKEN__;
+var MS_API = window.__MS_API__ || "/api";
+var liveJobId=null, livePoll=null, liveOffset=0, liveStopped=false, liveKind=null;
+function apiFetch(path, opts){
+  opts = opts || {};
+  var headers = opts.headers || {};
+  headers["X-ModelSmith-Token"] = window.__MS_TOKEN__;
+  if(opts.body!==undefined && opts.body!==null) headers["Content-Type"]="application/json";
+  opts.headers = headers;
+  opts.cache = "no-store";
+  return fetch(MS_API + path, opts).then(function(r){
+    return r.json().catch(function(){ return {}; }).then(function(j){
+      if(!r.ok){ var e=new Error((j&&j.error)||("HTTP "+r.status)); e.status=r.status; throw e; }
+      return j;
+    });
+  });
+}
+
+/* ---- flow definitions (per UI-BRIEF §4) ---- */
+var TRAIN_FIELDS = [
+  {n:"steps",g:"optim",label:"steps",d:"1000"},
+  {n:"batch_size",g:"optim",label:"batch_size",d:"1"},
+  {n:"lr",g:"optim",label:"lr",d:"1e-4"},
+  {n:"rank",g:"optim",label:"rank",d:"16"},
+  {n:"alpha",g:"optim",label:"alpha",d:"16"},
+  {n:"resolution",g:"optim",label:"resolution（多分辨率 bucket）",d:"512,768,1024",hint:"逗号分隔；FLUX/Qwen-Image 吃多分辨率"},
+  {n:"gradient_accumulation",g:"optim",label:"gradient_accumulation",d:"1"},
+  {n:"gradient_accumulation_steps",g:"optim",label:"gradient_accumulation_steps（与上一项互斥）",d:"1",rule:"gt1pair",pair:"gradient_accumulation"},
+  {n:"save_every",g:"optim",label:"save_every",d:"1000"},
+  {n:"max_step_saves_to_keep",g:"optim",label:"max_step_saves_to_keep",d:"5"},
+  {n:"sample_every",g:"calib",label:"sample_every",d:"100"},
+  {n:"sample_start_step",g:"calib",label:"sample_start_step",d:"0"},
+  {n:"sample.prompts",g:"calib",label:"sample.prompts（逗号分隔）",d:"a photo of [trigger] in a studio",hint:"空=不出采样图（黄条，不阻止开始）"},
+  {n:"sample_steps",g:"calib",label:"sample_steps",d:"20"},
+  {n:"guidance_scale",g:"calib",label:"guidance_scale",d:"7"},
+  {n:"sample_width",g:"calib",label:"sample.width",d:"512"},
+  {n:"sample_height",g:"calib",label:"sample.height",d:"512"},
+  {n:"sampler",g:"eval",label:"sample.sampler",d:"flowmatch",type:"select",opts:["flowmatch","ddpm","ddpm_dynamic"],rule:"match",pair:"noise_scheduler"},
+  {n:"noise_scheduler",g:"eval",label:"train.noise_scheduler",d:"flowmatch",type:"select",opts:["flowmatch","ddpm","ddpm_dynamic"]},
+  {n:"save_format",g:"eval",label:"save_format",d:"safetensors",type:"select",opts:["safetensors","diffusers"]}
+];
+var VIDEO_TRAIN_FIELDS = [
+  {n:"switch_boundary_every",g:"optim",label:"switch_boundary_every",d:"10",hint:"Wan2.2 MOE 每 10 步切高/低噪专家"},
+  {n:"train_high_noise",g:"optim",label:"train_high_noise",d:"true",type:"seg",opts:["true","false"]},
+  {n:"train_low_noise",g:"optim",label:"train_low_noise",d:"true",type:"seg",opts:["true","false"]}
+];
+var LLM_DATASETS = ["loco_decision","alpaca_gpt4","sharegpt_demo"];
+var LLM_MODEL_FIELDS = [
+  {n:"model_name_or_path",g:"optim",label:"model_name_or_path（必填）",d:"",hint:"Hub id 或本地目录"},
+  {n:"template",g:"optim",label:"template（必填，示例 qwen3_nothink）",d:"",hint:"空 = 上游直接失败，红字阻止"}
+];
+var LLM_DATA_FIELDS = [
+  {n:"data_path",g:"optim",label:"本地 JSONL 路径（必填）",d:"",ph:"E:\\视频\\modelsmith\\resources\\02-LLM-语料\\dolly-15k\\databricks-dolly-15k.jsonl",hint:"core 的 data 合同是 JSONL 绝对路径；dataset_name 仅作展示，不参与提交",required:true},
+  {n:"dataset_name",g:"optim",label:"数据集名（仅展示，不参与提交）",d:"",rule:"inList",list:LLM_DATASETS,optionalIf:"data_path",hint:"已注册示例：loco_decision / alpaca_gpt4 / sharegpt_demo；core 只使用 data_path"},
+  {n:"formatting",g:"optim",label:"formatting",d:"alpaca",type:"select",opts:["alpaca","sharegpt"]},
+  {n:"prompt_column",g:"optim",label:"alpaca prompt 列",d:"instruction"},
+  {n:"response_column",g:"optim",label:"alpaca response 列",d:"output"},
+  {n:"conversations_column",g:"optim",label:"sharegpt conversations 列",d:"conversations"},
+  {n:"cutoff_len",g:"optim",label:"cutoff_len",d:"2048"},
+  {n:"val_size",g:"eval",label:"val_size（与 eval_dataset 互斥）",d:"0.0",rule:"notBoth",pair:"eval_dataset"},
+  {n:"eval_dataset",g:"eval",label:"eval_dataset（可选）",d:"",hint:"填了才按 held-out 验证，完成页才显示指标"}
+];
+var LLM_PARAM_FIELDS = [
+  {n:"stage",g:"optim",label:"stage",d:"sft",type:"select",opts:["sft","dpo","kto"]},
+  {n:"finetuning_type",g:"optim",label:"finetuning_type",d:"lora",type:"select",opts:["lora","full","freeze"]},
+  {n:"rank",g:"optim",label:"rank（lora_rank）",d:"8"},
+  {n:"alpha",g:"optim",label:"alpha（lora_alpha）",d:"16"},
+  {n:"lr",g:"optim",label:"lr",d:"5e-5"},
+  {n:"epochs",g:"optim",label:"epochs",d:"3.0"},
+  {n:"batch_size",g:"optim",label:"batch_size",d:"8"},
+  {n:"gradient_accumulation",g:"optim",label:"grad_accum",d:"1"},
+  {n:"save_steps",g:"calib",label:"save_steps",d:"500"},
+  {n:"logging_steps",g:"calib",label:"logging_steps（默认 500）",d:"500",hint:"前 500 步看不到 loss；示例配置会改成 10"},
+  {n:"save_total_limit",g:"calib",label:"save_total_limit（空=None）",d:"",hint:"默认不删档，磁盘会一直涨"}
+];
+var FLOWS = {
+  decision: {
+    title:"决策模型训练", accent:"var(--laya)", out:"model.safetensors",
+    run:{unit:"updates", extra:"epoch", showSamples:false, cancelWarn:"无 resume，中断=从头"},
+    done:{panels:["before_after","calibration","abstention","artifacts"]},
+    steps:[
+      {k:"数据", type:"file", field:"data", label:"训练数据（单个 JSONL / CSV）", accept:["jsonl","csv"], columns:{text:"text",label:"label"}},
+      {k:"体检", type:"dryrun", field:"check", label:"数据体检（--dry-run）"},
+      {k:"设置", type:"params", field:"params", label:"训练设置",
+        fields:[
+          {n:"base",g:"optim",label:"底座 base",d:"convaiinnovations/laya",type:"select",opts:["convaiinnovations/laya","english","multilingual","typed-decisions"]},
+          {n:"basePath",g:"optim",label:"本地底座路径（优先于下拉）",d:"",ph:"E:\\视频\\拉亚决策模型\\models\\laya",hint:"手输绝对路径优先；留空则用下方下拉 base"},
+          {n:"loss",g:"optim",label:"损失 loss",d:"rlcd",type:"seg",opts:["rlcd","soft-ce"]},
+          {n:"epochs",g:"optim",label:"epochs",d:"4"},
+          {n:"micro_batch",g:"optim",label:"micro_batch",d:"8"},
+          {n:"grad_accum",g:"optim",label:"grad_accum",d:"8"},
+          {n:"encoder_lr",g:"optim",label:"encoder_lr",d:"2.5e-5"},
+          {n:"head_lr",g:"optim",label:"head_lr",d:"1e-4"},
+          {n:"max_len",g:"optim",label:"max_len（来自 base config）",d:"512",readonly:true,hint:"head_max_len 192 同样取自 base config"},
+          {n:"shuffle_options",g:"optim",label:"shuffle_options",d:"（关）",type:"select",opts:["（关）","choice","score","noul"],hint:"已知题类型名；关=不洗选项"},
+          {n:"label_smoothing",g:"calib",label:"label_smoothing",d:"0.0",hint:"[0,1)"},
+          {n:"calib_frac",g:"calib",label:"calib_frac",d:"0.1",hint:"[0,1)"},
+          {n:"calib_max",g:"calib",label:"calib_max",d:"400"},
+          {n:"target_error",g:"calib",label:"target_error",d:"0.10",hint:"[0,1]"},
+          {n:"min_abstain_n",g:"calib",label:"min_abstain_n",d:"10"},
+          {n:"eval_data",g:"eval",label:"eval_data（可选）",d:"",hint:"留出集 JSONL/CSV；不填则 after 来自校准切片（in-sample）"}
+        ]},
+      {k:"开始", type:"review", field:"review", label:"确认并开始训练"}
+    ]
+  },
+  llm: {
+    title:"LLM 微调", accent:"var(--llm)", out:"adapter/",
+    run:{unit:"global_step", showSamples:false, resumable:true, cancelWarn:"可续训"},
+    done:{panels:["adapter","train_results","loss_png","checkpoints","eval_if_any"]},
+    steps:[
+      {k:"模型", type:"params", field:"params", label:"模型与模板", fields:LLM_MODEL_FIELDS},
+      {k:"数据", type:"params", field:"params", label:"数据注册", fields:LLM_DATA_FIELDS},
+      {k:"体检", type:"llmcheck", field:"check", label:"数据体检（注册名 / 列映射 / token / 截断）"},
+      {k:"参数", type:"params", field:"params", label:"训练参数", fields:LLM_PARAM_FIELDS},
+      {k:"开始", type:"review", field:"review", label:"确认并开始训练"}
+    ]
+  },
+  image: {
+    title:"生图 LoRA 训练", accent:"var(--image)", out:"LoRA .safetensors",
+    run:{unit:"steps", showSamples:true, sampleEvery:true, cancelWarn:"正常停止"},
+    done:{panels:["samples","artifacts","config","dataset_hash","lastSampleWarn"]},
+    media:{kind:"image", ext:"png", label:"图片"},
+    steps:[
+      {k:"架构", type:"params", field:"params", label:"架构与底模", fields:[
+        {n:"arch",g:"optim",label:"生成架构 arch",d:"qwen_image_2_1",type:"select",opts:["qwen_image_2_1","sd1","flux","flux_schnell","flux_kontext","chroma","flex","flex2","hidream","lumina","omnigen2","qwen_image","qwen_image_edit","sd35_large"]},
+        {n:"base",g:"optim",label:"底模 name_or_path（必填）",d:"",hint:"Hub id 或本地目录；空 = 拒绝开始"}
+      ]},
+      {k:"数据", type:"media", field:"data", label:"数据与触发词", mediaKind:"image", captionExt:".txt", fields:[
+        {n:"data_path",g:"optim",label:"本地图片文件夹（优先于缩略图模拟）",d:"",ph:"E:\\视频\\modelsmith\\resources\\04-生图LoRA-图集\\smoke-synthetic",hint:"非空白时优先于缩略图模拟路径"},
+        {n:"caption_ext",g:"optim",label:"caption_ext",d:".txt"},
+        {n:"trigger_word",g:"optim",label:"trigger_word（可不填）",d:""},
+        {n:"cache_text_embeddings",g:"optim",label:"cache_text_embeddings",d:"true",type:"seg",opts:["true","false"]}
+      ]},
+      {k:"体检", type:"mediacheck", field:"check", label:"数据体检（图片 / caption）"},
+      {k:"参数", type:"params", field:"params", label:"训练参数", fields:TRAIN_FIELDS},
+      {k:"开始", type:"review", field:"review", label:"确认并开始训练"}
+    ]
+  },
+  video: {
+    title:"视频 LoRA 训练", accent:"var(--video)", out:"LoRA .safetensors",
+    run:{unit:"steps", showSamples:true, sampleEvery:true, cancelWarn:"正常停止"},
+    done:{panels:["samples","artifacts","config","dataset_hash","lastSampleWarn"]},
+    media:{kind:"video", ext:"webp", label:"视频"},
+    steps:[
+      {k:"架构", type:"params", field:"params", label:"架构与底模", fields:[
+        {n:"arch",g:"optim",label:"生成架构 arch",d:"wan22_14b",type:"select",opts:["wan21_1b","wan21_14b","wan22_14b"]},
+        {n:"base",g:"optim",label:"底模 name_or_path（必填）",d:"",hint:"Hub id 或本地目录；空 = 拒绝开始"},
+        {n:"qtype",g:"optim",label:"qtype",d:"ARA",type:"select",opts:["ARA","F16"],hint:"ARA = Accuracy Recovery Adapter（4bit 训练）"},
+        {n:"cache_text_embeddings",g:"optim",label:"cache_text_embeddings",d:"true",type:"seg",opts:["true","false"],rule:"oneTrue",pair:"unload_text_encoder"},
+        {n:"unload_text_encoder",g:"optim",label:"unload_text_encoder",d:"false",type:"seg",opts:["true","false"]}
+      ]},
+      {k:"数据", type:"media", field:"data", label:"数据与触发词（视频）", mediaKind:"video", captionExt:".txt", fields:[
+        {n:"caption_ext",g:"optim",label:"caption_ext",d:".txt"},
+        {n:"trigger_word",g:"optim",label:"trigger_word（可不填）",d:""},
+        {n:"num_frames",g:"optim",label:"num_frames",d:"81",hint:"num_frames>1 时加载器改找视频文件"},
+        {n:"shrink_video_to_frames",g:"optim",label:"shrink_video_to_frames",d:"true",type:"seg",opts:["true","false"]},
+        {n:"fps",g:"optim",label:"fps（仅 shrink=false 时用）",d:"24"}
+      ]},
+      {k:"体检", type:"mediacheck", field:"check", label:"数据体检（片段 / caption）"},
+      {k:"参数", type:"params", field:"params", label:"训练参数", fields:TRAIN_FIELDS.concat(VIDEO_TRAIN_FIELDS)},
+      {k:"开始", type:"review", field:"review", label:"确认并开始训练"}
+    ]
+  }
+};
+
+var PHASES = ["准备","加载权重","前向计算","反向传播","保存产物"];
+
+var home = document.getElementById("home");
+var flow = document.getElementById("flow");
+var run = document.getElementById("run");
+var done = document.getElementById("done");
+var actionbar = document.getElementById("actionbar");
+var stepBar = document.getElementById("stepBar");
+var stepCenter = document.getElementById("stepCenter");
+var flowTitle = document.getElementById("flowTitle");
+var prevBtn = document.getElementById("prevBtn");
+var nextBtn = document.getElementById("nextBtn");
+
+var state = { flow:null, step:0, data:{} };
+function flowState(key){
+  if(!state.data[key]) state.data[key] = { step:0, picks:{}, params:{} };
+  return state.data[key];
+}
+function allParams(key){
+  var fs=flowState(key), o={};
+  for(var k in fs.picks) o[k]=fs.picks[k];
+  for(var k in fs.params) o[k]=fs.params[k];
+  return o;
+}
+var cardsPlayed = false;
+
+/* ---- home entrance (once per session) ---- */
+function playCards(){
+  if(cardsPlayed || REDUCE){ document.querySelectorAll(".card").forEach(function(c){c.style.opacity=1;c.style.transform="none";}); return; }
+  cardsPlayed = true;
+  document.querySelectorAll(".card").forEach(function(c,i){
+    setTimeout(function(){ c.classList.add("in"); }, i*70);
+  });
+}
+
+function show(el){
+  [home,flow,run,done].forEach(function(s){ s.classList.remove("active"); s.style.display="none"; });
+  el.style.display="";
+  el.classList.add("active");
+}
+
+/* ---- enter flow ---- */
+function enterFlow(key){
+  if(!FLOWS[key] || key==="video") return;
+  state.flow = key;
+  var fs = flowState(key);
+  state.step = Math.min(fs.step||0, FLOWS[key].steps.length-1);
+  var f = FLOWS[key];
+  flow.style.setProperty("--c", f.accent);
+  flowTitle.textContent = f.title;
+  buildSteps();
+  renderStep();
+  show(flow);
+  actionbar.hidden = false;
+  window.scrollTo(0,0);
+}
+
+function buildSteps(){
+  var f = FLOWS[state.flow];
+  stepBar.innerHTML="";
+  f.steps.forEach(function(s,i){
+    var b=document.createElement("button");
+    b.className="step-item"; b.type="button";
+    b.innerHTML='<span class="num">'+(i+1)+'</span><span>'+s.k+'</span>';
+    b.addEventListener("click",function(){ if(i<=state.step){ state.step=i; renderStep(); } });
+    stepBar.appendChild(b);
+  });
+}
+
+function markSteps(){
+  var items = stepBar.children;
+  for(var i=0;i<items.length;i++){
+    items[i].classList.remove("done");
+    items[i].removeAttribute("aria-current");
+    if(i<state.step){ items[i].classList.add("done"); items[i].querySelector(".num").innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="3"><path d="M5 13l4 4 10-10"/></svg>'; }
+    else { items[i].querySelector(".num").textContent = (i+1); }
+    if(i===state.step){ items[i].setAttribute("aria-current","step"); }
+  }
+}
+
+var ESTC = {
+  decision:{items:5600,mb:8,ga:8,epochs:4,sps:0.34,base:6.5,k:0.15},
+  llm:{samples:3600,batch:8,epochs:3,sps:2.9,base:8.0,k:0.55},
+  image:{samples:48000,batch:16,epochs:1,sps:1.2,base:24.0,k:0.5},
+  video:{samples:35200,batch:16,epochs:1,sps:6.0,base:24.0,k:0.8}
+};
+var ARCHK = {flux:1.2,flux_schnell:1.05,flux_kontext:1.25,chroma:1.1,flex:1.1,flex2:1.15,hidream:1.2,lumina:1.05,omnigen2:1.25,qwen_image:1.35,qwen_image_edit:1.4,sd35_large:1.0,wan21_1b:0.8,wan21_14b:1.4,wan22_14b:1.5};
+function numOf(v,d){ var n=parseFloat(v); return isFinite(n)?n:d; }
+function fmtDur(sec){
+  var m=Math.round(sec/60);
+  if(m<60) return "约 "+m+" 分钟";
+  return "约 "+Math.floor(m/60)+" 小时 "+((m%60)<10?"0":"")+(m%60)+" 分";
+}
+function estCalc(flowKey, params, out){
+  var C=ESTC[flowKey]||ESTC.decision, p=params||{};
+  if(flowKey==="decision"){
+    var items=(p.check&&p.check.items)||C.items;
+    var mb=Math.max(1,Math.round(numOf(p.micro_batch,C.mb)));
+    var ga=Math.max(1,Math.round(numOf(p.grad_accum,C.ga)));
+    var ep=Math.max(1,Math.round(numOf(p.epochs,C.epochs)));
+    var perEpoch=Math.ceil(items/mb);
+    var updates=ep*Math.ceil(perEpoch/ga);
+    var micro=ep*perEpoch;
+    var vram=C.base+(mb*ga)*C.k+(numOf(p.max_len,512)-512)*0.002;
+    if(vram<4) vram=4;
+    return { vram:vram.toFixed(1)+" GB", steps:updates.toLocaleString(), updates:updates.toLocaleString(), micro:micro.toLocaleString(), sps:C.sps.toFixed(2)+" s/step", time:fmtDur(micro*C.sps), out:out||"" };
+  }
+  if(flowKey==="llm"){
+    var litems=(p.check&&p.check.items)||12000;
+    var lbs=Math.max(1,Math.round(numOf(p.batch_size,8)));
+    var lga=Math.max(1,Math.round(numOf(p.gradient_accumulation,1)));
+    var lep=Math.max(0.1,numOf(p.epochs,3));
+    var lper=Math.ceil(litems/(lbs*lga));
+    var ltotal=Math.max(1,Math.ceil(lper*lep));
+    return { vram:"未检测", steps:ltotal.toLocaleString(), updates:ltotal.toLocaleString(), micro:"—", sps:"0.55 s/step", time:fmtDur(ltotal*0.55), out:out||"" };
+  }
+  var batch=Math.max(1,Math.round(numOf(p.batch_size, numOf(p.batch,C.batch))));
+  var epochs=Math.max(1,Math.round(numOf(p.epochs,C.epochs)));
+  var steps;
+  if(flowKey==="image"||flowKey==="video"){
+    var fd=fieldDefaults();
+    steps=Math.max(1,Math.round(numOf(p.steps,numOf(fd.steps,1000))));
+    batch=Math.max(1,Math.round(numOf(p.batch_size,numOf(fd.batch_size,1))));
+    if(p.arch===undefined) p.arch=fd.arch;
+    if(p.rank===undefined) p.rank=fd.rank;
+    if(p.resolution===undefined) p.resolution=fd.resolution;
+  }
+  else { steps=Math.ceil(C.samples/batch)*epochs; }
+  var archK=ARCHK[p.arch]||1;
+  var res=numOf(p.resolution,0)/1024*0.8;
+  var vram2=C.base+batch*C.k+(archK-1)*2.0+numOf(p.rank,0)*0.02+(flowKey==="image"||flowKey==="video"?res:0);
+  return { vram:vram2.toFixed(1)+" GB", steps:steps.toLocaleString(), time:fmtDur(steps*C.sps), out:out||"" };
+}
+function setEst(){
+  var f=FLOWS[state.flow], s=f.steps[state.step];
+  var e=estCalc(state.flow, allParams(state.flow), (s.est&&s.est.out)||f.out);
+  var isU=!!(f.run&&f.run.unit==="updates");
+  var isG=!!(f.run&&f.run.unit==="global_step");
+  document.getElementById("estVram").textContent=e.vram+(isU?"（估算）":"");
+  document.getElementById("estSteps").textContent=isU?(e.updates+" updates（估算）"):(isG?(e.steps+" global_step（估算）"):e.steps);
+  document.getElementById("estTime").textContent=e.time+(isU||isG?"（估算）":"");
+  document.getElementById("estOut").textContent=e.out;
+  var warnEl=document.getElementById("estWarn");
+  if(warnEl){
+    var vnum=parseFloat(e.vram);
+    warnEl.hidden=!((state.flow==="image"||state.flow==="video")&&isFinite(vnum)&&vnum>31.5);
+  }
+}
+
+/* ---- render current step (center) ---- */
+function renderStep(){
+  var f=FLOWS[state.flow], s=f.steps[state.step];
+  flowState(state.flow).step = state.step;
+  markSteps(); setEst();
+  var body;
+  if(s.type==="select") body=sel(s);
+  else if(s.type==="seg") body=seg(s);
+  else if(s.type==="path") body=pathZone(s);
+  else if(s.type==="gallery") body=gallery(s);
+  else if(s.type==="file") body=fileStep(s);
+  else if(s.type==="dryrun") body=dryRun(s);
+  else if(s.type==="media") body=mediaStep(s);
+  else if(s.type==="mediacheck") body=mediaCheck(s);
+  else if(s.type==="llmcheck") body=llmCheck(s);
+  else if(s.type==="check") body=check(s);
+  else if(s.type==="params") body=params(s);
+  else if(s.type==="review") body=review(s);
+
+  stepCenter.innerHTML='<div class="step-body"><h2 tabindex="-1" id="stepH1" aria-label="第 '+(state.step+1)+' 步，共 '+f.steps.length+' 步：'+s.label+'">'+s.label+'</h2>'+body+'</div>';
+  var h=document.getElementById("stepH1"); if(h) h.focus();
+  wireStep(s);
+
+  // buttons
+  prevBtn.style.visibility = state.step===0 ? "hidden" : "visible";
+  var isReview = s.type==="review";
+  nextBtn.textContent = isReview ? "开始训练" : "下一步";
+  nextBtn.className = "btn "+(isReview?"btn--primary btn--start":"btn--primary");
+  var ok = validate(s).length===0;
+  nextBtn.setAttribute("aria-disabled", ok?"false":"true");
+}
+
+function fieldLabelText(s){
+  if(s.type==="select"||s.type==="seg") return "选项";
+  if(s.type==="path"||s.type==="gallery"||s.type==="file") return "数据路径";
+  if(s.type==="params") return "本步参数";
+  if(s.type==="dryrun"||s.type==="mediacheck"||s.type==="llmcheck"||s.type==="check") return "体检操作";
+  return "本步内容";
+}
+function fieldShell(s,inner){
+  var hasFor=(s.type==="select"||s.type==="path"||s.type==="gallery"||s.type==="file");
+  var lab='<label'+(hasFor?' for="ctl-'+s.field+'"':'')+'>'+fieldLabelText(s)+'</label>';
+  return '<div class="field" data-field="'+s.field+'">'+lab+inner+'<span class="msg" id="msg-'+s.field+'">请完成此项后再继续</span></div>';
+}
+function sel(s){
+  var cur=flowState(state.flow).picks[s.field]||"";
+  var opts='<option value="" disabled'+(cur?"":" selected")+'>请选择…</option>'+s.opts.map(function(o){return '<option value="'+o+'"'+(o===cur?" selected":"")+'>'+o+'</option>';}).join("");
+  return fieldShell(s,'<select id="ctl-'+s.field+'" aria-label="'+s.label+'" aria-describedby="msg-'+s.field+'">'+opts+'</select>');
+}
+function seg(s){
+  var cur=flowState(state.flow).picks[s.field]||"";
+  var btns=s.opts.map(function(o){return '<button type="button" data-val="'+o+'" aria-pressed="'+(o===cur?"true":"false")+'">'+o+'</button>';}).join("");
+  return fieldShell(s,'<div class="seg" role="group" aria-label="选项" aria-describedby="msg-'+s.field+'">'+btns+'</div>');
+}
+function pathZone(s){
+  var cur=flowState(state.flow).picks[s.field];
+  return fieldShell(s,'<div class="dropzone" id="ctl-'+s.field+'" tabindex="0" role="button" aria-label="选择数据文件夹" aria-describedby="msg-'+s.field+'"><span class="path">'+(cur||("E:\\数据\\"+state.flow+"\\"))+'</span><span style="font-size:12px">拖放文件夹到此，或点击选择</span></div>');
+}
+function gallery(s){
+  var cur=flowState(state.flow).picks[s.field];
+  var cells='';
+  for(var i=0;i<8;i++){ cells+='<svg viewBox="0 0 40 40" width="100%" height="100%" aria-hidden="true"><rect x="3" y="3" width="34" height="26" rx="3" fill="none" stroke="var(--line)" stroke-width="1.5"/><rect x="8" y="31" width="24" height="3" rx="1.5" fill="var(--line)"/></svg>'; }
+  var wall='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">'+cells+'</div>';
+  return fieldShell(s,'<div class="dropzone" id="ctl-'+s.field+'" tabindex="0" role="button" style="display:block;padding:16px" aria-label="选择图片文件夹" aria-describedby="msg-'+s.field+'">'+wall+'<div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--dim)"><span class="path">'+(cur||("E:\\数据\\"+state.flow+"\\"))+'</span><span class="checkline" style="border:none;padding:0;display:inline">caption 抽检 <b style="color:var(--c)">通过</b></span></div></div>');
+}
+function fileStep(s){
+  var cur=flowState(state.flow).picks[s.field];
+  var cols=s.columns?('<div class="checkline" style="border:none;padding:6px 0"><span style="font-size:12.5px;color:var(--dim)">CSV 列名：<b class="en" style="color:var(--text)">'+s.columns.text+'</b> / <b class="en" style="color:var(--text)">'+s.columns.label+'</b>；JSONL：{state,questions,expected|gold}</span></div>'):"";
+  var pathField=cfgField({n:"data_path",label:"本地 JSONL 路径（必填）",d:"",ph:"E:\\视频\\modelsmith\\resources\\02-LLM-语料\\dolly-15k\\databricks-dolly-15k.jsonl",hint:"live 模式必须填写；file:// 离线演示可只用下方 dropzone"});
+  return fieldShell(s,pathField+'<div class="dropzone" id="ctl-'+s.field+'" tabindex="0" role="button" aria-label="选择数据文件" aria-describedby="msg-'+s.field+'"><span class="path">'+(cur||"未选择文件（单文件 .jsonl / .csv）")+'</span><span style="font-size:12px">点击选择单文件，或拖放到此（模拟）</span></div>'+cols+'<div style="font-size:12px;color:var(--dim);margin-top:6px">按单个文件读取，不做目录遍历；训练 / 校准 / 可选评测是三份独立来源。</div>');
+}
+function dryRun(s){
+  var fs=flowState(state.flow), r=fs.picks[s.field];
+  if(!r){
+    return fieldShell(s,'<div class="card-box" style="background:var(--bg2);padding:16px">'+
+      '<p style="font-size:13px;color:var(--dim);margin-bottom:12px">只加载 tokenizer 与 config，不加载权重、不训练。输出：读入行数 / 生成 item 数 / 跳过计数与原因 / 优化器更新预算。</p>'+
+      '<button class="btn btn--primary" type="button" id="dryRunBtn">运行 --dry-run</button></div>');
+  }
+  var e=estCalc(state.flow, allParams(state.flow));
+  var skip=[["empty_text",120],["empty_label",40],["invalid_question",30],["invalid_target",25],["options_collapsed",15],["options_beyond_max_len",10]];
+  var rows=skip.map(function(x){return '<div class="checkline"><div style="flex:1"><div class="en" style="font-size:13px">'+x[0]+'</div></div><span class="dot dot--idle">'+x[1]+'</span></div>';}).join("");
+  var pct=(r.skipped/r.rows*100).toFixed(1);
+  return fieldShell(s,'<div class="card-box" style="background:var(--bg2);padding:16px">'+
+    '<div class="est"><span class="k">读入行数</span><span class="v en">'+r.rows.toLocaleString()+'</span></div>'+
+    '<div class="est"><span class="k">生成 item</span><span class="v en">'+r.items.toLocaleString()+'</span></div>'+
+    '<div class="est"><span class="k">跳过</span><span class="v en">'+r.skipped.toLocaleString()+'（'+pct+'%）</span></div>'+
+    '<div class="est" style="border:none"><span class="k">更新预算（估算）</span><span class="v">'+e.updates+' updates / '+e.micro+' micro-batch 步</span></div>'+
+    '<div style="margin-top:8px">'+rows+'</div>'+
+    '<button class="btn btn--ghost" type="button" id="dryRunBtn" style="margin-top:12px">重新运行 --dry-run</button>'+
+    '</div>');
+}
+function mediaStep(s){
+  var fs=flowState(state.flow), cur=fs.picks[s.field], p=fs.params;
+  var kind=(FLOWS[state.flow].media&&FLOWS[state.flow].media.kind)||"image";
+  var cacheOn=String(p.cache_text_embeddings!==undefined?p.cache_text_embeddings:"true")==="true";
+  var trig=String(p.trigger_word||"").trim();
+  var capName=String(p.caption_ext||s.captionExt||".txt");
+  var cap='<div style="font-size:12.5px;color:var(--dim);margin-top:8px">只收 jpg / jpeg / png；caption 为同名 <b class="en">'+capName+'</b>（image2.jpg ↔ image2.txt）；采样 prompt 里请手写 [trigger]。</div>';
+  var grid='display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px';
+  return '<div class="field" data-field="'+s.field+'"><label for="mediaPath-'+s.field+'">数据文件夹（含同名 caption）</label>'+
+    '<div class="dropzone" id="mediaPath-'+s.field+'" tabindex="0" role="button" aria-label="选择数据文件夹"><span class="path">'+(cur||(kind==="video"?"视频文件夹（未选择）":"图片文件夹（未选择）"))+'</span><span style="font-size:12px">点击选择文件夹，或拖放到此</span></div>'+cap+
+    '<div id="mediaWarn" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin:10px 0;color:var(--warn);display:'+((cacheOn&&trig)?"block":"none")+'">黄条：cache_text_embeddings=true 时缓存文本嵌入，trigger_word 不生效。要么关缓存，要么接受 trigger 无名。</div>'+
+    '<div style="'+grid+'">'+s.fields.map(cfgField).join("")+'</div>'+
+    '<span class="msg" id="msg-'+s.field+'">请选择数据文件夹</span></div>';
+}
+function updateMediaWarn(){
+  var el=document.getElementById("mediaWarn"); if(!el) return;
+  var p=flowState(state.flow).params;
+  var cacheOn=String(p.cache_text_embeddings!==undefined?p.cache_text_embeddings:"true")==="true";
+  var trig=String(p.trigger_word||"").trim();
+  el.style.display=(cacheOn&&trig)?"block":"none";
+}
+function mediaCheck(s){
+  var fs=flowState(state.flow), r=fs.picks[s.field], kind=(FLOWS[state.flow].media&&FLOWS[state.flow].media.kind)||"image";
+  if(!r){
+    return fieldShell(s,'<div class="card-box" style="background:var(--bg2);padding:16px"><p style="font-size:13px;color:var(--dim);margin-bottom:12px">扫描文件夹：数量、缺 caption、扩展名 / 尺寸分布、重复项（视频：片段数 / 总时长 / 帧率 / 损坏）。</p><button class="btn btn--primary" type="button" id="mediaCheckBtn">运行数据体检</button></div>');
+  }
+  var rows=kind==="video"
+    ?[["片段数",r.items],["总时长",r.duration],["分辨率 / 帧率",r.res],["缺 caption",r.missing],["损坏",r.broken]]
+    :[["图片数",r.items],["缺 caption",r.missing],["扩展名分布",r.ext],["尺寸分布",r.size],["重复图",r.dup]];
+  var trs=rows.map(function(x){return '<div class="est"><span class="k">'+x[0]+'</span><span class="v en">'+x[1]+'</span></div>';}).join("");
+  var list="";
+  if(r.missing>0) list='<div style="margin-top:10px;font-size:12.5px;color:var(--warn)">缺 caption 清单（示例）：'+(kind==="video"?"clip_0003.mp4":"img_0007.jpg / img_0031.jpg")+'</div><button class="btn btn--ghost" type="button" id="genCaptionBtn" style="margin-top:8px">一键生成空 caption</button>';
+  return fieldShell(s,'<div class="card-box" style="background:var(--bg2);padding:16px">'+trs+list+'<button class="btn btn--ghost" type="button" id="mediaCheckBtn" style="margin-top:12px">重新体检</button></div>');
+}
+function llmCheck(s){
+  var fs=flowState(state.flow), r=fs.picks[s.field], p=fs.params;
+  if(!r){
+    return fieldShell(s,'<div class="card-box" style="background:var(--bg2);padding:16px"><p style="font-size:13px;color:var(--dim);margin-bottom:12px">解析 data/dataset_info.json 注册项、列映射、token 长度分布、截断率、空回复 / 角色格式错。</p><button class="btn btn--primary" type="button" id="llmCheckBtn">运行数据体检</button></div>');
+  }
+  var rows=[
+    ["注册名解析",r.dataset+"（dataset_info.json 命中）"],
+    ["列映射",r.mapping],
+    ["token 长度分布",r.token],
+    ["截断率（cutoff_len="+(p.cutoff_len||"2048")+"）",r.trunc+"%"],
+    ["空回复 / 角色格式错",r.empty+" / "+r.roles+" 条"],
+    ["样本数",r.items.toLocaleString()]
+  ];
+  return fieldShell(s,'<div class="card-box" style="background:var(--bg2);padding:16px">'+rows.map(function(x){return '<div class="est"><span class="k">'+x[0]+'</span><span class="v en">'+x[1]+'</span></div>';}).join("")+'<button class="btn btn--ghost" type="button" id="llmCheckBtn" style="margin-top:12px">重新体检</button></div>');
+}
+function check(s){
+  var items=[["格式合法","ok","全部样本可解析"],["空标签 / 重复","ok","未发现异常"],["分辨率分布","warn","6 张低于 512，建议剔除"],["caption 覆盖率","ok","100% 已标注"]];
+  var rows=items.map(function(it){
+    var cls=it[1]==="ok"?"dot--ok":"dot--fail";
+    var lbl=it[1]==="ok"?"通过":"注意";
+    var icon=it[1]==="ok"
+      ?'<svg class="ci" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--c)" stroke-width="2"><path d="M5 13l4 4 10-10"/></svg>'
+      :'<svg class="ci" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--danger)" stroke-width="2"><path d="M12 8v5M12 16v.5"/><circle cx="12" cy="12" r="9"/></svg>';
+    return '<div class="checkline">'+icon+'<div style="flex:1"><div style="font-size:13.5px">'+it[0]+'</div><div style="font-size:12px;color:var(--dim)">'+it[2]+'</div></div><span class="dot '+cls+'">'+lbl+'</span></div>';
+  }).join("");
+  return fieldShell(s,'<div class="card-box" style="padding:8px 16px;background:var(--bg2)">'+rows+'</div>');
+}
+function paramField(a){
+  var cur=flowState(state.flow).params;
+  var v=cur[a.n]!==undefined?cur[a.n]:a.d;
+  return '<div class="field" data-field="params:'+a.n+'"><label>'+a.n+'</label><input type="text" data-pname="'+a.n+'" data-def="'+a.d+'" value="'+v+'" aria-describedby="msg-params-'+a.n+'"><span class="msg" id="msg-params-'+a.n+'"></span></div>';
+}
+function cfgField(a){
+  var fs=flowState(state.flow).params;
+  var v=fs[a.n]!==undefined?fs[a.n]:a.d;
+  var mid="msg-params-"+a.n, inner;
+  if(a.type==="select"){
+    inner='<select id="ctl-'+a.n+'" data-pname="'+a.n+'" aria-label="'+a.label+'" aria-describedby="'+mid+'">'+a.opts.map(function(o){return '<option'+(o===v?" selected":"")+'>'+o+'</option>';}).join("")+'</select>';
+  } else if(a.type==="seg"){
+    inner='<div class="seg" role="group" aria-label="'+a.label+'" aria-describedby="'+mid+'">'+a.opts.map(function(o){return '<button type="button" data-pname="'+a.n+'" data-val="'+o+'" aria-pressed="'+(o===v?"true":"false")+'">'+o+'</button>';}).join("")+'</div>';
+  } else {
+    inner='<input type="text" id="ctl-'+a.n+'" data-pname="'+a.n+'" aria-label="'+a.label+'" value="'+v+'"'+(a.ph?' placeholder="'+a.ph.replace(/"/g,"&quot;")+'"':'')+(a.readonly?' readonly aria-readonly="true"':'')+' aria-describedby="'+mid+'">';
+  }
+  var forAttr=(a.type==="seg")?"":' for="ctl-'+a.n+'"';
+  return '<div class="field" data-field="params:'+a.n+'"><label'+forAttr+'>'+a.label+'</label>'+inner+'<span class="msg" id="'+mid+'"></span>'+(a.hint?'<div style="font-size:12px;color:var(--dim);margin-top:6px">'+a.hint+'</div>':'')+'</div>';
+}
+function paramsV2(s){
+  var by=function(g){ return s.fields.filter(function(a){return a.g===g;}); };
+  var grid='display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0';
+  var main=fieldShell(s,'<div class="dropzone" style="min-height:0;padding:0;border:none;background:none;display:block"><div style="'+grid+'">'+by("optim").map(cfgField).join("")+'</div></div>');
+  var cal=by("calib"), ev=by("eval"), adv="";
+  var calLabel=cal.some(function(a){return a.n==="sample_every";})?"采样计划（sample）":(cal.some(function(a){return a.n==="save_steps";})?"保存 / 日志（save / logging）":"校准参数（calibration）");
+  var evLabel=ev.some(function(a){return a.n==="sampler";})?"采样器 / 保存（save）":"评测（可选）";
+  if(cal.length) adv+='<details class="adv"><summary>'+calLabel+'</summary><div class="row2">'+cal.map(cfgField).join("")+'</div></details>';
+  if(ev.length) adv+='<details class="adv"><summary>'+evLabel+'</summary><div class="row2">'+ev.map(cfgField).join("")+'</div></details>';
+  return main+adv;
+}
+function params(s){
+  if(s.fields) return paramsV2(s);
+  var main=fieldShell(s,'<div class="dropzone" style="min-height:0;padding:0;border:none;background:none;display:block">'+advGrid(s.adv)+'</div>');
+  var adv='<details class="adv"><summary>高级参数</summary><div class="row2">'+s.adv.map(paramField).join("")+'</div></details>';
+  return main+adv;
+}
+function advGrid(adv){
+  return '<div class="row2" style="padding:0">'+adv.slice(0,2).map(paramField).join("")+'</div>';
+}
+function review(s){
+  var f=FLOWS[state.flow];
+  if(f.run&&f.run.showSamples) return reviewSampling(s,f);
+  if(f.run&&f.run.unit==="global_step") return reviewLLM(s,f);
+  if(f.run&&f.run.unit==="updates") return reviewDecision(s,f);
+  var e=estCalc(state.flow, allParams(state.flow), s.est.out);
+  return '<div class="card-box" style="background:var(--bg2)">'+
+    '<div class="est"><span class="k">显存</span><span class="v">'+e.vram+'</span></div>'+
+    '<div class="est"><span class="k">步数</span><span class="v">'+e.steps+'</span></div>'+
+    '<div class="est"><span class="k">预计时长</span><span class="v">'+e.time+'</span></div>'+
+    '<div class="est"><span class="k">产物</span><span class="v">'+e.out+'</span></div>'+
+    '<div class="est" style="border:none"><span class="k">输出目录</span><span class="v" style="font-size:12px;word-break:break-all">E:\\output\\'+state.flow+'\\run_01</span></div>'+
+    '</div><p class="lead">确认无误后点击「开始训练」，本机将串行执行。</p>';
+}
+function reviewDecision(s,f){
+  var p=allParams(state.flow), e=estCalc(state.flow,p);
+  var hasCheck=!!flowState(state.flow).picks.check;
+  var warn=hasCheck?"":'<div class="checkline" id="reviewWarn" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-bottom:12px;color:var(--warn)">还没跑数据体检：请回到「体检」步骤运行 --dry-run。</div>';
+  var rows=[
+    ["底座 base",p.base||"convaiinnovations/laya"],
+    ["loss",p.loss||"rlcd"],
+    ["epochs / micro_batch / grad_accum",(p.epochs||"4")+" / "+(p.micro_batch||"8")+" / "+(p.grad_accum||"8")],
+    ["encoder_lr / head_lr",(p.encoder_lr||"2.5e-5")+" / "+(p.head_lr||"1e-4")],
+    ["eval_data",p.eval_data?p.eval_data:"（未填：评测用校准切片，in-sample）"]
+  ];
+  return warn+'<div class="card-box" style="background:var(--bg2)">'+
+    '<div class="est"><span class="k">optimizer updates（估算）</span><span class="v">'+e.updates+'</span></div>'+
+    '<div class="est"><span class="k">micro-batch 步</span><span class="v">'+e.micro+'</span></div>'+
+    '<div class="est"><span class="k">每秒步</span><span class="v">'+e.sps+'</span></div>'+
+    '<div class="est"><span class="k">预计时长</span><span class="v">'+e.time+'</span></div>'+
+    '<div class="est" style="border:none"><span class="k">峰值显存（估算）</span><span class="v">'+e.vram+'</span></div>'+
+    rows.map(function(r){return '<div class="checkline"><span style="flex:1;color:var(--dim)">'+r[0]+'</span><span class="en" style="color:var(--text)">'+r[1]+'</span></div>';}).join("")+
+    '<div class="checkline"><span style="flex:1;color:var(--dim)">产物</span><span class="en" style="color:var(--text);font-size:12px;text-align:right">model.safetensors / encoder / tokenizer / rl_agent_config.json / questions.json / train_report.json / checkpoint_latest</span></div>'+
+    '</div><p class="lead">确认无误后点击「开始训练」。决策训练无 resume：中断=从头再训，checkpoint_latest/ 只能拿回上一轮。</p>';
+}
+
+function fieldDefaults(){
+  var o={};
+  TRAIN_FIELDS.concat(VIDEO_TRAIN_FIELDS).forEach(function(a){ o[a.n]=a.d; });
+  return o;
+}
+function samplePlan(p){
+  var def=fieldDefaults();
+  var raw=(p["sample.prompts"]!==undefined&&p["sample.prompts"]!==null)?p["sample.prompts"]:def["sample.prompts"];
+  var steps=Math.max(1,Math.round(numOf(p.steps,1000)));
+  var se=Math.max(1,Math.round(numOf(p.sample_every,100)));
+  var start=Math.max(0,Math.round(numOf(p.sample_start_step,0)));
+  var prompts=String(raw||"").split(/[,，]/).filter(function(x){return x.trim().length;});
+  var list=[0];
+  var st=Math.max(se,Math.ceil(start/se)*se);
+  for(;st<=steps;st+=se){ if(st%se===0) list.push(st); }
+  return {steps:steps,se:se,start:start,prompts:prompts,sampleSteps:list,count:list.length,per:prompts.length,total:list.length*prompts.length,last:list[list.length-1]};
+}
+function reviewSampling(s,f){
+  var p=allParams(state.flow), e=estCalc(state.flow,p,f.out), plan=samplePlan(p);
+  var media=f.media||{kind:"image",ext:"png"};
+  var warn="";
+  if(parseFloat(e.vram)>31.5) warn+='<div id="vramOverWarn" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-bottom:10px;color:var(--warn)">警告：显存预估 '+e.vram+' 超出本机 32GB（31.5GB 上限），需降分辨率 / 减帧数 / 减 batch。</div>';
+  if(!plan.per) warn+='<div id="planNoPrompts" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-bottom:10px;color:var(--warn)">黄条：sample.prompts 为空 = 关掉采样 = 关掉唯一验收信号（loss 下降不能替代）。</div>';
+  if(plan.steps%plan.se!==0) warn+='<div id="planLastStep" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-bottom:10px;color:var(--warn)">黄条：steps % sample_every ≠ 0 —— 末步不出图，最后一组采样停在 step '+plan.last+'，最终 LoRA 可能没有对应采样图。</div>';
+  var rows=[
+    ["训练步数 steps",plan.steps.toLocaleString()],
+    ["sample_every / sample_start_step",plan.se+" / "+plan.start],
+    ["每组 prompt 数",plan.per+" "+(media.kind==="video"?"个 webp 片段":"张图")],
+    ["采样组数（首图基线 + 循环）",plan.count+" 组"],
+    ["预计采样总量",plan.total+" "+(media.kind==="video"?"个 webp 片段":"张图")],
+    ["采样点",plan.sampleSteps.map(function(x){return "step "+x;}).join(" / ")],
+    ["进度分母","step / train.steps（"+plan.steps.toLocaleString()+"）"]
+  ];
+  var tip=media.kind==="video"?'<div class="checkline"><span style="flex:1;color:var(--dim)">显存建议</span><span class="en" style="color:var(--text);text-align:right">Wan2.2 14B：降分辨率 / 减 num_frames 可降显存；采样为 animated webp 片段</span></div>':"";
+  return warn+'<div class="card-box" style="background:var(--bg2)">'+
+    '<div class="est"><span class="k">预计时长（估算）</span><span class="v">'+e.time+'</span></div>'+
+    '<div class="est" style="border:none"><span class="k">峰值显存（估算）</span><span class="v">'+e.vram+'</span></div>'+
+    rows.map(function(r){return '<div class="checkline"><span style="flex:1;color:var(--dim)">'+r[0]+'</span><span class="en" style="color:var(--text);text-align:right">'+r[1]+'</span></div>';}).join("")+
+    tip+'</div><p class="lead">确认无误后点击「开始训练」。每 sample_every 步出一组采样；取消 = SIGINT 正常停止（非报错）。</p>';
+}
+function reviewLLM(s,f){
+  var p=allParams(state.flow), e=estCalc(state.flow,p,f.out);
+  var hasEval=(String(p.eval_dataset||"").trim().length>0)||(parseFloat(p.val_size||"0")>0);
+  var warn="";
+  if(String(p.save_total_limit||"")==="") warn+='<div id="llmNoDelete" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-bottom:10px;color:var(--warn)">黄条：save_total_limit=None（默认不删档，磁盘会一直涨）。要限档请填数字。</div>';
+  warn+='<div id="llmResume" style="border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px;color:var(--dim)">可续训（resume_from_checkpoint）：中断后可从 checkpoint-N/ 继续；loss 每 logging_steps='+(p.logging_steps||"500")+' 条，<b style="color:var(--text)">前 '+(p.logging_steps||"500")+' 步看不到 loss</b>（示例配置常改 10）。</div>';
+  var rows=[
+    ["模型 / 模板",(p.model_name_or_path||"—")+" / "+(p.template||"—")],
+    ["数据集 / formatting",(p.dataset_name||"—")+" / "+(p.formatting||"alpaca")],
+    ["cutoff_len / val_size / eval_dataset",(p.cutoff_len||"2048")+" / "+(p.val_size||"0.0")+" / "+(p.eval_dataset||"（无）")],
+    ["stage / finetuning_type",(p.stage||"sft")+" / "+(p.finetuning_type||"lora")],
+    ["rank / alpha / lr",(p.rank||"8")+" / "+(p.alpha||"16")+" / "+(p.lr||"5e-5")],
+    ["epochs / batch / grad_accum",(p.epochs||"3.0")+" / "+(p.batch_size||"8")+" / "+(p.gradient_accumulation||"1")],
+    ["save_steps / logging_steps",(p.save_steps||"500")+" / "+(p.logging_steps||"500")],
+    ["save_total_limit",(p.save_total_limit||"None")],
+    ["预计总 update 数（估算）",e.steps+" steps"],
+    ["预计时长（估算）",e.time],
+    ["产物路径","E:\\output\\llm\\run_01\\adapter/adapter_model.safetensors"]
+  ];
+  var smoke='<div id="smokeNote" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-bottom:10px;color:var(--warn)">smoke 模式：只训 2 步（硬上限），不是完整训练；完整训练请用非 smoke 配置。</div>';
+  return smoke+warn+'<div class="card-box" style="background:var(--bg2)">'+rows.map(function(r){return '<div class="checkline"><span style="flex:1;color:var(--dim)">'+r[0]+'</span><span class="en" style="color:var(--text);text-align:right">'+r[1]+'</span></div>';}).join("")+'</div><p class="lead">确认无误后点击「开始训练」。进度按 global_step；LLM 不出采样图。'+(hasEval?'完成页会显示 held-out 验证指标。':'没有 eval（val_size=0 且未填 eval_dataset），完成页不显示验证指标。')+'</p>';
+}
+var PARAM_RULES = {
+  epochs:{min:1,max:100}, batch_size:{min:1,max:1024}, learning_rate:{min:0,exclusive:true},
+  rank:{min:1,max:1024}, alpha:{min:1}, resolution:{min:1}, steps:{min:1}, frames:{min:1}, max_len:{min:1},
+  micro_batch:{min:1,max:1024}, grad_accum:{min:1,max:1024}, calib_max:{min:1,max:100000}, min_abstain_n:{min:1,max:100000},
+  target_error:{min:0,max:1}, label_smoothing:{min:0,max:1,maxExclusive:true}, calib_frac:{min:0,max:1,maxExclusive:true},
+  encoder_lr:{min:0,exclusive:true}, head_lr:{min:0,exclusive:true},
+  lr:{min:0,exclusive:true}, gradient_accumulation:{min:1,max:1024}, gradient_accumulation_steps:{min:1,max:1024},
+  save_every:{min:1}, max_step_saves_to_keep:{min:1}, sample_every:{min:1,max:100000}, sample_start_step:{min:0},
+  sample_steps:{min:1}, guidance_scale:{min:0}, sample_width:{min:64}, sample_height:{min:64},
+  num_frames:{min:1}, fps:{min:1,max:240}, switch_boundary_every:{min:1}
+};
+var OPTIONAL_FIELDS = {eval_data:1,"sample.prompts":1,trigger_word:1,eval_dataset:1,save_total_limit:1,dataset_name:1,data_path:1,basePath:1};
+function paramError(n,v){
+  if(OPTIONAL_FIELDS[n]) return "";
+  if(String(v===undefined||v===null?"":v).trim()==="") return n+" 不能为空";
+  var r=PARAM_RULES[n];
+  if(!r) return "";
+  var x=parseFloat(v); if(!isFinite(x)) return n+" 需为数值";
+  if(r.exclusive && !(x>r.min)) return n+" 需大于 "+r.min;
+  if(!r.exclusive && x<r.min) return n+" 需 ≥ "+r.min;
+  if(r.max!==undefined && (r.maxExclusive ? !(x<r.max) : x>r.max)) return n+" 需 "+(r.maxExclusive?"<":"≤")+" "+r.max;
+  return "";
+}
+function ruleError(a,p){
+  if(!a.rule) return "";
+  if(a.rule==="inList"){
+    var x0=String(p[a.n]===undefined?"":p[a.n]);
+    if(x0 && a.list && a.list.indexOf(x0)<0) return a.n+" 不在 dataset_info.json 注册名单里（已注册："+a.list.join(" / ")+"）";
+    return "";
+  }
+  if(!a.pair) return "";
+  var x=p[a.n], y=p[a.pair];
+  if(a.rule==="gt1pair"){
+    if(parseFloat(x)>1 && parseFloat(y)>1) return a.n+" 与 "+a.pair+" 互斥：两个都 >1 会直接报错，只能留一个";
+  }
+  if(a.rule==="oneTrue"){
+    if((String(x)==="true")===(String(y)==="true")) return a.n+" 与 "+a.pair+" 必须二选一（当前"+(String(x)==="true"?"都开":"都关")+"）";
+  }
+  if(a.rule==="match"){
+    if(String(x)!==String(y)) return a.n+" 必须与 "+a.pair+" 匹配（当前 "+x+" vs "+y+"）";
+  }
+  if(a.rule==="notBoth"){
+    if(parseFloat(x)>0 && String(y===undefined?"":y).trim().length) return a.n+" 与 "+a.pair+" 互斥：两者只能给一个";
+  }
+  return "";
+}
+function fieldErrs(defs, fs, prefix, errs){
+  var merged={};
+  defs.forEach(function(a){ merged[a.n]=fs.params[a.n]!==undefined?fs.params[a.n]:a.d; });
+  defs.forEach(function(a){
+    if(a.required && !String(merged[a.n]||"").trim()){
+      errs.push({key:prefix+a.n, msg:"请填写 "+a.n+" 字段，不能留空"});
+      return;
+    }
+    if(a.needOne){
+      var cur=String(merged[a.n]||"").trim(), alt=String(merged[a.needOne]||"").trim();
+      if(!cur && !alt) errs.push({key:prefix+a.n, msg:"请填写 data_path（本地 JSONL 路径）或注册数据集名（"+a.needOne+"）"});
+      return;
+    }
+    if(a.optionalIf && String(merged[a.optionalIf]||"").trim()) return;
+    var m=paramError(a.n,merged[a.n])||ruleError(a,merged);
+    if(m) errs.push({key:prefix+a.n, msg:m});
+  });
+}
+function validate(s){
+  var fs=flowState(state.flow), errs=[];
+  if(s.type==="select"||s.type==="seg"){
+    if(!fs.picks[s.field]) errs.push({key:s.field, msg:"请先完成「"+s.label+"」"});
+  }
+  if(s.type==="path"||s.type==="gallery"){
+    if(!fs.picks[s.field]) errs.push({key:s.field, msg:"请先选择数据目录"});
+  }
+  if(s.type==="file"){
+    var dp=String(fs.params.data_path||"").trim();
+    var picked=String(fs.picks[s.field]||"").trim();
+    if(LIVE){
+      if(!dp) errs.push({key:"params:data_path", msg:"请填写 data_path（本地 JSONL 路径），不能留空"});
+      else if(!/\.(jsonl|csv)$/i.test(dp)) errs.push({key:"params:data_path", msg:"data_path 后缀必须是 .jsonl 或 .csv"});
+    } else {
+      if(!picked) errs.push({key:s.field, msg:"请选择单个 .jsonl / .csv 文件"});
+      else if(!/\.(jsonl|csv)$/i.test(picked)) errs.push({key:s.field, msg:"后缀必须是 .jsonl 或 .csv"});
+    }
+  }
+  if(s.type==="dryrun"){
+    if(!fs.picks[s.field]) errs.push({key:s.field, msg:"请先运行 --dry-run 数据体检"});
+    else if(!fs.picks[s.field].items) errs.push({key:s.field, msg:"items=0，无法训练"});
+  }
+  if(s.type==="params"){
+    fieldErrs(s.fields||s.adv||[], fs, "params:", errs);
+  }
+  if(s.type==="media"){
+    var mdefs=s.fields||[], mpath=false;
+    for(var mi=0;mi<mdefs.length;mi++){
+      if(mdefs[mi].n==="data_path" && String(fs.params.data_path||"").trim()) mpath=true;
+    }
+    if(!fs.picks[s.field] && !mpath) errs.push({key:s.field, msg:"请选择图片文件夹，或填写本地图片文件夹路径（data_path）"});
+    fieldErrs(mdefs, fs, "params:", errs);
+  }
+  if(s.type==="mediacheck"){
+    if(!fs.picks[s.field]) errs.push({key:s.field, msg:"请先运行数据体检"});
+    else if(!fs.picks[s.field].items) errs.push({key:s.field, msg:"items=0，无法训练"});
+  }
+  if(s.type==="llmcheck"){
+    if(!fs.picks[s.field]) errs.push({key:s.field, msg:"请先运行数据体检"});
+    else if(!fs.picks[s.field].items) errs.push({key:s.field, msg:"items=0，无法训练"});
+  }
+  if(s.type==="review"){
+    var f=FLOWS[state.flow];
+    if(f.run&&(f.run.unit==="updates"||f.run.showSamples)&&!fs.picks.check) errs.push({key:"review", msg:"请先完成数据体检"});
+  }
+  return errs;
+}
+
+function fieldEl(key){ return stepCenter.querySelector('.field[data-field="'+key+'"]'); }
+function clearErrFor(key){
+  var f=fieldEl(key); if(!f) return;
+  f.classList.remove("err");
+  var m=f.querySelector(".msg"); if(m) m.textContent="";
+  var c=f.querySelector("[aria-invalid]"); if(c) c.removeAttribute("aria-invalid");
+  var d=f.querySelector(".dropzone.err"); if(d) d.classList.remove("err");
+}
+function clearErrs(){
+  stepCenter.querySelectorAll(".field.err").forEach(function(f){ f.classList.remove("err"); });
+  stepCenter.querySelectorAll(".dropzone.err").forEach(function(d){ d.classList.remove("err"); });
+  stepCenter.querySelectorAll("[aria-invalid]").forEach(function(c){ c.removeAttribute("aria-invalid"); });
+}
+function markErr(key,msg){
+  var f=fieldEl(key); if(!f) return null;
+  f.classList.add("err");
+  var m=f.querySelector(".msg");
+  if(m){ if(!m.id) m.id="msg-"+key.replace(/[^A-Za-z0-9_-]/g,"-"); m.textContent=msg; }
+  var c=f.querySelector("select,input,.seg button,.dropzone");
+  if(c){ c.setAttribute("aria-invalid","true"); if(m&&m.id) c.setAttribute("aria-describedby",m.id); if(c.classList.contains("dropzone")) c.classList.add("err"); }
+  return c;
+}
+function showErrors(errs){
+  clearErrs();
+  var first=null;
+  errs.forEach(function(e){ var c=markErr(e.key,e.msg); if(!first&&c) first=c; });
+  if(first) first.focus();
+  return first;
+}
+function refreshNext(){
+  var s=FLOWS[state.flow].steps[state.step];
+  nextBtn.setAttribute("aria-disabled", validate(s).length?"true":"false");
+}
+function bindParamFields(){
+  var fs=flowState(state.flow);
+  stepCenter.querySelectorAll("select[data-pname]").forEach(function(sel){
+    sel.addEventListener("change",function(){
+      var n=sel.getAttribute("data-pname");
+      fs.params[n]=sel.value; clearErrFor("params:"+n); refreshNext(); setEst();
+    });
+  });
+  stepCenter.querySelectorAll(".seg button[data-pname]").forEach(function(b){
+    b.addEventListener("click",function(){
+      var n=b.getAttribute("data-pname");
+      b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true");
+      fs.params[n]=b.getAttribute("data-val");
+      clearErrFor("params:"+n); refreshNext(); setEst();
+    });
+  });
+  stepCenter.querySelectorAll("input[data-pname]").forEach(function(inp){
+    if(inp.readOnly) return;
+    var n=inp.getAttribute("data-pname");
+    inp.addEventListener("input",function(){
+      fs.params[n]=inp.value;
+      stepCenter.querySelectorAll('input[data-pname="'+n+'"]').forEach(function(o){ if(o!==inp) o.value=inp.value; });
+      clearErrFor("params:"+n); refreshNext(); setEst();
+    });
+  });
+}
+function wireStep(s){
+  var fs=flowState(state.flow);
+  if(s.type==="seg"){
+    stepCenter.querySelectorAll(".seg button").forEach(function(b){
+      b.addEventListener("click",function(){
+        b.parentNode.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed","false");});
+        b.setAttribute("aria-pressed","true");
+        fs.picks[s.field]=b.getAttribute("data-val");
+        clearErrFor(s.field); refreshNext(); setEst();
+      });
+    });
+  }
+  if(s.type==="select"){
+    var sl=stepCenter.querySelector("select");
+    if(sl){ sl.addEventListener("change",function(){ fs.picks[s.field]=sl.value; clearErrFor(s.field); refreshNext(); setEst(); }); }
+  }
+  if(s.type==="file"){
+    var fz=stepCenter.querySelector(".dropzone");
+    if(fz){ fz.addEventListener("click",function(){
+      var p="E:\\数据\\laya\\train.csv";
+      fs.picks[s.field]=p;
+      var t=fz.querySelector(".path"); if(t) t.textContent=p+" \u2713";
+      clearErrFor(s.field); refreshNext(); setEst();
+    }); }
+    bindParamFields();
+  }
+  if(s.type==="dryrun"){
+    var db=document.getElementById("dryRunBtn");
+    if(db){ db.addEventListener("click",function(){
+      fs.picks[s.field]={rows:5840,items:5600,skipped:240};
+      clearErrFor(s.field); renderStep();
+    }); }
+  }
+  if(s.type==="media"){
+    bindParamFields();
+    var mz=stepCenter.querySelector(".dropzone");
+    if(mz){ mz.addEventListener("click",function(){
+      var kind=(FLOWS[state.flow].media&&FLOWS[state.flow].media.kind)||"image";
+      var p="E:\\数据\\"+(kind==="video"?"video\\clips":"image\\my_lora");
+      fs.picks[s.field]=p;
+      var t=mz.querySelector(".path"); if(t) t.textContent=p+" \u2713";
+      clearErrFor(s.field); refreshNext();
+    }); }
+    var tw=stepCenter.querySelector('input[data-pname="trigger_word"]');
+    if(tw) tw.addEventListener("input",updateMediaWarn);
+    stepCenter.querySelectorAll('.seg button[data-pname="cache_text_embeddings"]').forEach(function(b){ b.addEventListener("click",updateMediaWarn); });
+  }
+  if(s.type==="mediacheck"){
+    var mcb=document.getElementById("mediaCheckBtn");
+    if(mcb){ mcb.addEventListener("click",function(){
+      var kind=(FLOWS[state.flow].media&&FLOWS[state.flow].media.kind)||"image";
+      fs.picks[s.field]= kind==="video"
+        ?{items:24,duration:"12m 40s",res:"832×480 / 16fps",missing:1,broken:0}
+        :{items:48,missing:2,ext:"jpg 30 / png 18",size:"1024×1024 41 / 768×768 7",dup:0};
+      clearErrFor(s.field); renderStep();
+    }); }
+    var gcb=document.getElementById("genCaptionBtn");
+    if(gcb){ gcb.addEventListener("click",function(){
+      var r=fs.picks[s.field]; if(r){ r.missing=0; renderStep(); }
+    }); }
+  }
+  if(s.type==="llmcheck"){
+    var lb=document.getElementById("llmCheckBtn");
+    if(lb){ lb.addEventListener("click",function(){
+      var p=fs.params;
+      fs.picks[s.field]={dataset:(p.dataset_name||"(未填)"),
+        mapping:(p.formatting==="sharegpt"?((p.conversations_column||"conversations")+" → conversations"):((p.prompt_column||"instruction")+" → prompt, "+(p.response_column||"output")+" → response")),
+        token:"P50 512 / P95 1536 / max 2048", trunc:3.2, empty:4, roles:0, items:12000};
+      clearErrFor(s.field); renderStep();
+    }); }
+  }
+  if(s.type==="path"||s.type==="gallery"){
+    var dz=stepCenter.querySelector(".dropzone");
+    if(dz){ dz.addEventListener("click",function(){
+      var p="E:\\数据\\"+state.flow+"\\dataset_01";
+      fs.picks[s.field]=p;
+      var t=dz.querySelector(".path"); if(t) t.textContent=p+" \u2713";
+      clearErrFor(s.field); refreshNext();
+    }); }
+  }
+  if(s.type==="params"){
+    if(s.fields){ bindParamFields(); }
+    else {
+      stepCenter.querySelectorAll("input[data-pname]").forEach(function(inp){
+        if(inp.readOnly) return;
+        var n=inp.getAttribute("data-pname");
+        inp.addEventListener("input",function(){
+          fs.params[n]=inp.value;
+          stepCenter.querySelectorAll('input[data-pname="'+n+'"]').forEach(function(o){ if(o!==inp) o.value=inp.value; });
+          clearErrFor("params:"+n); refreshNext(); setEst();
+        });
+      });
+    }
+  }
+}
+
+prevBtn.addEventListener("click",function(){ if(state.step>0){ state.step--; renderStep(); } });
+nextBtn.addEventListener("click",function(){
+  var s=FLOWS[state.flow].steps[state.step];
+  var errs=validate(s);
+  if(errs.length){ showErrors(errs); return; }
+  var f=FLOWS[state.flow];
+  if(state.step>=f.steps.length-1){ startRun(); return; }
+  state.step++; renderStep();
+});
+
+document.getElementById("flowBack").addEventListener("click",goHome);
+function goHome(){
+  show(home); actionbar.hidden=true;
+  window.scrollTo(0,0);
+}
+
+document.getElementById("cards").addEventListener("click",function(e){
+  var c=e.target.closest(".card");
+  if(!c || c.getAttribute("data-disabled")==="1" || c.getAttribute("aria-disabled")==="true") return;
+  enterFlow(c.getAttribute("data-flow"));
+});
+
+/* ---- live wiring (HTTP mode only; simulation stays for file://) ---- */
+function liveStamp(){
+  var d=new Date();
+  var p=function(n){ return (n<10?"0":"")+n; };
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"-"+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
+}
+function liveLlmPayload(){
+  var p=allParams("llm");
+  var model=String(p.model_name_or_path||"").trim();
+  var data=String(p.data_path||"").trim();
+  var out=String(p.out||"").trim() || ("E:\\视频\\modelsmith\\_runs\\ui-lf-"+liveStamp());
+  var tpl=String(p.template||"").trim() || "qwen";
+  return {kind:"lf",params:{
+    model:model, data:data, out:out, template:tpl,
+    rank:Math.max(1,Math.round(numOf(p.rank,8))),
+    alpha:Math.max(1,Math.round(numOf(p.alpha,16))),
+    lr:numOf(p.lr,0.0002),
+    epochs:Math.max(0.000001,numOf(p.epochs,1)),
+    max_steps:2,
+    batch:Math.max(1,Math.round(numOf(p.batch_size,1))),
+    grad_accum:Math.max(1,Math.round(numOf(p.gradient_accumulation,1))),
+    cutoff_len:Math.max(16,Math.round(numOf(p.cutoff_len,512)))
+  }};
+}
+function liveLayaPayload(){
+  var p=allParams("decision"), fs=flowState("decision");
+  var data=String(p.data_path||"").trim() || String(fs.picks.data||"").trim();
+  var selBase=(p.base===undefined)?("convaiinnovations/laya"):String(p.base||"").trim();
+  var base=String(p.basePath||"").trim() || selBase;
+  var out=String(p.out||"").trim() || ("E:\\视频\\modelsmith\\_runs\\ui-laya-"+liveStamp());
+  var shuffle=String(p.shuffle_options||"（关）").trim();
+  var payload={kind:"laya",params:{
+    data:data, out:out, base:base,
+    loss:String(p.loss||"rlcd"),
+    epochs:Math.max(1,Math.round(numOf(p.epochs,4))),
+    micro_batch:Math.max(1,Math.round(numOf(p.micro_batch,8))),
+    grad_accum:Math.max(1,Math.round(numOf(p.grad_accum,8))),
+    encoder_lr:numOf(p.encoder_lr,2.5e-5),
+    head_lr:numOf(p.head_lr,1e-4),
+    max_len:Math.max(8,Math.round(numOf(p.max_len,512))),
+    shuffle_options:(shuffle!=="（关）" && shuffle!=="false" && shuffle!==""),
+    label_smoothing:numOf(p.label_smoothing,0.0),
+    calib_frac:numOf(p.calib_frac,0.1),
+    calib_max:Math.max(1,Math.round(numOf(p.calib_max,400))),
+    target_error:numOf(p.target_error,0.10),
+    min_abstain_n:Math.max(1,Math.round(numOf(p.min_abstain_n,10)))
+  }};
+  var ev=String(p.eval_data||"").trim();
+  if(ev) payload.params.eval_data=ev;
+  return payload;
+}
+function liveDiffsynthPayload(){
+  var p=allParams("image"), fs=flowState("image");
+  var model=String(p.base||"").trim();
+  var dataset=String(p.data_path||"").trim() || String(fs.picks.data||"").trim();
+  var out=String(p.out||"").trim() || ("E:\\视频\\modelsmith\\_runs\\ui-diffsynth-"+liveStamp());
+  return {kind:"diffsynth",params:{
+    model:model, dataset:dataset, metadata:String(p.metadata||"").trim(), out:out,
+    arch:String(p.arch||"qwen_image_2_1"),
+    rank:Math.max(1,Math.round(numOf(p.rank,8))),
+    epochs:Math.max(1,Math.round(numOf(p.epochs,1))),
+    lr:numOf(p.lr,0.0001),
+    height:Math.max(64,Math.round(numOf(p.height,512))),
+    width:Math.max(64,Math.round(numOf(p.width,512)))
+  }};
+}
+function liveStart(){
+  var f=FLOWS[state.flow];
+  var el=function(id){ return document.getElementById(id); };
+  var payload=(state.flow==="llm")?liveLlmPayload():((state.flow==="image")?liveDiffsynthPayload():((state.flow==="decision")?liveLayaPayload():{kind:"fake",params:{flow:state.flow}}));
+  var bad="", badKind=(payload.kind==="lf")?"LLM lf":((payload.kind==="diffsynth")?"生图 diffsynth":((payload.kind==="laya")?"决策 laya":"fake"));
+  if(payload.kind==="lf"){
+    if(!payload.params.model) bad="模型（model_name_or_path）为空";
+    else if(!payload.params.data) bad="data_path（本地 JSONL 路径）为空（必填）";
+  } else if(payload.kind==="diffsynth"){
+    if(!payload.params.model) bad="模型（底模 name_or_path）为空";
+    else if(!payload.params.dataset) bad="data_path（本地图片文件夹路径）为空，且未选择缩略图文件夹";
+  } else if(payload.kind==="laya"){
+    if(!payload.params.data) bad="data_path（本地 JSONL 路径）为空";
+    else if(!payload.params.base) bad="base（本地底座路径/下拉）为空";
+  }
+  liveKind=payload.kind;
+  run.style.setProperty("--c", f.accent);
+  el("runTitle").textContent=f.title+"（训练中）";
+  actionbar.hidden=true;
+  show(run);
+  stepNo=0; lossPts=[]; phaseIdx=0;
+  ["roLoss","roLr","roSpeed"].forEach(function(id){ el(id).textContent="—"; });
+  el("progBar").style.width="0%"; el("progStep").textContent="step 0 / 0"; el("eta").textContent="剩余 --:--";
+  el("vramBar").style.width="0%"; el("vramVal").textContent="未检测";
+  el("timeline").style.display="none";
+  el("runSamplesBox").hidden=true;
+  el("runSamples").innerHTML="";
+  el("simNote").textContent=(payload.kind==="lf")?"已连接本地核心（LLM lf 任务，smoke：2 步硬上限）":((payload.kind==="diffsynth")?"已连接本地核心（生图 diffsynth 任务）":((payload.kind==="laya")?"已连接本地核心（决策 laya 任务）":"已连接本地核心（fake 任务）"));
+  el("log").innerHTML="";
+  var lnote=document.getElementById("lossNote");
+  if(payload.kind==="laya"){
+    if(!lnote){ lnote=document.createElement("p"); lnote.id="lossNote"; lnote.style.cssText="font-size:12px;color:var(--dim);margin:6px 0 0"; var lc=document.getElementById("losschart"); lc.parentNode.insertBefore(lnote, lc.nextSibling); }
+    lnote.textContent="x 轴：micro-batch 步（每 100 条一个点），≠ 更新步；两者差 grad_accum="+(payload.params.grad_accum||8)+" 倍。";
+    lnote.hidden=false;
+  } else if(lnote){ lnote.hidden=true; }
+  if(payload.kind==="lf") appendLiveLog(["[ui] smoke 模式：只训 2 步（硬上限），不是完整训练"]);
+  var cb=el("cancelBtn"); cb.disabled=false; cb.textContent="取消训练"; cb.removeAttribute("data-armed");
+  liveJobId=null; liveOffset=0; liveStopped=false;
+  if(livePoll){ clearTimeout(livePoll); livePoll=null; }
+  if(bad){
+    el("runStatus").textContent=badKind+" 提交被拒："+bad+"，未提交任务";
+    appendLiveLog(["[core] 未提交："+badKind+" 任务缺少必填 "+bad]);
+    return;
+  }
+  el("runStatus").textContent="正在提交"+badKind+"任务到本地核心…";
+  apiFetch("/jobs",{method:"POST",body:JSON.stringify(payload)}).then(function(j){
+    if(!j.job_id) throw new Error("核心未返回 job_id");
+    liveJobId=j.job_id;
+    el("runStatus").textContent="已连接本地核心（"+badKind+" 任务），job "+liveJobId;
+    appendLiveLog(["[core] job created: "+liveJobId+" kind="+payload.kind+" state="+j.state]);
+    livePoll=setTimeout(livePollOnce,800);
+  }).catch(function(e){
+    el("runStatus").textContent="核心未连接（POST /api/jobs 失败），未开始训练";
+    appendLiveLog(["[core] 核心未连接："+e.message+"（未开始训练，轮询未启动）"]);
+  });
+}
+function appendLiveLog(lines){
+  var log=document.getElementById("log");
+  var atBottom=log.scrollTop+log.clientHeight>=log.scrollHeight-6;
+  (lines||[]).forEach(function(line){
+    var div=document.createElement("div"); div.className="ln"; div.textContent=String(line);
+    log.appendChild(div);
+  });
+  if(atBottom||log.children.length<3) log.scrollTop=log.scrollHeight;
+}
+function livePollOnce(){
+  if(!liveJobId||liveStopped) return;
+  var id=liveJobId;
+  Promise.all([
+    apiFetch("/jobs/"+encodeURIComponent(id)),
+    apiFetch("/jobs/"+encodeURIComponent(id)+"/logs?offset="+liveOffset)
+  ]).then(function(rs){
+    var job=(rs[0]&&rs[0].job)||{}, lg=rs[1]||{};
+    if(lg.lines && lg.lines.length) appendLiveLog(lg.lines);
+    if(typeof lg.next_offset==="number") liveOffset=lg.next_offset;
+    updateLiveJob(job);
+    var st=job.state||"";
+    if(st==="succeeded"){ liveStopped=true; liveDone(job); return; }
+    if(st==="failed"||st==="cancelled"||st==="interrupted"){ liveStopped=true; liveTerminal(job); return; }
+    livePoll=setTimeout(livePollOnce,800);
+  }).catch(function(e){
+    liveStopped=true;
+    document.getElementById("runStatus").textContent="核心未连接（轮询失败），已停止";
+    appendLiveLog(["[core] 核心未连接："+e.message+"；轮询已停止"]);
+  });
+}
+function updateLiveJob(job){
+  var m=job.metrics||{}, p=job.params||{};
+  if(job.kind==="laya"){
+    var ut=Number(m.updates_total||0);
+    var et=Number(m.epochs_total||p.epochs||0);
+    var pe=ut&&et?Math.ceil(ut/et):0;
+    var ep=Number(m.epoch||1);
+    var ms=Number(m.micro_step||0);
+    var ga=Math.max(1,Number(m.grad_accum||p.grad_accum||8));
+    var done=pe?Math.min(ut,(ep-1)*pe+Math.ceil(ms/ga)):0;
+    var pctL=ut>0?Math.min(100,done/ut*100):0;
+    document.getElementById("progBar").style.width=pctL+"%";
+    document.getElementById("progStep").textContent="update "+(ut>0?done.toLocaleString():"—")+" / "+(ut>0?ut.toLocaleString():"—")+"，epoch "+ep+(et?("/"+et):"");
+    if(m.loss!==undefined&&m.loss!==null) document.getElementById("roLoss").textContent=Number(m.loss).toFixed(4);
+    else if(m.epoch_mean_loss!==undefined&&m.epoch_mean_loss!==null) document.getElementById("roLoss").textContent=Number(m.epoch_mean_loss).toFixed(4);
+    if(m.elapsed_s>0&&done>0&&ut>0){ var remL=Math.max(0,Math.round((m.elapsed_s/done)*(ut-done))); document.getElementById("eta").textContent="剩余 "+fmt(remL); }
+    document.getElementById("roSpeed").textContent="core laya";
+    document.getElementById("runStatus").textContent="已连接本地核心（决策 laya 任务）："+(job.state||"running")+"，update "+done+"/"+ut+"，epoch "+ep+"/"+(et||"?");
+    return;
+  }
+  var isLlm=job.kind==="lf", isDiff=job.kind==="diffsynth";
+  var total=isLlm?Math.max(1,Math.round(numOf(p.max_steps,numOf(m.planned_steps,20)))):(isDiff?Math.max(1,Math.round(numOf(m.total,numOf(p.epochs,1)))):Number(m.total||0));
+  var step=Number(isLlm?(m.step!==undefined?m.step:(m.steps_done||0)):(m.step||0));
+  var pct=(isLlm||isDiff)?(total>0?Math.min(100,(step/total)*100):0):Number(m.percent||0);
+  document.getElementById("progBar").style.width=Math.max(0,Math.min(100,pct))+"%";
+  if(total>0){
+    document.getElementById("progStep").textContent="step "+step.toLocaleString()+" / "+total.toLocaleString();
+    if(m.loss!==null && m.loss!==undefined) document.getElementById("roLoss").textContent=Number(m.loss).toFixed(4);
+    else if(isLlm && m.loss_last!==undefined && m.loss_last!==null) document.getElementById("roLoss").textContent=Number(m.loss_last).toFixed(4);
+    if((isLlm||isDiff) && m.lr!==undefined && m.lr!==null) document.getElementById("roLr").textContent=Number(m.lr).toExponential(1);
+    if(m.elapsed_s>0 && step>0){
+      var remain=Math.max(0,Math.round((m.elapsed_s/step)*(total-step)));
+      document.getElementById("eta").textContent="剩余 "+fmt(remain);
+    }
+  }
+  if(isDiff){
+    var sit=(m.sec_per_it!==undefined&&m.sec_per_it!==null)?Number(m.sec_per_it):((m.elapsed_s>0&&step>0)?m.elapsed_s/step:null);
+    if(sit!==null) document.getElementById("roSpeed").textContent=sit.toFixed(2)+" s/it";
+    var box=document.getElementById("runSamplesBox"), sb=document.getElementById("runSamples");
+    if(box && sb && (m.artifact||m.saved)){
+      box.hidden=false;
+      sb.innerHTML='<div style="font-size:12.5px;color:var(--dim)">已出产物：'+(m.artifact||m.saved)+'（epoch-0.safetensors）</div>';
+    }
+  } else {
+    document.getElementById("roSpeed").textContent=isLlm?"core llm":"core fake";
+  }
+  if(isLlm && m.peak_vram_alloc_mib) document.getElementById("vramVal").textContent=(Number(m.peak_vram_alloc_mib)/1024).toFixed(1)+" GiB（峰值）";
+  document.getElementById("runStatus").textContent="已连接本地核心（"+(isLlm?"LLM":(isDiff?"生图 diffsynth":"fake"))+" 任务）："+(job.state||"running")+"，step "+step+"/"+total;
+}
+function liveDone(job){
+  var f=FLOWS[state.flow], m=job.metrics||{}, isLlm=job.kind==="lf", isDiff=job.kind==="diffsynth", isLaya=job.kind==="laya";
+  document.getElementById("runStatus").textContent=isLlm?"LLM 任务完成（核心）":(isDiff?"生图任务完成（核心）":(isLaya?"决策任务完成（核心）":"任务完成（核心 fake）"));
+  document.getElementById("doneTitle").textContent=f.title+"（核心任务完成）";
+  var extra=document.getElementById("doneExtra");
+  if(isLaya){
+    var lout=(job.params&&job.params.out)||"?";
+    var hasEval=!!(job.params&&String(job.params.eval_data||"").trim());
+    var evalMode=(m.evaluation||"in-sample");
+    var inSample=hasEval?"":'<div id="evalInSample" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin:12px 0;color:var(--warn)">黄条：after 来自校准切片 = in-sample，不是泛化数（未提供 eval_data）。</div>';
+    var tempMsg="—（核心未返回）";
+    var warns=m.warnings||[];
+    for(var wi=0;wi<warns.length;wi++){ if(String(warns[wi]).indexOf("temperature stays 1.0")>=0){ tempMsg="1.0（未拟合：校准项 < 10）"; } }
+    var abn=(m.abstention_thresholds!==undefined&&m.abstention_thresholds!==null)?JSON.stringify(m.abstention_thresholds):"—（核心未返回；见 rl_agent_config.json）";
+    var head='<div class="checkline" style="border-bottom:1px solid var(--line)"><span style="flex:1;color:var(--dim)">Metric</span><span class="en" style="width:76px;text-align:right;color:var(--dim)">Before</span><span class="en" style="width:76px;text-align:right;color:var(--dim)">After</span><span class="en" style="width:66px;text-align:right;color:var(--dim)">Delta</span></div>';
+    var metricRows=[["Accuracy","—","—","—"],["AUC","—","—","—"],["LogLoss","—","—","—"]];
+    var body=metricRows.map(function(r){return '<div class="checkline"><span style="flex:1">'+r[0]+'</span><span class="en" style="width:76px;text-align:right">'+r[1]+'</span><span class="en" style="width:76px;text-align:right">'+r[2]+'</span><span class="en" style="width:66px;text-align:right">'+r[3]+'</span></div>';}).join("");
+    document.getElementById("doneSum").textContent="核心决策任务（laya）"+job.id+" 已执行完成（updates "+(m.updates_total||"?")+" / epochs "+(m.epochs_total||"?")+"）。";
+    document.getElementById("donePath").textContent=lout;
+    extra.innerHTML='<div class="card-box" style="background:var(--bg2);margin-top:16px;text-align:left"><h4>Evaluation (before vs after)</h4>'+
+      '<div style="font-size:12px;color:var(--dim);margin:6px 0 10px">job_id: '+job.id+'；eval_source: '+evalMode+'</div>'+inSample+head+body+
+      '<div style="font-size:12px;color:var(--dim);margin-top:8px">核心未返回逐指标数值；完整 before/after 见 train_report.json。</div></div>';
+    extra.innerHTML+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>校准温度与拒答阈值</h4>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">temperature</span><span class="en" style="color:var(--text)">'+tempMsg+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">abstention_thresholds</span><span class="en" style="color:var(--text);word-break:break-all;text-align:right">'+abn+'</span></div></div>';
+    extra.innerHTML+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>产物清单</h4>'+
+      '<div style="font-size:12.5px;color:var(--dim);line-height:1.9">输出目录：<span class="en" style="color:var(--text)">'+lout+'</span><br>model.safetensors / encoder/ / tokenizer/ / rl_agent_config.json / questions.json / train_report.json / checkpoint_latest/</div></div>';
+  } else if(isLlm){
+    var out=(job.params&&job.params.out)||"?";
+    var steps=(m.steps_done!==undefined?m.steps_done:(m.step!==undefined?m.step:"?"));
+    var lossInfo=(m.loss_last!==undefined&&m.loss_last!==null)?Number(m.loss_last).toFixed(4):((m.loss!==undefined&&m.loss!==null)?Number(m.loss).toFixed(4):"—");
+    document.getElementById("doneSum").textContent="核心 LLM 任务（lf）"+job.id+" 已执行完成（"+steps+" 步）。";
+    document.getElementById("donePath").textContent=out;
+    extra.innerHTML='<div class="card-box" style="background:var(--bg2);margin-top:16px;text-align:left"><h4>核心 LLM 任务（lf）</h4>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">job_id</span><span class="en" style="color:var(--text)">'+job.id+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">kind / state</span><span class="en" style="color:var(--text)">'+(job.kind||"lf")+' / '+(job.state||"succeeded")+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">adapter 目录</span><span class="en" style="color:var(--text);word-break:break-all;text-align:right">'+out+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">steps / loss</span><span class="en" style="color:var(--text)">'+steps+' / '+lossInfo+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">产物</span><span class="en" style="color:var(--text);font-size:12px;text-align:right">adapter_model.safetensors / adapter_config.json / trainer_log.jsonl（核心 LlamaFactory 适配器写出）</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">状态</span><span style="color:var(--laya)">核心已执行完成</span></div></div>';
+  } else if(isDiff){
+    var dout=(job.params&&job.params.out)||"?";
+    var dsteps=(m.steps_done!==undefined?m.steps_done:(m.step!==undefined?m.step:"?"));
+    var artifact=(m.artifact||"epoch-0.safetensors");
+    document.getElementById("doneSum").textContent="核心生图任务 "+job.id+" 已执行完成（"+dsteps+" 步）。";
+    document.getElementById("donePath").textContent=dout+"\\"+artifact;
+    extra.innerHTML='<div class="card-box" style="background:var(--bg2);margin-top:16px;text-align:left"><h4>核心生图任务（diffsynth）</h4>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">job_id</span><span class="en" style="color:var(--text)">'+job.id+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">kind / state</span><span class="en" style="color:var(--text)">'+(job.kind||"diffsynth")+' / '+(job.state||"succeeded")+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">产物目录</span><span class="en" style="color:var(--text);word-break:break-all;text-align:right">'+dout+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">steps</span><span class="en" style="color:var(--text)">'+dsteps+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">产物</span><span class="en" style="color:var(--text)">'+artifact+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">状态</span><span style="color:var(--laya)">核心已执行完成</span></div></div>';
+  } else {
+    document.getElementById("doneSum").textContent="核心 fake 任务 "+job.id+" 已成功结束（"+(m.total||"?")+" 步，"+(m.elapsed_s||"?")+" 秒）。核心未接适配器，未生成真实模型产物。";
+    document.getElementById("donePath").textContent="（核心未接适配器：无真实产物路径）";
+    extra.innerHTML='<div class="card-box" style="background:var(--bg2);margin-top:16px;text-align:left"><h4>核心任务</h4>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">job_id</span><span class="en" style="color:var(--text)">'+job.id+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">kind / state</span><span class="en" style="color:var(--text)">'+(job.kind||"fake")+' / '+(job.state||"succeeded")+'</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">steps / elapsed</span><span class="en" style="color:var(--text)">'+(m.total||"?")+' / '+(m.elapsed_s||"?")+'s</span></div>'+
+      '<div class="checkline"><span style="flex:1;color:var(--dim)">产物</span><span style="color:var(--warn)">核心未接适配器（fake 任务无真实产物）</span></div></div>';
+  }
+  show(done); window.scrollTo(0,0);
+}
+function liveTerminal(job){
+  var st=job.state||"failed";
+  var msg=st==="cancelled"?"已取消（核心）":(st==="failed"?"失败（核心）":"已中断（核心）");
+  document.getElementById("runStatus").textContent=msg+(job.error?"："+job.error:"");
+  appendLiveLog(["[core] 任务终态："+st+(job.error?" error="+job.error:"")]);
+  var cb=document.getElementById("cancelBtn"); cb.disabled=false; cb.textContent="取消训练";
+}
+/* ---- RUN simulation ---- */
+var runTimer, stepNo=0, totalSteps=0, lossPts=[], phaseIdx=0, runInfo={};
+function startRun(){
+  if(LIVE){ liveStart(); return; }
+  var f=FLOWS[state.flow];
+  run.style.setProperty("--c", f.accent);
+  document.getElementById("runTitle").textContent=f.title+"（训练中）";
+  actionbar.hidden=true;
+  show(run);
+  stepNo=0; lossPts=[]; phaseIdx=0;
+  ["roLoss","roLr","roSpeed"].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent="—"; });
+  document.getElementById("progBar").style.width="0%";
+  document.getElementById("progStep").textContent="step 0 / 0";
+  document.getElementById("eta").textContent="剩余 --:--";
+  document.getElementById("vramBar").style.width="0%";
+  var p=allParams(state.flow), e=estCalc(state.flow,p,f.out);
+  var isD=!!(f.run&&f.run.unit==="updates");
+  var isS=!!(f.run&&f.run.showSamples);
+  var up=parseInt(String(e.updates||"").replace(/,/g,""),10)||0;
+  var mi=parseInt(String(e.micro||"").replace(/,/g,""),10)||0;
+  totalSteps=isD?mi:(parseInt(String(e.steps).replace(/,/g,""),10)||1000);
+  var plan=isS?samplePlan(p):null;
+  var saveEvery=isS?Math.max(1,Math.round(numOf(p.save_every,1000))):0;
+  var isL=!!(f.run&&f.run.unit==="global_step");
+  var logEvery=isL?Math.max(1,Math.round(numOf(p.logging_steps,500))):0;
+  var llmSave=isL?Math.max(1,Math.round(numOf(p.save_steps,500))):0;
+  runInfo={isD:isD, isS:isS, isL:isL, updates:up, micro:mi, epochs:Math.max(1,Math.round(numOf(p.epochs,4))), ga:Math.max(1,Math.round(numOf(p.grad_accum,8))), vram:isFinite(parseFloat(e.vram))?parseFloat(e.vram):null, lr:isL?(p.lr||"5e-5"):(isS?(p.lr||"1e-4"):(p.head_lr||"1e-4")), lastEp:1, plan:plan, mediaKind:isS?((f.media&&f.media.kind)||"image"):"", nextIdx:isS?1:0, saveEvery:isL?llmSave:saveEvery, nextSave:isL?llmSave:saveEvery, logEvery:logEvery, nextLog:isL?logEvery:0, checkpoints:[], total:totalSteps};
+  runInfo.vramVal=isFinite(parseFloat(e.vram))?parseFloat(e.vram):null;
+  runInfo.vramText=isFinite(parseFloat(e.vram))?parseFloat(e.vram).toFixed(1)+" GB":"未检测";
+  runInfo.etaSec=isD?(mi*0.34):(isL?(totalSteps*0.55):(totalSteps*(state.flow==="video"?6.0:1.2)));
+  runInfo.speedText=isD?"0.34 s/step":(isL?"0.55 s/step":(state.flow==="video"?"6.00 s/step":"1.20 s/step"));
+  document.getElementById("vramVal").textContent=runInfo.vramText;
+  document.getElementById("vramBar").style.width=(runInfo.vramVal?Math.min(100,runInfo.vramVal/32*100):0)+"%";
+  document.getElementById("timeline").style.display=(isD||isS||isL)?"none":"";
+  var note=document.getElementById("lossNote");
+  if(isD){
+    if(!note){ note=document.createElement("p"); note.id="lossNote"; note.style.cssText="font-size:12px;color:var(--dim);margin:6px 0 0"; var lc=document.getElementById("losschart"); lc.parentNode.insertBefore(note, lc.nextSibling); }
+    note.textContent="x 轴：micro-batch 步（每 100 条一个点），≠ 更新步；两者差 grad_accum="+runInfo.ga+" 倍。";
+    note.hidden=false;
+  } else if(note){ note.hidden=true; }
+  var box=document.getElementById("runSamplesBox"), sbox=document.getElementById("runSamples");
+  box.hidden=!isS; sbox.innerHTML="";
+  var cb=document.getElementById("cancelBtn"); cb.textContent="取消训练"; cb.removeAttribute("data-armed");
+  document.getElementById("log").innerHTML="";
+  if(isD){
+    var chk=flowState(state.flow).picks.check||{items:5600,skipped:240};
+    var eff=Math.max(1,Math.round(numOf(p.micro_batch,8)))*runInfo.ga;
+    addLog("train items "+Number(chk.items).toLocaleString()+", calibration items "+Math.round(chk.items*0.1)+", eval items "+(p.eval_data?"held-out":"0")+", skipped {"+(chk.skipped||0)+"}, device cuda");
+    addLog("optimizer budget: "+Number(chk.items).toLocaleString()+" train item(s), effective batch up to "+eff+" (micro_batch "+(p.micro_batch||"8")+" x grad_accum "+runInfo.ga+"), "+up+" optimizer updates over "+runInfo.epochs+" epoch(s)");
+  } else if(isS){
+    addLog("加载底模 <b>"+(p.base||"（未填）")+"</b> 与文本编码器…");
+    addLog("采样计划："+plan.count+" 组 × "+plan.per+" "+(runInfo.mediaKind==="video"?"个 webp 片段":"张图")+"（sample_every="+plan.se+"，sample_start_step="+plan.start+"）");
+    addLog("Generating baseline samples before training（首图 1 组）");
+    renderSampleGroup(0);
+    if(runInfo.vramVal && runInfo.vramVal>31.5) addLog("<b>警告</b>：显存预估 "+runInfo.vramText+" 超出本机 32GB（31.5GB 上限），建议降分辨率 / 减帧数 / 减 batch。");
+  } else if(isL){
+    addLog("加载模型 <b>"+(p.model_name_or_path||"（未填）")+"</b>，template="+(p.template||"（未填）"));
+    addLog("进度按 <b>global_step</b>；loss 每 logging_steps="+runInfo.logEvery+" 条 —— <b>前 "+runInfo.logEvery+" 步看不到 loss</b>（示例配置常改 10）");
+    addLog("每 save_steps="+llmSave+" 步存 <b>checkpoint-N/</b>；<b>可续训（resume_from_checkpoint）</b>");
+  } else {
+    buildTimeline();
+    addLog("加载底模权重…");
+    addLog("设备 <b>CUDA:0</b>，本机 GPU（未检测）");
+    addLog("开始训练，共 <b>"+totalSteps.toLocaleString()+"</b> steps");
+  }
+  run._sample=Math.min(totalSteps,240);
+  if(REDUCE){ drawLoss([0.9]); }
+  tick();
+}
+function renderSampleGroup(step){
+  var ri=runInfo, box=document.getElementById("runSamples");
+  if(!box||!ri.plan) return;
+  var n=Math.max(1,ri.plan.per), kind=ri.mediaKind, cells="";
+  for(var i=0;i<n;i++){
+    cells+='<div style="border:1px solid var(--line);border-radius:12px;padding:6px;background:var(--bg2);text-align:center">'+
+      '<svg viewBox="0 0 64 40" width="100%" height="42" aria-hidden="true"><rect x="2" y="2" width="60" height="36" rx="4" fill="none" stroke="var(--line)" stroke-width="1.5"/><path d="M2 30l16-12 10 8 14-14 22 18" fill="none" stroke="var(--c)" stroke-width="1.5" opacity=".7"/></svg>'+
+      '<div style="font-size:11px;color:var(--dim);margin-top:4px">'+(kind==="video"?"webp":"png")+' P'+(i+1)+'</div></div>';
+  }
+  box.insertAdjacentHTML("beforeend",'<div id="sampleStep'+step+'" style="margin-top:12px"><div style="font-size:12.5px;color:var(--dim);margin-bottom:6px">step '+step+'（'+n+' '+(kind==="video"?"个 webp 片段":"张图")+'）</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px">'+cells+'</div></div>');
+}
+function processSampling(){
+  var ri=runInfo, plan=ri.plan;
+  if(!plan) return;
+  while(ri.nextIdx<plan.sampleSteps.length && stepNo>=plan.sampleSteps[ri.nextIdx]){
+    var st=plan.sampleSteps[ri.nextIdx];
+    renderSampleGroup(st);
+    addLog("Sample at step "+st+"（"+plan.per+" "+(ri.mediaKind==="video"?"个 webp 片段":"张图")+"）");
+    ri.nextIdx++;
+  }
+  while(ri.saveEvery && stepNo>=ri.nextSave){
+    addLog("<b>Saving at step "+ri.nextSave+"</b>");
+    ri.nextSave+=ri.saveEvery;
+  }
+}
+function tick(){
+  var isD=runInfo.isD;
+  var maxDrawn=Math.min(totalSteps,48);
+  stepNo+=Math.ceil(totalSteps/48);
+  if(stepNo>totalSteps) stepNo=totalSteps;
+  var t=stepNo/totalSteps;
+  var loss=0.9*Math.exp(-3.2*t)+0.05+(Math.random()*0.06-0.03);
+  if(loss<0.02) loss=0.02;
+  lossPts.push(loss);
+  if(lossPts.length>maxDrawn){ lossPts=lossPts.slice(-maxDrawn); }
+  drawLoss(lossPts);
+  if(isD){
+    document.getElementById("progBar").style.width=(t*100)+"%";
+    var u=Math.round(t*runInfo.updates);
+    var ep=Math.min(runInfo.epochs,Math.floor(t*runInfo.epochs)+1);
+    var ms=Math.round(t*runInfo.micro);
+    var rem=Math.max(0,Math.round((1-t)*runInfo.etaSec));
+    document.getElementById("progStep").textContent="update "+u.toLocaleString()+" / "+runInfo.updates.toLocaleString()+"，epoch "+ep+" / "+runInfo.epochs;
+    document.getElementById("eta").textContent="剩余 "+fmt(rem);
+    document.getElementById("roLoss").textContent=loss.toFixed(4);
+    document.getElementById("roLr").textContent=runInfo.lr;
+    document.getElementById("roSpeed").textContent=runInfo.speedText;
+    if(ep!==runInfo.lastEp){
+      addLog("epoch "+(ep-1)+"/"+runInfo.epochs+" mean loss "+(loss+0.031).toFixed(4));
+      addLog("写入 checkpoint_latest/（epoch "+(ep-1)+" 末）");
+      runInfo.lastEp=ep;
+    }
+    if(stepNo<totalSteps) addLog("epoch "+ep+"/"+runInfo.epochs+" step "+ms+" loss "+loss.toFixed(4));
+    document.getElementById("runStatus").textContent="update "+u+" / "+runInfo.updates+"，epoch "+ep+" / "+runInfo.epochs+"，lr "+runInfo.lr+"，已用时 "+fmt(runInfo.etaSec-rem);
+    if(t>=1){ finishRun(); return; }
+    runTimer=setTimeout(tick,700);
+    return;
+  }
+  document.getElementById("progBar").style.width=(t*100)+"%";
+  document.getElementById("progStep").textContent="step "+stepNo.toLocaleString()+" / "+totalSteps.toLocaleString();
+  var remain=Math.max(0,(1-t)*(runInfo.etaSec||1800));
+  document.getElementById("eta").textContent="剩余 "+fmt(remain);
+  if(!runInfo.isL) document.getElementById("roLoss").textContent=loss.toFixed(4);
+  document.getElementById("roLr").textContent=runInfo.lr;
+  document.getElementById("roSpeed").textContent=runInfo.speedText;
+  if(runInfo.isL){
+    document.getElementById("progBar").style.width=(t*100)+"%";
+    document.getElementById("progStep").textContent="global_step "+stepNo.toLocaleString()+" / "+totalSteps.toLocaleString();
+    var remL=Math.max(0,(1-t)*(runInfo.etaSec||totalSteps*0.55));
+    document.getElementById("eta").textContent="剩余 "+fmt(remL);
+    var lossL=0.92*Math.exp(-2.6*t)+0.11;
+    if(stepNo>=runInfo.nextLog){
+      addLog("global_step "+stepNo.toLocaleString()+" loss "+lossL.toFixed(4));
+      document.getElementById("roLoss").textContent=lossL.toFixed(4);
+      runInfo.nextLog+=runInfo.logEvery;
+    } else {
+      addLog("global_step "+stepNo.toLocaleString()+" / "+totalSteps.toLocaleString()+"（未到 logging_steps="+runInfo.logEvery+"，暂无 loss）");
+    }
+    document.getElementById("roLr").textContent=runInfo.lr;
+    document.getElementById("roSpeed").textContent=runInfo.speedText;
+    while(runInfo.nextSave<=stepNo && runInfo.nextSave<=totalSteps){
+      runInfo.checkpoints.push(runInfo.nextSave);
+      addLog("保存 <b>checkpoint-"+runInfo.nextSave+"/</b>（save_steps）");
+      runInfo.nextSave+=runInfo.saveEvery;
+    }
+    document.getElementById("runStatus").textContent="global_step "+stepNo.toLocaleString()+" / "+totalSteps.toLocaleString()+"，lr "+runInfo.lr+"，可续训（resume_from_checkpoint）";
+    if(t>=1){ finishRun(); return; }
+    runTimer=setTimeout(tick,700);
+    return;
+  }
+  if(runInfo.isS){
+    document.getElementById("runStatus").textContent="step "+stepNo+" / "+totalSteps+"，lr "+runInfo.lr+"，loss "+loss.toFixed(4);
+    addLog("step "+stepNo+" / "+totalSteps+" loss "+loss.toFixed(4)+" lr "+runInfo.lr);
+    processSampling();
+  } else {
+    var np=Math.min(PHASES.length-1,Math.floor(t*PHASES.length));
+    if(np!==phaseIdx){ phaseIdx=np; setPhase(np); addLog("阶段切换 <b>"+PHASES[np]+"</b>"); }
+    document.getElementById("runStatus").textContent="第 "+stepNo+" / "+totalSteps+" 步，阶段："+PHASES[phaseIdx]+"，已用时 "+fmt((runInfo.etaSec||1800)-remain);
+  }
+  if(t>=1){ finishRun(); return; }
+  runTimer=setTimeout(tick,700);
+}
+function fmt(sec){ var m=Math.floor(sec/60), s=Math.floor(sec%60); return (m<10?"0":"")+m+":"+(s<10?"0":"")+s; }
+function buildTimeline(){
+  var tl=document.getElementById("timeline"); tl.innerHTML="";
+  PHASES.forEach(function(p,i){
+    if(i>0){ var ln=document.createElement("span"); ln.className="tl-line"; tl.appendChild(ln); }
+    var n=document.createElement("div"); n.className="tl-node"; n.setAttribute("data-i",i);
+    n.innerHTML='<span class="tn-dot"></span><span class="tn-lbl">'+p+'</span>';
+    tl.appendChild(n);
+  });
+  setPhase(0);
+}
+function setPhase(idx){
+  var nodes=document.querySelectorAll(".tl-node");
+  nodes.forEach(function(n,i){ n.classList.remove("done","cur"); if(i<idx)n.classList.add("done"); else if(i===idx)n.classList.add("cur"); });
+  var lines=document.querySelectorAll(".tl-line");
+  lines.forEach(function(l,i){ if(i<idx) l.style.background="var(--c)"; else l.style.background="var(--line)"; });
+}
+function drawLoss(pts){
+  var w=560,h=150,pad=18;
+  var max=Math.max.apply(null,pts), min=Math.min.apply(null,pts);
+  var y=function(v){ return h-pad-((v-min)/(max-min||1))*(h-pad*2); };
+  var x=function(i){ return pad+(i/(Math.max(1,pts.length-1)))*(w-pad*2); };
+  var d=pts.map(function(v,i){ return (i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1); }).join(" ");
+  var dots=pts.length? '<circle cx="'+x(pts.length-1).toFixed(1)+'" cy="'+y(pts[pts.length-1]).toFixed(1)+'" r="3" fill="var(--c)"/>' : "";
+  document.getElementById("losschart").innerHTML='<svg viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'+
+    '<line x1="'+pad+'" y1="'+(h-pad)+'" x2="'+(w-pad)+'" y2="'+(h-pad)+'" stroke="var(--line)"/>'+
+    '<line x1="'+pad+'" y1="'+pad+'" x2="'+pad+'" y2="'+(h-pad)+'" stroke="var(--line)"/>'+
+    '<path d="'+d+'" fill="none" stroke="var(--c)" stroke-width="2"/>'+dots+'</svg>';
+}
+function addLog(msg){
+  var log=document.getElementById("log");
+  var atBottom=log.scrollTop+log.clientHeight>=log.scrollHeight-6;
+  var div=document.createElement("div"); div.className="ln"; div.textContent="["+now()+"] ";
+  var span=document.createElement("span"); span.innerHTML=msg; div.appendChild(span);
+  log.appendChild(div);
+  if(atBottom||log.children.length<3) log.scrollTop=log.scrollHeight;
+}
+function now(){ var d=new Date(); return d.toTimeString().slice(0,8); }
+
+document.getElementById("runHomeBtn").addEventListener("click",function(){
+  show(home); actionbar.hidden=true;
+  addLog(LIVE?"已返回首屏，核心 fake 任务仍在后台运行（轮询继续）":"已返回首屏，模拟训练仍在继续（未连接训练后端）");
+});
+document.getElementById("cancelBtn").addEventListener("click",function(){
+  if(LIVE){
+    var self=this;
+    if(!liveJobId){ document.getElementById("runStatus").textContent="核心未连接，无可取消任务"; return; }
+    if(liveStopped){ show(home); actionbar.hidden=true; return; }
+    if(liveKind==="laya" && this.getAttribute("data-armed")!=="1"){
+      this.setAttribute("data-armed","1");
+      this.textContent="确认中断（从头再训）";
+      appendLiveLog(["[core] 决策无 resume：中断=从头再训；checkpoint_latest/ 只能拿回上一轮。再点一次「确认中断」才会停止。"]);
+      document.getElementById("runStatus").textContent="无 resume：中断=从头；checkpoint_latest/ 只能拿回上一轮";
+      var btnL=this;
+      setTimeout(function(){ btnL.removeAttribute("data-armed"); btnL.textContent="取消训练"; },5000);
+      return;
+    }
+    self.disabled=true; self.textContent="正在取消…";
+    apiFetch("/jobs/"+encodeURIComponent(liveJobId)+"/cancel",{method:"POST"}).then(function(j){
+      appendLiveLog(["[core] 已发送取消请求：state="+j.state+" cancel_requested="+j.cancel_requested]);
+      document.getElementById("runStatus").textContent="正在取消（等待核心确认）…";
+    }).catch(function(e){
+      self.disabled=false; self.textContent="取消训练";
+      appendLiveLog(["[core] 取消失败："+e.message]);
+      document.getElementById("runStatus").textContent="取消失败（核心）："+e.message;
+    });
+    return;
+  }
+  if(runInfo.isD && this.getAttribute("data-armed")!=="1"){
+    this.setAttribute("data-armed","1");
+    this.textContent="确认中断（从头再训）";
+    addLog("<b>提示</b>：决策训练无 resume，中断 = 从头再训；checkpoint_latest/ 只能拿回上一轮。再点一次「确认中断」才会停止。");
+    document.getElementById("runStatus").textContent="无 resume：中断=从头，checkpoint_latest/ 只能拿回上一轮";
+    var btn=this;
+    runInfo.armTimer=setTimeout(function(){ btn.removeAttribute("data-armed"); btn.textContent="取消训练"; },5000);
+    return;
+  }
+  clearTimeout(runTimer);
+  if(runInfo.armTimer) clearTimeout(runInfo.armTimer);
+  addLog("<b>已取消</b>，清理显存…（决策无 resume，本次进度不保留）");
+  document.getElementById("runStatus").textContent="训练已取消（无 resume，下次从头开始）";
+  setTimeout(goHome,600);
+});
+
+function finishRun(){
+  clearTimeout(runTimer);
+  if(runInfo.isD){
+    var p=allParams(state.flow);
+    var src=(p.eval_data&&String(p.eval_data).trim())?"held-out":"calibration";
+    addLog("epoch "+runInfo.epochs+"/"+runInfo.epochs+" mean loss 0.1832");
+    addLog("写入 checkpoint_latest/（末轮，含校准后 config）");
+    addLog("=== Evaluation (before vs after fine-tuning on "+src+" items) ===");
+    addLog("Metric / Before / After / Delta：Accuracy 0.612 → 0.654（+0.042）");
+  } else if(runInfo.isL){
+    addLog("保存终版 adapter（<b>adapter_model.safetensors</b> + adapter_config.json）");
+    addLog("写出 <b>train_results.json</b> 与 <b>training_loss.png</b>（plot_loss）");
+    addLog("checkpoint 列表："+(runInfo.checkpoints.map(function(x){return "checkpoint-"+x+"/";}).join(", ")||"—"));
+    addLog("可续训（resume_from_checkpoint）：从任一 checkpoint-N/ 继续");
+  } else if(runInfo.isS){
+    var pl=runInfo.plan, p2=allParams(state.flow);
+    addLog("保存终版 LoRA（<b>my_lora.safetensors</b>，无步号后缀）");
+    addLog("最后采样停在 step "+pl.last+(pl.steps%pl.se!==0?"（steps 未整除 sample_every，末步不出图）":""));
+    addLog("采样图在 samples/，共 "+pl.count+" 组 × "+pl.per+" "+(runInfo.mediaKind==="video"?"个 webp 片段":"张图"));
+  } else {
+    addLog("保存产物…");
+    setPhase(PHASES.length-1);
+    var node=document.querySelector('.tl-node[data-i="'+(PHASES.length-1)+'"]'); if(node){ node.classList.remove("cur"); node.classList.add("done"); }
+  }
+  addLog("<b>完成</b>");
+  setTimeout(showDone,500);
+}
+function showDone(){
+  var f=FLOWS[state.flow];
+  done.style.setProperty("--c", f.accent);
+  document.getElementById("doneTitle").textContent=f.title+"（完成）";
+  var extra=document.getElementById("doneExtra");
+  if(f.run&&f.run.unit==="updates"){
+    var p=allParams(state.flow);
+    var hasEval=!!(p.eval_data&&String(p.eval_data).trim());
+    var sum=runInfo.updates?runInfo.updates.toLocaleString():"0";
+    var micro=runInfo.micro?runInfo.micro.toLocaleString():"0";
+    document.getElementById("doneSum").textContent="本次共 "+sum+" optimizer updates（"+runInfo.epochs+" epochs，micro-batch "+micro+" 步），产物已写入本地输出目录。";
+    document.getElementById("donePath").textContent="E:\\output\\decision\\run_01\\model.safetensors";
+    var rows=[["Accuracy","0.612","0.654","+0.042"],["AUC","0.681","0.709","+0.028"],["LogLoss","0.671","0.638","-0.033"],["Mean abstain rate","—","0.084","—"]];
+    var head='<div class="checkline" style="border-bottom:1px solid var(--line)"><span style="flex:1;color:var(--dim)">Metric</span><span class="en" style="width:76px;text-align:right;color:var(--dim)">Before</span><span class="en" style="width:76px;text-align:right;color:var(--dim)">After</span><span class="en" style="width:66px;text-align:right;color:var(--dim)">Delta</span></div>';
+    var body=rows.map(function(r){return '<div class="checkline"><span style="flex:1">'+r[0]+'</span><span class="en" style="width:76px;text-align:right">'+r[1]+'</span><span class="en" style="width:76px;text-align:right">'+r[2]+'</span><span class="en" style="width:66px;text-align:right;color:var(--laya)">'+r[3]+'</span></div>';}).join("");
+    var warn=hasEval?"":'<div id="evalInSample" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-top:12px;color:var(--warn);font-size:12.5px">黄条：after 来自校准切片 = in-sample，不是泛化数。补 eval_data 后重训才会得到 held-out 读数。</div>';
+    var html='<div class="card-box" style="background:var(--bg2);margin-top:16px;text-align:left"><h4>Evaluation (before vs after)</h4>'+
+      '<div style="font-size:12px;color:var(--dim);margin:6px 0 10px">eval_source: '+(hasEval?"held-out（eval_data 指定）":"calibration slice = in-sample（未指定 eval_data）")+'</div>'+head+body+warn+'</div>';
+    html+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>校准温度与拒答阈值</h4>'+
+      '<div class="checkline"><span style="flex:1">Temperature（choice）</span><span class="en" style="color:var(--warn)">1.0（未拟合：校准项 4 < 10，保持 1.0）</span></div>'+
+      '<div class="checkline"><span style="flex:1">Temperature（score / noul）</span><span class="en">1.0 / 1.0（校准项不足 10，未拟合）</span></div>'+
+      '<div class="checkline"><span style="flex:1">abstention_thresholds</span><span class="en">choice 0.62 / score 0.58 / noul 0.55</span></div></div>';
+    html+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>产物清单</h4>'+
+      '<div style="font-size:12.5px;color:var(--dim);line-height:1.9">model.safetensors / encoder/ / tokenizer/ / rl_agent_config.json / questions.json / train_report.json / checkpoint_latest/</div></div>';
+    extra.innerHTML=html;
+  } else if(f.run&&f.run.showSamples){
+    var sp=allParams(state.flow), plan=samplePlan(sp), media2=f.media||{kind:"image",ext:"png"};
+    var kind2=media2.kind;
+    document.getElementById("doneSum").textContent="本次共 "+plan.steps.toLocaleString()+" steps，采样 "+plan.count+" 组 × "+plan.per+" "+(kind2==="video"?"个 webp 片段":"张图")+"，LoRA 已写入本地输出目录。";
+    document.getElementById("donePath").textContent="E:\\output\\"+state.flow+"\\run_01\\my_lora.safetensors";
+    var wall="";
+    plan.sampleSteps.forEach(function(st){
+      var cells="";
+      for(var i=0;i<Math.max(1,plan.per);i++){
+        cells+='<div style="border:1px solid var(--line);border-radius:10px;padding:4px;background:var(--bg2);text-align:center"><svg viewBox="0 0 64 40" width="100%" height="36" aria-hidden="true"><rect x="2" y="2" width="60" height="36" rx="4" fill="none" stroke="var(--line)" stroke-width="1.5"/><path d="M2 30l16-12 10 8 14-14 22 18" fill="none" stroke="var(--c)" stroke-width="1.5" opacity=".7"/></svg><div style="font-size:10.5px;color:var(--dim)">'+(kind2==="video"?"webp":"png")+' P'+(i+1)+'</div></div>';
+      }
+      wall+='<div style="margin-top:10px"><div style="font-size:12px;color:var(--dim);margin-bottom:4px">step '+st+'</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px">'+cells+'</div></div>';
+    });
+    var lastWarn=(plan.steps%plan.se!==0)?'<div id="lastSampleWarn" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-top:10px;color:var(--warn)">黄条：steps % sample_every ≠ 0，最后采样停在 step '+plan.last+'，终版 LoRA 可能没有对应采样图。</div>':"";
+    var noPrompt=plan.per?"":'<div id="doneNoPrompts" style="border:1px solid var(--warn);border-radius:12px;padding:10px 12px;margin-top:10px;color:var(--warn)">黄条：sample.prompts 为空——没有采样图可作验收信号。</div>';
+    var keep=Math.max(1,Math.round(numOf(sp.max_step_saves_to_keep,5)));
+    var saveEvery=Math.max(1,Math.round(numOf(sp.save_every,1000)));
+    var mids=[];
+    for(var msave=saveEvery;msave<=plan.steps;msave+=saveEvery){ mids.push("my_lora_"+("000000000"+msave).slice(-9)+".safetensors"); }
+    mids=mids.slice(-keep);
+    var cfgRows=[
+      ["arch / base",(sp.arch||"flux")+" / "+(sp.base||"—")],
+      ["steps / batch_size",plan.steps+" / "+(sp.batch_size||"1")],
+      ["lr / rank / alpha",(sp.lr||"1e-4")+" / "+(sp.rank||"16")+" / "+(sp.alpha||"16")],
+      ["resolution",sp.resolution||"512,768,1024"],
+      ["save_every / max_step_saves_to_keep",saveEvery+" / "+keep],
+      ["sample_every / sample_steps / guidance_scale",plan.se+" / "+(sp.sample_steps||"20")+" / "+(sp.guidance_scale||"7")],
+      ["sampler / noise_scheduler",(sp.sampler||"flowmatch")+" / "+(sp.noise_scheduler||"flowmatch")],
+      ["save_format",sp.save_format||"safetensors"]
+    ];
+    var html='<div class="card-box" style="background:var(--bg2);margin-top:16px;text-align:left"><h4>采样图墙（按 step 分组，固定 seed 对比）</h4><div style="font-size:12px;color:var(--dim);margin:6px 0 0">这是唯一验收信号；不要用 loss 下降代替。</div>'+wall+lastWarn+noPrompt+'</div>';
+    html+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>LoRA 产物</h4><div style="font-size:12.5px;line-height:1.9">终版 <b class="en">my_lora.safetensors</b><br>中途档（最多保留 '+keep+' 个）：<span class="en">'+(mids.join(" / ")||"—")+'</span><br>采样图目录：<span class="en">samples/</span></div></div>';
+    html+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>训练配置</h4>'+cfgRows.map(function(r){return '<div class="checkline"><span style="flex:1;color:var(--dim)">'+r[0]+'</span><span class="en" style="color:var(--text);text-align:right">'+r[1]+'</span></div>';}).join("")+'</div>';
+    html+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>数据清单哈希</h4><div style="font-size:12.5px;color:var(--dim)">数据集清单 sha256：<span class="en" style="color:var(--text)">9f2c41d7a8e0b35c…e0b3</span>（'+(kind2==="video"?"24 个片段":"48 张图")+' + 同名 caption）</div></div>';
+    extra.innerHTML=html;
+  } else if(f.run&&f.run.unit==="global_step"){
+    var lp=allParams(state.flow);
+    var totalL=runInfo.total||totalSteps;
+    var saveStepL=runInfo.saveEvery||500;
+    var cps=[];
+    for(var cc=saveStepL;cc<=totalL;cc+=saveStepL){ cps.push("checkpoint-"+cc+"/"); }
+    var cpsShow=cps.length>12?cps.slice(0,12).concat(["…共 "+cps.length+" 个"]):cps;
+    var hasEvalL=(String(lp.eval_dataset||"").trim().length>0)||(parseFloat(lp.val_size||"0")>0);
+    document.getElementById("doneSum").textContent="本次共 "+totalL.toLocaleString()+" global_step（"+runInfo.epochs+" epochs），adapter 已写入本地输出目录。";
+    document.getElementById("donePath").textContent="E:\\output\\llm\\run_01\\adapter\\adapter_model.safetensors";
+    var htmlL='<div class="card-box" style="background:var(--bg2);margin-top:16px;text-align:left"><h4>Adapter 产物</h4><div style="font-size:12.5px;line-height:1.9">adapter_model.safetensors<br>adapter_config.json<br><span style="color:var(--dim)">LoRA adapter，推理端可直接加载</span></div></div>';
+    htmlL+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>训练记录</h4><div style="font-size:12.5px;line-height:1.9">train_results.json（train_runtime / train_loss / epoch）<br>training_loss.png（plot_loss=true）</div></div>';
+    htmlL+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>Checkpoints（每 save_steps='+saveStepL+'）</h4><div class="en" style="font-size:12.5px;color:var(--dim);line-height:1.9">'+(cpsShow.join(" / ")||"—")+'</div></div>';
+    htmlL+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>评测</h4><div style="font-size:12.5px;color:var(--dim)">'+(hasEvalL?'eval_dataset='+(lp.eval_dataset||"（val_size 切分）")+'：eval_loss 0.412 / eval_accuracy 0.831（held-out，示例）':'没有 eval（val_size=0 且未填 eval_dataset）——不显示验证指标，只看 train_results.json 的训练 loss。')+'</div></div>';
+    htmlL+='<div class="card-box" style="background:var(--bg2);margin-top:12px;text-align:left"><h4>续训</h4><div style="font-size:12.5px;color:var(--dim)">可续训（resume_from_checkpoint）：从任一 checkpoint-N/ 继续；与决策流程不同。</div></div>';
+    extra.innerHTML=htmlL;
+  } else {
+    extra.innerHTML="";
+    document.getElementById("doneSum").textContent="本次共训练 "+totalSteps.toLocaleString()+" 步，产物已写入本地输出目录，可直接在对应推理端加载。";
+    document.getElementById("donePath").textContent="E:\\output\\"+state.flow+"\\run_01\\"+f.out;
+  }
+  show(done);
+  window.scrollTo(0,0);
+}
+document.getElementById("doneBack").addEventListener("click",goHome);
+document.getElementById("retrain").addEventListener("click",function(){ enterFlow(state.flow); });
+document.getElementById("openFolder").addEventListener("click",function(){ this.textContent="原型未接后端（未打开资源管理器）"; });
+
+/* ---- DRAWER ---- */
+var drawer=document.getElementById("drawer"), scrim=document.getElementById("scrim");
+var agentBtn=document.getElementById("agentBtn"), lastFocus=null;
+var TOOLS=[["train.start","启动一条训练流程"],["train.status","读取当前训练进度"],["dataset.check","对目录跑数据体检"],["lora.export","导出 LoRA / adapter"],["env.snapshot","读取本机 CUDA / 显存快照"]];
+(function(){
+  document.getElementById("tools").innerHTML=TOOLS.map(function(t){
+    return '<div class="tool"><span class="nm">'+t[0]+'</span><span class="desc">'+t[1]+'</span></div>';
+  }).join("");
+})();
+function openDrawer(){
+  lastFocus=document.activeElement;
+  drawer.hidden=false; scrim.classList.add("open"); drawer.classList.add("open");
+  drawer.style.setProperty("--c","var(--llm)");
+  var first=drawer.querySelector("button,[role=switch],[href]"); if(first) first.focus();
+}
+function closeDrawer(){
+  drawer.classList.remove("open"); scrim.classList.remove("open");
+  drawer.hidden=true;
+  if(lastFocus) lastFocus.focus();
+}
+agentBtn.addEventListener("click",openDrawer);
+document.getElementById("drawerClose").addEventListener("click",closeDrawer);
+scrim.addEventListener("click",closeDrawer);
+document.addEventListener("keydown",function(e){
+  if(drawer.hidden) return;
+  if(e.key==="Escape"){ closeDrawer(); return; }
+  if(e.key==="Tab"){
+    var f=drawer.querySelectorAll('button,[role=switch],[href],input,select,[tabindex]:not([tabindex="-1"])');
+    var list=Array.prototype.filter.call(f,function(x){return !x.disabled && x.offsetParent!==null;});
+    if(!list.length) return;
+    var first=list[0], last=list[list.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
+});
+document.getElementById("mcpSwitch").addEventListener("click",function(){
+  var on=this.getAttribute("aria-checked")==="true";
+  this.setAttribute("aria-checked", on?"false":"true");
+});
+document.getElementById("copyCfg").addEventListener("click",function(){
+  var txt=document.getElementById("cfgBox").textContent;
+  var btn=this;
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){btn.textContent="已复制";},function(){btn.textContent="复制失败";}); }
+  else { btn.textContent="浏览器不支持复制，请手动选中配置"; }
+});
+
+/* ---- header popovers ---- */
+function popPair(id){
+  var b=document.getElementById(id+"Btn"), p=document.getElementById(id+"Pop");
+  return (b&&p)?{b:b,p:p}:null;
+}
+function closePops(){
+  ["env","set"].forEach(function(id){
+    var x=popPair(id); if(!x) return;
+    x.p.hidden=true; x.b.setAttribute("aria-expanded","false");
+  });
+}
+function bindPop(id){
+  var x=popPair(id); if(!x) return;
+  x.b.addEventListener("click",function(e){
+    e.stopPropagation();
+    var willOpen=x.p.hidden;
+    closePops();
+    x.p.hidden=!willOpen;
+    x.b.setAttribute("aria-expanded", willOpen?"true":"false");
+    if(willOpen){ var f=x.p.querySelector("button,a,input"); if(f) f.focus(); }
+  });
+  x.p.addEventListener("click",function(e){ e.stopPropagation(); });
+}
+bindPop("env"); bindPop("set");
+document.addEventListener("click",closePops);
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Escape") return;
+  ["env","set"].forEach(function(id){
+    var x=popPair(id); if(!x||x.p.hidden) return;
+    x.p.hidden=true; x.b.setAttribute("aria-expanded","false"); x.b.focus();
+  });
+});
+
+/* init */
+show(home);
+playCards();
+</script>
+</body>
+</html>

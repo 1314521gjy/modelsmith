@@ -1,0 +1,32 @@
+﻿[
+    {
+        "package":  "tokenizers",
+        "version":  "0.22.1",
+        "spdx":  "Apache-2.0",
+        "path":  "dist\\runtime-licenses\\tokenizers\\LICENSE",
+        "bytes":  11357,
+        "sha256":  "C71D239DF91726FC519C6EB72D318EC65820627232B2F796219E87DCF35D0AB4",
+        "source_url":  "https://raw.githubusercontent.com/huggingface/tokenizers/v0.22.1/LICENSE",
+        "fetched_at":  "2026-10-22T20:43:00+08:00"
+    },
+    {
+        "package":  "sentencepiece",
+        "version":  "0.2.1",
+        "spdx":  "Apache-2.0",
+        "path":  "dist\\runtime-licenses\\sentencepiece\\LICENSE",
+        "bytes":  11358,
+        "sha256":  "CFC7749B96F63BD31C3C42B5C471BF756814053E847C10F3EB003417BC523D30",
+        "source_url":  "https://raw.githubusercontent.com/google/sentencepiece/v0.2.1/LICENSE",
+        "fetched_at":  "2026-10-22T20:43:00+08:00"
+    },
+    {
+        "package":  "antlr4",
+        "version":  "4.9.3",
+        "spdx":  "BSD-3-Clause",
+        "path":  "dist\\runtime-licenses\\antlr4\\LICENSE",
+        "bytes":  2699,
+        "sha256":  "B1B379FCAF3219593A4C433FEB1B35C780BED23FAFAAE440B1AE2771A9521E3A",
+        "source_url":  "https://raw.githubusercontent.com/antlr/antlr4/4.9.3/LICENSE.txt",
+        "fetched_at":  "2026-10-22T20:43:00+08:00"
+    }
+]

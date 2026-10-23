@@ -1,0 +1,807 @@
+{
+ "generated_at": "2026-10-22",
+ "base": ".",
+ "file_count": 114,
+ "total_bytes": 3157207209,
+ "total_mb": 3010.95,
+ "entries": [
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\MANIFEST.md",
+   "bytes": 3225,
+   "sha256": "eee3e234174a4e1d1a5e15f23772a8c7152be2bc09f18da1161c1643193116c0"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\banking77\\README.md",
+   "bytes": 16578,
+   "sha256": "acd7824643a65ad5447e2119669639a4613aa252f1b985b49227bd3a744cab4c"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\banking77\\data\\test-00000-of-00001.parquet",
+   "bytes": 91367,
+   "sha256": "9575f636fdeae0c94a0f3f2d926ca8f9a2833b998cf94108936dfd5d72322bf9"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\banking77\\data\\train-00000-of-00001.parquet",
+   "bytes": 294377,
+   "sha256": "482d07d5f8027debcaca8fb3b8fa9da9d81a01318bba746eb36e5bb4fcd785af"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\banking77\\test.jsonl",
+   "bytes": 365101,
+   "sha256": "fb1b0043ded745b8767687084786e6dd0a5f0ce03243b6131992a1c7ae2c2595"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\banking77\\train.jsonl",
+   "bytes": 1245265,
+   "sha256": "d411780d8c0e18e166f5664c6cfe90dc9de399d722aa7cde282e31a771323ea7"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\massive-en-US\\test.jsonl",
+   "bytes": 293658,
+   "sha256": "946947a0e8de7f120bc643b2892f54638673b9fe97b627a67305ca5f2d93c3c2"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\massive-en-US\\train.jsonl",
+   "bytes": 1143545,
+   "sha256": "5d7acab7dd4ec9f8253dec8571eafd75fa8fc4ef64ad401ef2ac6907d277e1a8"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\massive-en-US\\validation.jsonl",
+   "bytes": 201274,
+   "sha256": "616da8f9a9c33e72ae57f64bac4804f87b92f71712ef7f348f576032f7bf9c6d"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\massive-zh-CN\\test.jsonl",
+   "bytes": 509897,
+   "sha256": "26a255acae18c2269b566943432e63bc621d5936903e19a856e7f6b9cc165a49"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\massive-zh-CN\\train.jsonl",
+   "bytes": 1982001,
+   "sha256": "8e6800248544f82c15898b98fac90870ab81fc48dd68638ec944b247374afb39"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\massive-zh-CN\\validation.jsonl",
+   "bytes": 348171,
+   "sha256": "e4e5397d7b1bcc1db467fea25923c325f701b7ace6e9935002948a48243b777d"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\README.md",
+   "bytes": 27236,
+   "sha256": "4569a5c49a5e68bcfeb970cef9ea11f2038e1e840675071b15945ea4289e0296"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\agent_trace_observability\\test-00000-of-00001.parquet",
+   "bytes": 71362,
+   "sha256": "833ad1364237b9a3fe05be2c62e632f0cb34ba372284b975140d362ab246f70d"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\agent_trace_observability\\train-00000-of-00001.parquet",
+   "bytes": 157731,
+   "sha256": "e7b2f78fe539517c6a66a90c68ed671c6133194a88d27dbff5d84713af46b901"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\all\\test-00000-of-00001.parquet",
+   "bytes": 222140,
+   "sha256": "4f294f218ea1da27f3efef936359389c62ea4d3973a41457732990f1d31b647c"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\all\\train-00000-of-00001.parquet",
+   "bytes": 598824,
+   "sha256": "46a58d63edfd86e23229c78afe8b72307bb4ca9fb0e8df180cabb3c67ec9dcd5"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\customer_service\\test-00000-of-00001.parquet",
+   "bytes": 115037,
+   "sha256": "b4e6e23b3c2add197dda74008f2ce42ff996511ff1bf9c93e8b0e6d84ac9c275"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\customer_service\\train-00000-of-00001.parquet",
+   "bytes": 267280,
+   "sha256": "3e3abc2a9307bc641f60a6f9042627897ca01c145c3206211dfa9c926ba8721c"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\invoice_processing\\test-00000-of-00001.parquet",
+   "bytes": 79603,
+   "sha256": "ce2adfb5201dba910b23bda6ab9678c385b580edaabbf8348b4e024c120d4b75"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\invoice_processing\\train-00000-of-00001.parquet",
+   "bytes": 177403,
+   "sha256": "6a5cfcd12e77e707cd9861107868a5adbb7df566ced3162bb9472cd3e348a598"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\security_incidents\\test-00000-of-00001.parquet",
+   "bytes": 87929,
+   "sha256": "4d8bc1879a0b67e5d275edea21a694b06136ca2a2c3355215a7d8adea6b0c75f"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\typed-decisions\\security_incidents\\train-00000-of-00001.parquet",
+   "bytes": 201079,
+   "sha256": "3aae379ac25fc6434d5f5675f04b06f4310d1aac3056a0e30bb0f779aa2f0a99"
+  },
+  {
+   "group": "data",
+   "package": "data:01-决策模型-业务语料",
+   "path": "resources\\01-决策模型-业务语料\\zh-decision-bench\\zh_decision_bench.jsonl",
+   "bytes": 146706,
+   "sha256": "e77b30e9d86af4b55d2ba77e4687e2384361b676cee7dcc854759408cbe1175f"
+  },
+  {
+   "group": "data",
+   "package": "data:02-LLM-语料",
+   "path": "resources\\02-LLM-语料\\.keep",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "group": "data",
+   "package": "data:02-LLM-语料",
+   "path": "resources\\02-LLM-语料\\README-LLM跑通.md",
+   "bytes": 37629,
+   "sha256": "788e5e6c9f8ff8c262dad566831852c2187c82dbbcb2dbdacbc1641d39cf0e04"
+  },
+  {
+   "group": "data",
+   "package": "data:02-LLM-语料",
+   "path": "resources\\02-LLM-语料\\dolly-15k\\README.md",
+   "bytes": 8199,
+   "sha256": "db06c60090a11b20e79d1933b2f316f781605f07761ff2ae2795d6523e3e960b"
+  },
+  {
+   "group": "data",
+   "package": "data:02-LLM-语料",
+   "path": "resources\\02-LLM-语料\\dolly-15k\\databricks-dolly-15k.jsonl",
+   "bytes": 13085339,
+   "sha256": "2df9083338b4abd6bceb5635764dab5d833b393b55759dffb0959b6fcbf794ec"
+  },
+  {
+   "group": "data",
+   "package": "data:03-LLM-小模型",
+   "path": "resources\\03-LLM-小模型\\.keep",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "group": "data",
+   "package": "data:03-LLM-小模型",
+   "path": "resources\\03-LLM-小模型\\Qwen2.5-0.5B-Instruct\\LICENSE",
+   "bytes": 11343,
+   "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e"
+  },
+  {
+   "group": "data",
+   "package": "data:03-LLM-小模型",
+   "path": "resources\\03-LLM-小模型\\Qwen2.5-0.5B-Instruct\\config.json",
+   "bytes": 659,
+   "sha256": "18e18afcaccafade98daf13a54092927904649e1dd4eba8299ab717d5d94ff45"
+  },
+  {
+   "group": "data",
+   "package": "data:03-LLM-小模型",
+   "path": "resources\\03-LLM-小模型\\Qwen2.5-0.5B-Instruct\\generation_config.json",
+   "bytes": 242,
+   "sha256": "e558847a8b4402616f1273797b015104dc266fe4b520056fca88823ba8f8ebe6"
+  },
+  {
+   "group": "data",
+   "package": "data:03-LLM-小模型",
+   "path": "resources\\03-LLM-小模型\\Qwen2.5-0.5B-Instruct\\merges.txt",
+   "bytes": 1671839,
+   "sha256": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3"
+  },
+  {
+   "group": "data",
+   "package": "data:03-LLM-小模型",
+   "path": "resources\\03-LLM-小模型\\Qwen2.5-0.5B-Instruct\\model.safetensors",
+   "bytes": 988097824,
+   "sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+  },
+  {
+   "group": "data",
+   "package": "data:03-LLM-小模型",
+   "path": "resources\\03-LLM-小模型\\Qwen2.5-0.5B-Instruct\\tokenizer.json",
+   "bytes": 7031645,
+   "sha256": "c0382117ea329cdf097041132f6d735924b697924d6f6fc3945713e96ce87539"
+  },
+  {
+   "group": "data",
+   "package": "data:03-LLM-小模型",
+   "path": "resources\\03-LLM-小模型\\Qwen2.5-0.5B-Instruct\\tokenizer_config.json",
+   "bytes": 7305,
+   "sha256": "5b5d4f65d0acd3b2d56a35b56d374a36cbc1c8fa5cf3b3febbbfabf22f359583"
+  },
+  {
+   "group": "data",
+   "package": "data:03-LLM-小模型",
+   "path": "resources\\03-LLM-小模型\\Qwen2.5-0.5B-Instruct\\vocab.json",
+   "bytes": 2776833,
+   "sha256": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\.keep",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\.aitk_size.json",
+   "bytes": 220,
+   "sha256": "6c1958011bed4afb5cf76c61d300320352ddfa36fe097b82f11c0657e79382b1"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\_latent_cache\\smoke_00_yK9cSGnzm9XmpJAd-5bzQw.safetensors",
+   "bytes": 33184,
+   "sha256": "3f3ad4bfd5e22ac7b598afdfa5512c005b5f9764f2aeee25f7f80eab3c37a003"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\_latent_cache\\smoke_01_hsECPlU1dASnXUORJ8H2sQ.safetensors",
+   "bytes": 33184,
+   "sha256": "f91445b97b6f9f89ab2a319892ec86926d581b7606736f34382a7b31400b06cb"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\_latent_cache\\smoke_02_rBUSy9fccRqkPTcH68hkjg.safetensors",
+   "bytes": 33184,
+   "sha256": "e62dc9bf9e04657e82fa574ed3260cf96968049aea40cd833e2808d58fccd888"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\_latent_cache\\smoke_03_H7_2A7mlV60JTnhucZRVTA.safetensors",
+   "bytes": 33184,
+   "sha256": "9cf34617786365039e5b8a8a1ac1559319a96e8b71130f39da20f3b225e73d57"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\_t_e_cache\\smoke_00_Nr1mNlXDRvF3dcIaJpzA5Q.safetensors",
+   "bytes": 118360,
+   "sha256": "d854e62982a82fba67d45eb806e85d72358ec15097c7f24b0827b19d0c7b649a"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\_t_e_cache\\smoke_01_Nr1mNlXDRvF3dcIaJpzA5Q.safetensors",
+   "bytes": 118360,
+   "sha256": "d854e62982a82fba67d45eb806e85d72358ec15097c7f24b0827b19d0c7b649a"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\_t_e_cache\\smoke_02_Nr1mNlXDRvF3dcIaJpzA5Q.safetensors",
+   "bytes": 118360,
+   "sha256": "d854e62982a82fba67d45eb806e85d72358ec15097c7f24b0827b19d0c7b649a"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\_t_e_cache\\smoke_03_Nr1mNlXDRvF3dcIaJpzA5Q.safetensors",
+   "bytes": 118360,
+   "sha256": "d854e62982a82fba67d45eb806e85d72358ec15097c7f24b0827b19d0c7b649a"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\metadata.csv",
+   "bytes": 358,
+   "sha256": "71c259c1e76022c0be4e9457e6d1b0a7ebb37edf8e3cac762c9e371325a31b51"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\smoke_00.png",
+   "bytes": 3594,
+   "sha256": "d4cd60dbd3b72191503e7515f14073dc5dc8b5f8fb7245c18a2c58b12dde9221"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\smoke_00.txt",
+   "bytes": 71,
+   "sha256": "79b965091dedc7c9f5da1444e5799120e1bc560fd5b87aff12f32bb71f6ec3a5"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\smoke_01.png",
+   "bytes": 3553,
+   "sha256": "21424b1dc299f69a413640ed9897d5cec20e2d64b75f687d96ec0c5d7d237215"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\smoke_01.txt",
+   "bytes": 71,
+   "sha256": "79b965091dedc7c9f5da1444e5799120e1bc560fd5b87aff12f32bb71f6ec3a5"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\smoke_02.png",
+   "bytes": 3633,
+   "sha256": "5d5332d7b09211bf48d354bb0857982c9452bdde64ded0f08d50bb8116d643c0"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\smoke_02.txt",
+   "bytes": 71,
+   "sha256": "79b965091dedc7c9f5da1444e5799120e1bc560fd5b87aff12f32bb71f6ec3a5"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\smoke_03.png",
+   "bytes": 3671,
+   "sha256": "364b0b6c62eee06b265ab69fae0c21afc55cfe717f5d5bcbce30416ce107f2b4"
+  },
+  {
+   "group": "data",
+   "package": "data:04-生图LoRA-图集",
+   "path": "resources\\04-生图LoRA-图集\\smoke-synthetic\\smoke_03.txt",
+   "bytes": 71,
+   "sha256": "79b965091dedc7c9f5da1444e5799120e1bc560fd5b87aff12f32bb71f6ec3a5"
+  },
+  {
+   "group": "data",
+   "package": "data:05-视频LoRA-图集",
+   "path": "resources\\05-视频LoRA-图集\\.keep",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\feature_extractor\\preprocessor_config.json",
+   "bytes": 342,
+   "sha256": "2a1da83b5e1032aaeef397552ddb408dca0d8cd1dc58f61bf6abf38d6f33a0a2"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\model_index.json",
+   "bytes": 541,
+   "sha256": "e2f6f22e274374010aec30c79eb2d6e53fff4a36ac0225523a92cb2d41a83347"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\scheduler\\scheduler_config.json",
+   "bytes": 308,
+   "sha256": "699cce92eb7c122e2eb7dfdea78e6187fda76a5ed4a8e42319b85610e620e091"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\text_encoder\\config.json",
+   "bytes": 617,
+   "sha256": "845df614cb9327ae7bbea027316246fae917827407da6df13572e41b5f93b4cc"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\text_encoder\\model.safetensors",
+   "bytes": 246144864,
+   "sha256": "77795e2023adcf39bc29a884661950380bd093cf0750a966d473d1718dc9ef4e"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\tokenizer\\merges.txt",
+   "bytes": 524619,
+   "sha256": "9fd691f7c8039210e0fced15865466c65820d09b63988b0174bfe25de299051a"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\tokenizer\\special_tokens_map.json",
+   "bytes": 472,
+   "sha256": "c4864a9376a8401918425bed71fc14fc0e81f9b59ec45c1cf96cccb2df508eac"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\tokenizer\\tokenizer_config.json",
+   "bytes": 806,
+   "sha256": "00439066fcba73de57644cf41e4e3b9f2dbb09d7f3fc2005898ba52399045882"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\tokenizer\\vocab.json",
+   "bytes": 1059962,
+   "sha256": "e089ad92ba36837a0d31433e555c8f45fe601ab5c221d4f607ded32d9f7a4349"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\unet\\config.json",
+   "bytes": 743,
+   "sha256": "78f474de6bab3d893868f37be97b636ae65c0df3073ed3256ca458ff599b5f96"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\unet\\diffusion_pytorch_model.safetensors",
+   "bytes": 1719125304,
+   "sha256": "c83908253f9a64d08c25fc90874c9c8aef9a329ce1ca5fb909d73b0c83d1ea21"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\vae\\config.json",
+   "bytes": 547,
+   "sha256": "786a7d21647ddea6a04b9675c03d3cb45e90a2f3c6da5fbda2c54ade040036de"
+  },
+  {
+   "group": "data",
+   "package": "data:07-底模",
+   "path": "resources\\07-底模\\sd15\\vae\\diffusion_pytorch_model.safetensors",
+   "bytes": 167335342,
+   "sha256": "4fbcf0ebe55a0984f5a5e00d8c4521d52359af7229bb4d81890039d2aa16dd7c"
+  },
+  {
+   "group": "data",
+   "package": "data:common",
+   "path": "resources\\00-底座与权重-指针.md",
+   "bytes": 2386,
+   "sha256": "8c3014029aedcf444b1f3721ef54633d23af608ae9cc669f649247e2b111e84d"
+  },
+  {
+   "group": "data",
+   "package": "data:common",
+   "path": "resources\\06-清单与说明\\.keep",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "group": "data",
+   "package": "data:common",
+   "path": "resources\\06-清单与说明\\RESOURCES-BUSINESS.md",
+   "bytes": 13441,
+   "sha256": "9bcb762ad5d9ce5955801ccb4ecc0d7523c8fb177b08729810845e40944b3f58"
+  },
+  {
+   "group": "data",
+   "package": "data:common",
+   "path": "resources\\06-清单与说明\\RESOURCES-ONLINE.md",
+   "bytes": 12203,
+   "sha256": "626d95d7476f727e073d4a40c014f15f954f33b78d07280e3e9f7d7f350a1aca"
+  },
+  {
+   "group": "data",
+   "package": "data:common",
+   "path": "resources\\README.md",
+   "bytes": 4297,
+   "sha256": "ff6891d7fd33322f16c5f7d54df9c2c3f53770855442251f5fffd974abec8a59"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\README.md",
+   "bytes": 15265,
+   "sha256": "dfda6765c8bcd847891e15ab1f8520a3f4266c6eee7897e0db555463ac09d574"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\aitk_adapter.py",
+   "bytes": 38375,
+   "sha256": "ce72b4cc7aa392d40321d399cb02b66fd0f4defd7dcdd783119615928f8b767c"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\diffsynth_adapter.py",
+   "bytes": 27766,
+   "sha256": "2619ad89fabfb04d321637ee4acade37373a16c4af143ba0c0591c3f72282009"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\laya_adapter.py",
+   "bytes": 24413,
+   "sha256": "aba5a2041323b5cd2bb29ad8d48a74921e29b92471cf4a3b3e2203ea08f3523c"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\lf_adapter.py",
+   "bytes": 34792,
+   "sha256": "6354807e1052953966f4b501435842eb58b60ff1ead428af469a934bc403d21c"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\llm_lora.py",
+   "bytes": 29214,
+   "sha256": "9827e8438120894a76f9bba2df19278845577f8c7a60782611f0de24284e001b"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\selftest_aitk_adapter.py",
+   "bytes": 18088,
+   "sha256": "b3a14b7bcf4e9e26c2f62c411c23937d3c6d2cda3c222ba9fd6effc9f5a174c1"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\selftest_diffsynth_adapter.py",
+   "bytes": 15374,
+   "sha256": "352c5317f71dab75ac66a0c02a3310099b5351a9de895bf9fadf07f7dd4e1a68"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\selftest_laya_adapter.py",
+   "bytes": 18080,
+   "sha256": "e217d69adefe710f60b95a77146bfff4fc37421fbdb9700679c46dd51b277d21"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\selftest_lf_adapter.py",
+   "bytes": 21257,
+   "sha256": "deedc34298d680bc797beb34987551194112a94b96fea973c3215d973d149b44"
+  },
+  {
+   "group": "adapters",
+   "package": "main",
+   "path": "adapters\\selftest_llm.py",
+   "bytes": 14373,
+   "sha256": "08b0476687b39b997ad419c4015bf82ec7c8af36d55b83a57e9e22620e2003d0"
+  },
+  {
+   "group": "core",
+   "package": "main",
+   "path": "core\\README.md",
+   "bytes": 55723,
+   "sha256": "d34c3421864a38b29de8bf1d238eef7d682aa1643f7b29ff3f938acdb3b5e7ae"
+  },
+  {
+   "group": "core",
+   "package": "main",
+   "path": "core\\modelsmith_core.py",
+   "bytes": 148577,
+   "sha256": "3bc194ec37ac65847f9d05210a003acc525cb8c7da56ba0b25ef7741ccdf392a"
+  },
+  {
+   "group": "core",
+   "package": "main",
+   "path": "core\\selftest_core.py",
+   "bytes": 98475,
+   "sha256": "09fc9e2fbed9e59eec0712cdf2916763693782dd01ac40d1e6cb905ca56dacd7"
+  },
+  {
+   "group": "ui",
+   "package": "main",
+   "path": "design\\prototype\\index.html",
+   "bytes": 130828,
+   "sha256": "7b64c45957a629708c5789acdb527b9ddebad295f1f84f2e5869a2436a623c86"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\CONTRACT-UI-v1.md",
+   "bytes": 6014,
+   "sha256": "04477b3dbe0109f56e9d77e7bcd7769c052db54a18c3ceb157d400ffe4fffeb0"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\DESIGN-BRIEF.md",
+   "bytes": 13449,
+   "sha256": "301d63069f7a7348b4df40d841b9cf24eb16efeb411acb1a2c5e6177398e7205"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\PITFALLS.md",
+   "bytes": 12284,
+   "sha256": "3dae369d4c1f94c8c99e984e937cc0820de94737ab28db3adf502c7fdb65d057"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\PLAN.md",
+   "bytes": 13264,
+   "sha256": "97118959afe7c421f1951b55772f14d9e101fb76a60b8e56ac9171440e5dc253"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\RESOURCES-BUSINESS.md",
+   "bytes": 13441,
+   "sha256": "9bcb762ad5d9ce5955801ccb4ecc0d7523c8fb177b08729810845e40944b3f58"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\RESOURCES-ONLINE.md",
+   "bytes": 12203,
+   "sha256": "626d95d7476f727e073d4a40c014f15f954f33b78d07280e3e9f7d7f350a1aca"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\TRAINING-FLOWS.md",
+   "bytes": 33787,
+   "sha256": "9e846df0dd89f588358f59fbaf4bcbedc40abd4e117da45f7c49b0ef5a51f62c"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\UI-BASELINE-v1.md",
+   "bytes": 4114,
+   "sha256": "19b00daeba4ac2eaef2765829edaa202438e3b16600d04028ccf7d1c294ec15a"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\UI-BRIEF-MINI.md",
+   "bytes": 3767,
+   "sha256": "11923d01e8b0aa5d153bc96bea9860500ae28ad16f4919a6f7ef50a39399e6c6"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\UI-FLOWS-v2.md",
+   "bytes": 14878,
+   "sha256": "15dd01ef83008077a369f6c2a6feb752ef844df26462b4cb4f129ec6cb385db9"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\research\\QWEN-IMAGE-21-TRAINING.md",
+   "bytes": 9962,
+   "sha256": "84cba0be704ba77a71cf3e9939de0f9ea85e1921d00026023f549e936e867b74"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\research\\RSI.md",
+   "bytes": 12087,
+   "sha256": "7079ea3640d5ef09abb291612d3bfa7e02dbae16b2e83871a62c8d612f454128"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\research\\imglora-train.md",
+   "bytes": 6974,
+   "sha256": "7fb26faf0d58456c0035881ced0ec0ab7c0268ac131716fb4cdecbc1f3d88425"
+  },
+  {
+   "group": "docs",
+   "package": "main",
+   "path": "docs\\research\\laya-train.md",
+   "bytes": 8706,
+   "sha256": "5d9e382b78e5ee5744f6cb3223c0e74d3fb1add23f2d5e0645bac583330cddb4"
+  },
+  {
+   "group": "recipes",
+   "package": "main",
+   "path": "recipes\\qwen_image_21_lora.md",
+   "bytes": 7641,
+   "sha256": "3492504bf31712e0aef6c87bc303c5ce90bc4c1dd94f0f3fe82867b1ccd59e7c"
+  },
+  {
+   "group": "review",
+   "package": "main",
+   "path": "review\\BASELINE-v1-evidence.json",
+   "bytes": 35055,
+   "sha256": "e7a04700d7249183c6b1015c2d7626337c068b1e9eb2980ec833adb794926d77"
+  },
+  {
+   "group": "review",
+   "package": "main",
+   "path": "review\\BASELINE-v1.md",
+   "bytes": 19175,
+   "sha256": "e09bc56d7a45b94f31eacf8c479cda2b0931f2fd2996a5fd4793eec36a447f59"
+  },
+  {
+   "group": "review",
+   "package": "main",
+   "path": "review\\E2E-LLM-20261022.md",
+   "bytes": 4304,
+   "sha256": "589b9f73dffcd9e8751cf8eac239cc8a2007f42c8376db7d60c47f1acde98d14"
+  },
+  {
+   "group": "review",
+   "package": "main",
+   "path": "review\\E2E-QWEN21-20261022.md",
+   "bytes": 4833,
+   "sha256": "8f2a8c00ae8d854cdbe29a272cd761745eddcbe7796bf512a844802610fdc40c"
+  },
+  {
+   "group": "review",
+   "package": "main",
+   "path": "review\\FINAL-AUDIT-v2.md",
+   "bytes": 10542,
+   "sha256": "9c26930bb57e4c1e072e778ea9abe36efd351b29abf0a3fd8203ca67a3d349a6"
+  },
+  {
+   "group": "review",
+   "package": "main",
+   "path": "review\\FINAL-AUDIT-v3.md",
+   "bytes": 15492,
+   "sha256": "0bd966896e3d48dd56d8e0179b5b4970332fbefc9056aad5a21d5a84658a721e"
+  },
+  {
+   "group": "review",
+   "package": "main",
+   "path": "review\\FINAL-AUDIT.md",
+   "bytes": 19352,
+   "sha256": "7a7106915be3e981ddcb4c5aa3b49ddae39bb0a852dc24798205675fe9873d84"
+  },
+  {
+   "group": "review",
+   "package": "main",
+   "path": "review\\INCIDENT-20261022-ui-art-overwrite.md",
+   "bytes": 3573,
+   "sha256": "4f8f6454d6224dc005e3079d9c4ac8191559484b4e80b81ed854ad0a45fd01c8"
+  },
+  {
+   "group": "review",
+   "package": "main",
+   "path": "review\\RUNBOOK.md",
+   "bytes": 7783,
+   "sha256": "cc6554f1d19e4b525f21672e4d0620cc0ea2c25ac646a6663efc709e7ad0ccfc"
+  }
+ ]
+}

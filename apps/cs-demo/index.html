@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>客服决策展示台 · ModelSmith</title>
+<style>
+:root{
+  --bg:#F4F6FA; --ink:#132238; --muted:#66758C; --line:#DDE4EF;
+  --card:#FFFFFF; --navy:#0F1E33; --blue:#3567D6; --blue-soft:#EAF0FF;
+  --amber:#B26A12; --amber-soft:#FFF4E2; --red:#C03A3A; --red-soft:#FFF0F0;
+  --green:#0B8062; --green-soft:#E9F8F2; --violet:#6B4FBB; --violet-soft:#F1EDFF;
+  --shadow:0 18px 50px rgba(24,44,76,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  min-height:100vh; background:radial-gradient(1200px 600px at 15% -10%,#E7EEFF 0,transparent 55%),
+  radial-gradient(900px 500px at 100% 0,#FDF2DF 0,transparent 50%),var(--bg);
+  color:var(--ink); font-family:"Noto Sans SC","Microsoft YaHei UI","PingFang SC",sans-serif;
+  font-size:15px; line-height:1.65;
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.demo-strip{
+  background:linear-gradient(90deg,#14243B,#253A59); color:#DCE8FA;
+  font-size:13px; letter-spacing:.02em; text-align:center; padding:9px 18px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+.demo-strip b{color:#FFD28E;font-weight:600}
+.shell{max-width:1280px;margin:0 auto;padding:26px clamp(18px,4vw,50px) 40px;min-width:0}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:20px;flex-wrap:wrap}
+.eyebrow{font-size:11px;letter-spacing:.16em;color:var(--muted);font-weight:700;margin:0 0 6px}
+h1{font-size:clamp(27px,3.2vw,42px);line-height:1.12;margin:0;letter-spacing:-.025em}
+.lede{margin:8px 0 0;color:var(--muted);font-size:14px}
+.status{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;border:1px solid var(--line);
+  border-radius:999px;background:rgba(255,255,255,.72);font-size:12px;color:var(--muted);white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(11,128,98,.12)}
+.layout{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);min-width:0}
+.chat{display:flex;flex-direction:column;min-height:650px;overflow:hidden}
+.chat__head,.decision__head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:15px 18px;border-bottom:1px solid var(--line)}
+.chat__head h2,.decision__head h2{font-size:15px;margin:0;letter-spacing:.01em}
+.chat__head span,.decision__head span{font-size:12px;color:var(--muted)}
+.chat-log{flex:1;overflow:auto;padding:20px 18px;display:flex;flex-direction:column;gap:12px;
+  min-height:330px;max-height:500px;scroll-behavior:smooth}
+.bubble{max-width:86%;padding:11px 14px;border-radius:15px;font-size:14px;line-height:1.7;word-break:break-word;white-space:pre-wrap}
+.bubble.agent{align-self:flex-start;background:#F1F5FB;border:1px solid #E2E9F4;border-bottom-left-radius:5px;color:#24364E}
+.bubble.user{align-self:flex-end;background:var(--navy);color:#F5F8FF;border-bottom-right-radius:5px}
+.bubble.system{align-self:center;background:var(--red-soft);border:1px solid #F2D3D3;color:#943232;font-size:12.5px;max-width:94%}
+.quick-row{display:flex;gap:7px;flex-wrap:wrap;padding:0 18px 10px}
+.quick{height:30px;padding:0 11px;border:1px solid var(--line);border-radius:999px;background:#FBFCFE;
+  color:var(--muted);font-size:12px;transition:border-color .16s,background .16s,color .16s}
+.quick:hover{border-color:#B8C8E2;background:var(--blue-soft);color:var(--blue)}
+.chat form{display:flex;gap:9px;padding:12px 18px 16px;border-top:1px solid var(--line);background:#FBFCFE}
+.chat input{flex:1;min-width:0;height:44px;border:1px solid var(--line);border-radius:12px;padding:0 13px;background:#fff;color:var(--ink);outline:none}
+.chat input:focus{border-color:#8CA9DE;box-shadow:0 0 0 3px rgba(53,103,214,.12)}
+.send{height:44px;padding:0 18px;border:0;border-radius:12px;background:var(--navy);color:#fff;font-weight:600;white-space:nowrap}
+.send:disabled{opacity:.5;cursor:wait}
+.hint{margin:0;padding:0 18px 14px;color:#94A0B4;font-size:11.5px;background:#FBFCFE}
+.decision{display:flex;flex-direction:column;overflow:hidden}
+.decision__head{border-bottom:1px solid var(--line)}
+#fallbackBadge{background:var(--red-soft);border:1px solid #F0CECE;color:#9A3535;border-radius:999px;padding:3px 9px;font-weight:600}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;padding:14px}
+.block{border:1px solid var(--line);border-radius:14px;padding:12px 13px;background:#FCFDFF;min-width:0}
+.block.wide{grid-column:1/-1}
+.k{font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:700;text-transform:uppercase}
+.v{font-size:19px;font-weight:700;margin-top:3px;word-break:break-word}
+.v.small{font-size:14px;font-weight:600;line-height:1.55}
+.meter{height:8px;border-radius:999px;background:#E7ECF5;overflow:hidden;margin-top:9px}
+.meter>i{display:block;height:100%;width:0;border-radius:999px;background:var(--blue);transition:width .30s ease,background .2s}
+.emotion-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.level{font-size:11px;color:var(--muted);font-family:ui-monospace,Consolas,monospace}
+.action-badge{display:inline-flex;align-items:center;min-height:36px;padding:5px 12px;border-radius:10px;
+  border:1px solid var(--line);background:var(--blue-soft);color:var(--blue);font-size:15px;font-weight:700;word-break:break-word}
+.action-badge[data-action="退款"],.action-badge[data-action="运费补偿"],.action-badge[data-action="发红包"]{background:var(--amber-soft);border-color:#F0D8B5;color:var(--amber)}
+.action-badge[data-action="转人工"],.action-badge[data-action="拒绝并解释"]{background:var(--red-soft);border-color:#F0CECE;color:#9A3535}
+.action-badge[data-action="补发"],.action-badge[data-action="换货"]{background:var(--green-soft);border-color:#CDEBE0;color:var(--green)}
+.action-badge[data-action="安抚话术"]{background:var(--violet-soft);border-color:#DED5FA;color:var(--violet)}
+.rule{font-family:ui-monospace,Consolas,"Cascadia Mono",monospace;font-size:12px;line-height:1.7;color:#374B66;word-break:break-word}
+.reply{white-space:pre-wrap;font-size:13.5px;line-height:1.8;color:#263A55;min-height:72px;word-break:break-word}
+.copybar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.copy{height:30px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);font-size:12px}
+.copy:hover{border-color:#B8C8E2;color:var(--blue)}
+#copyState{font-size:11px;color:var(--muted)}
+.raw{padding:0 14px 14px}
+.raw details{border-top:1px dashed var(--line);padding-top:12px}
+.raw summary{cursor:pointer;color:var(--muted);font-size:12px;user-select:none}
+.raw pre{margin:10px 0 0;padding:12px;border-radius:10px;background:#F6F8FC;border:1px solid #E9EEF7;
+  font-family:ui-monospace,Consolas,monospace;font-size:11.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow:auto;color:#3B4D66}
+.foot{margin-top:16px;color:var(--muted);font-size:11.5px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.foot code{font-family:ui-monospace,Consolas,monospace;color:#40536D}
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .chat{min-height:0}
+  .chat-log{max-height:360px}
+  .shell{padding-top:20px}
+}
+@media (max-width:520px){
+  .grid{grid-template-columns:1fr}
+  .block.wide{grid-column:auto}
+  .top{align-items:flex-start}
+  .status{justify-content:flex-start}
+  .bubble{max-width:92%}
+}
+</style>
+</head>
+<body>
+<div class="demo-strip"><b>演示模式：不接支付、不真发红包、不连真实客服系统</b></div>
+<div class="shell">
+  <header class="top">
+    <div>
+      <p class="eyebrow">MODELSMITH / CS DECISION LAB</p>
+      <h1>客服决策展示台</h1>
+      <p class="lede">发一句话，右侧看到情绪、意图、动作、置信度、命中规则和回复草稿。</p>
+    </div>
+    <div class="status" aria-label="后端状态">
+      <span class="pill"><i class="dot"></i><span id="backendText">后端：规则引擎</span></span>
+      <span class="pill">动作白名单 8 个 · 本地演示</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="card chat" aria-label="客服对话">
+      <div class="chat__head">
+        <h2>对话</h2>
+        <span>用户消息 → 决策引擎</span>
+      </div>
+      <div class="chat-log" id="chatLog" aria-live="polite" aria-relevant="additions">
+        <div class="bubble agent">您好，我是客服决策演示助手。说一句客户的话，我会给出情绪、意图、动作和回复草稿。</div>
+      </div>
+      <div class="quick-row" aria-label="示例输入">
+        <button class="quick" type="button" data-prompt="你们这破东西，我要退款！">愤怒退款</button>
+        <button class="quick" type="button" data-prompt="在吗">在吗</button>
+        <button class="quick" type="button" data-prompt="物流等了五天还没收到，能补发吗">物流补发</button>
+        <button class="quick" type="button" data-prompt="超过七天还能退吗">超期退款</button>
+        <button class="quick" type="button" data-prompt="我要投诉，给我转人工">威胁投诉</button>
+      </div>
+      <form id="chatForm" autocomplete="off">
+        <input id="chatInput" type="text" maxlength="300" placeholder="输入客户原话，例如：你们这破东西，我要退款！" aria-label="客户消息">
+        <button class="send" id="sendBtn" type="submit">发送</button>
+      </form>
+      <p class="hint">Enter 发送 · 仅用于本地演示，所有动作都不会真正执行</p>
+    </section>
+
+    <section class="card decision" aria-label="决策面板">
+      <div class="decision__head">
+        <h2>决策面板</h2>
+        <span id="fallbackBadge" hidden>已回落</span>
+      </div>
+      <div class="grid">
+        <div class="block">
+          <div class="k">情绪</div>
+          <div class="emotion-row"><div class="v" id="emotionName">—</div><span class="level" id="emotionLevel">L—</span></div>
+          <div class="meter" aria-hidden="true"><i id="emotionBar"></i></div>
+        </div>
+        <div class="block">
+          <div class="k">意图</div>
+          <div class="v small" id="intentText">—</div>
+        </div>
+        <div class="block">
+          <div class="k">动作</div>
+          <div class="v"><span class="action-badge" id="actionBadge">—</span></div>
+        </div>
+        <div class="block">
+          <div class="k">置信度</div>
+          <div class="v" id="confidenceText">—</div>
+          <div class="meter" aria-hidden="true"><i id="confidenceBar"></i></div>
+        </div>
+        <div class="block wide">
+          <div class="k">命中规则</div>
+          <div class="rule" id="ruleText">—</div>
+        </div>
+        <div class="block wide">
+          <div class="k">回复草稿</div>
+          <div class="reply" id="replyText">—</div>
+          <div class="copybar"><button class="copy" id="copyReply" type="button">复制回复</button><span id="copyState"></span></div>
+        </div>
+      </div>
+      <div class="raw">
+        <details>
+          <summary>查看原始 JSON</summary>
+          <pre id="rawJson">—</pre>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>规则引擎 · 本地 stdlib 服务 · <code>127.0.0.1:8766</code></span>
+    <span>动作执行一律不真实发生</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var chatLog = $("chatLog"), input = $("chatInput"), form = $("chatForm"), sendBtn = $("sendBtn");
+  var ACTIONS = ["安抚话术", "补发", "退款", "换货", "运费补偿", "发红包", "转人工", "拒绝并解释"];
+
+  function bubble(kind, text) {
+    var el = document.createElement("div");
+    el.className = "bubble " + kind;
+    el.textContent = String(text == null ? "" : text);
+    chatLog.appendChild(el);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  function setBar(el, pct) {
+    if (el) el.style.width = Math.max(0, Math.min(100, pct)) + "%";
+  }
+
+  function renderDecision(d) {
+    d = d || {};
+    var emotion = String(d.emotion || "—");
+    var level = Number(d.emotion_level);
+    if (!isFinite(level)) level = 1;
+    level = Math.max(1, Math.min(5, level));
+    $("emotionName").textContent = emotion;
+    $("emotionLevel").textContent = "L" + level;
+    setBar($("emotionBar"), level / 5 * 100);
+    $("intentText").textContent = String(d.intent || "—");
+    var action = String(d.action || "—");
+    var badge = $("actionBadge");
+    badge.textContent = action;
+    badge.setAttribute("data-action", ACTIONS.indexOf(action) >= 0 ? action : "");
+    var confidence = Number(d.confidence);
+    if (!isFinite(confidence)) confidence = 0;
+    confidence = Math.max(0, Math.min(1, confidence));
+    $("confidenceText").textContent = confidence.toFixed(2);
+    setBar($("confidenceBar"), confidence * 100);
+    $("ruleText").textContent = String(d.rule || "—");
+    $("replyText").textContent = String(d.reply || "（后端没有返回回复草稿）");
+    $("rawJson").textContent = JSON.stringify(d, null, 2);
+    var fallback = d.fallback === true || d.rule === "fallback";
+    var fb = $("fallbackBadge");
+    fb.hidden = !fallback;
+    fb.title = fallback ? ("已回落：" + String(d.reason || "后端输出不可用")) : "";
+    $("backendText").textContent = "后端：" + (d.backend === "http" ? "HTTP 模型服务" : (fallback ? "回落转人工" : "规则引擎"));
+    $("copyState").textContent = "";
+  }
+
+  function send(text) {
+    text = String(text || "").trim();
+    if (!text) return;
+    bubble("user", text);
+    input.value = "";
+    sendBtn.disabled = true;
+    sendBtn.textContent = "决策中…";
+    fetch("/decide", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ input: text })
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) throw new Error(data.reply || data.reason || ("HTTP " + res.status));
+        return data;
+      });
+    }).then(function (data) {
+      renderDecision(data);
+      bubble("agent", data.reply || "（后端没有返回回复草稿）");
+    }).catch(function (err) {
+      bubble("system", "请求失败：" + (err && err.message ? err.message : "服务未连接"));
+    }).then(function () {
+      sendBtn.disabled = false;
+      sendBtn.textContent = "发送";
+      input.focus();
+    });
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    send(input.value);
+  });
+
+  var quick = document.querySelectorAll("[data-prompt]");
+  for (var i = 0; i < quick.length; i++) {
+    quick[i].addEventListener("click", function () { send(this.getAttribute("data-prompt")); });
+  }
+
+  $("copyReply").addEventListener("click", function () {
+    var text = $("replyText").textContent || "";
+    if (!text) return;
+    var done = function (ok) { $("copyState").textContent = ok ? "已复制" : "复制失败，请手动选中"; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+      return;
+    }
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { done(document.execCommand("copy")); } catch (e) { done(false); }
+    document.body.removeChild(ta);
+  });
+
+  input.focus();
+})();
+</script>
+</body>
+</html>

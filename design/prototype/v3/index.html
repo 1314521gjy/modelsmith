@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>训练工坊</title>
+<script>(function(){var t;try{t=localStorage.getItem("ms-theme");}catch(e){}if(t!=="dark"&&t!=="light"){t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}document.documentElement.setAttribute("data-theme",t);
+if(location.search.indexOf("safe")>=0){document.documentElement.classList.add("safe");}
+if(location.search.indexOf("glass")>=0){document.documentElement.setAttribute("data-glass","1");}})();</script>
+<style>
+:root{
+  --bg:#F4F6FA; --bg2:#EEF2F8;
+  --glass:rgba(255,255,255,.55); --glass-hi:rgba(255,255,255,.72);
+  --line:rgba(15,23,42,.08); --line-hi:rgba(15,23,42,.16);
+  --text:#0F172A; --dim:#55658A; --muted:#9AA6BF;
+  --laya:#0E9F6E; --llm:#3B6FE0; --image:#C97B12; --video:#7C3AED;
+  --focus:#0F172A;
+  --r-panel:24px; --r-ctrl:12px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --cn:"Noto Sans SC","Microsoft YaHei UI",sans-serif;
+  --en:"Manrope","Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;overflow:hidden;background:var(--bg)}
+body{height:100%;overflow:hidden;background:linear-gradient(180deg,#FAFBFD 0%,#F4F6FA 46%,#EEF2F8 100%);color:var(--text);font-family:var(--cn);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+.en{font-family:var(--en);font-variant-numeric:tabular-nums}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+
+.aura{position:fixed;z-index:0;border-radius:50%;pointer-events:none;filter:blur(80px);will-change:opacity}
+.aura--a{width:560px;height:560px;left:-160px;top:-180px;background:radial-gradient(circle,rgba(90,209,165,.42),transparent 68%);opacity:.2;animation:breathe 24s ease-in-out infinite alternate}
+.aura--b{width:640px;height:640px;right:-220px;top:8%;background:radial-gradient(circle,rgba(122,167,255,.38),transparent 68%);opacity:.17;animation:breathe 28s ease-in-out infinite alternate}
+.aura--c{width:520px;height:520px;left:26%;bottom:-260px;background:radial-gradient(circle,rgba(240,179,90,.34),transparent 68%);opacity:.14;animation:breathe 32s ease-in-out infinite alternate}
+@keyframes breathe{from{opacity:.1}to{opacity:.22}}
+
+.deck{position:relative;z-index:1;height:100dvh;width:100%;overflow:hidden}
+.pages{display:flex;width:200%;height:100%;transition:transform 280ms var(--ease);will-change:transform}
+.deck.is-next .pages{transform:translateX(-50%)}
+.page{flex:0 0 50%;width:50%;height:100%;padding:clamp(24px,3.2vw,56px) clamp(24px,4vw,72px);display:flex;flex-direction:column}
+.page__in{width:100%;max-width:1600px;height:100%;margin:0 auto;display:flex;flex-direction:column;min-height:0}
+.top{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;height:clamp(40px,5vh,52px)}
+.brand{font-family:var(--en);font-weight:700;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
+.brand span{font-family:var(--cn);font-weight:400;font-size:12.5px;color:var(--dim);margin-left:8px}
+.acts{display:flex;gap:8px}
+.chip{height:36px;padding:0 14px;border:1px solid rgba(15,23,42,.10);border-radius:var(--r-ctrl);background:rgba(255,255,255,.45);color:var(--dim);font-size:12.5px;display:inline-flex;align-items:center;transition:color .12s,border-color .12s,background .12s}
+.chip:hover{color:var(--text);border-color:var(--line-hi);background:rgba(255,255,255,.78)}
+
+.home__main{flex:1;min-height:0;display:flex;flex-direction:column;padding-top:clamp(12px,2.4vh,30px)}
+.title{font-size:clamp(28px,3.2vw,44px);line-height:1.16;font-weight:600;letter-spacing:-.01em}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:clamp(24px,2.2vw,32px);margin-top:clamp(16px,2.4vh,30px)}
+.card{position:relative;display:flex;flex-direction:column;justify-content:space-between;text-align:left;min-height:30vh;padding:clamp(24px,2.6vw,40px);border-radius:24px;border:1px solid rgba(15,23,42,.08);background:rgba(255,255,255,.55);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);box-shadow:0 10px 30px rgba(15,23,42,.08);overflow:hidden;opacity:0;transform:translateY(8px);animation:enter 420ms var(--ease) forwards;animation-delay:calc(var(--i,0)*70ms);transition:transform 200ms var(--ease),background 200ms,box-shadow 200ms,border-color 200ms}
+.card::before{content:"";position:absolute;left:0;top:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(15,23,42,.10),transparent)}
+.card:hover{transform:translateY(-2px);background:rgba(255,255,255,.68);border-color:rgba(15,23,42,.14);box-shadow:0 16px 42px rgba(15,23,42,.13)}
+.card:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.card__top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.card__icon{display:inline-flex;color:var(--c,var(--dim))}
+.icn{width:clamp(56px,4.8vw,72px);height:clamp(56px,4.8vw,72px);display:block;animation:float 7s ease-in-out infinite alternate}
+.card:nth-child(1) .icn{animation-duration:7s}
+.card:nth-child(2) .icn{animation-duration:8.5s;animation-delay:600ms}
+.card:nth-child(3) .icn{animation-duration:7.5s;animation-delay:1200ms}
+.card:hover .icn,.card:focus-visible .icn,.card:focus-within .icn{animation-play-state:paused}
+@keyframes float{from{transform:translateY(-6px)}to{transform:translateY(6px)}}
+.state{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);white-space:nowrap;padding-top:4px}
+.state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.75}
+.card__bottom{display:flex;flex-direction:column;gap:6px;margin-top:auto}
+.card__title{font-size:clamp(24px,2vw,28px);line-height:1.2;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.card__sub{font-size:clamp(14px,1.05vw,16px);line-height:1.45;color:var(--dim)}
+.card__cta{display:inline-flex;align-items:center;gap:8px;margin-top:clamp(10px,1.6vh,18px);font-size:12.5px;color:var(--dim);opacity:.72;transition:color .15s,opacity .15s,gap .15s}
+.card__cta .arr{width:16px;height:16px}
+.card:hover .card__cta,.card:focus-visible .card__cta{color:var(--text);opacity:1;gap:11px}
+.card--video{cursor:default;border-color:rgba(15,23,42,.06);background:rgba(255,255,255,.38);box-shadow:0 8px 22px rgba(15,23,42,.05);animation-delay:calc(var(--i,0)*70ms)}
+.card--video::before{background:linear-gradient(90deg,transparent,rgba(15,23,42,.06),transparent)}
+.card--video:hover{transform:none;background:rgba(255,255,255,.38);border-color:rgba(15,23,42,.06);box-shadow:0 8px 22px rgba(15,23,42,.05)}
+.card--video .icn{animation:none;color:var(--muted);opacity:.85}
+.card--video .card__title{color:#6F7C96}
+.card--video .card__sub{color:var(--muted)}
+.card--video .state{color:var(--muted)}
+.card--video .card__cta{display:none}
+.foot{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding-top:clamp(10px,1.6vh,16px);color:var(--dim);font-size:11.5px}
+
+.next__head{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;height:clamp(44px,5.4vh,56px)}
+.back{width:44px;height:44px;border-radius:var(--r-ctrl);border:1px solid var(--line);background:var(--glass);color:var(--text);display:inline-flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s}
+.back:hover{background:var(--glass-hi);border-color:var(--line-hi)}
+.back svg{width:20px;height:20px}
+.next__body{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;max-width:900px}
+.next__kicker{font-family:var(--en);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:18px}
+.next__body h2{font-size:clamp(34px,4vw,54px);line-height:1.14;font-weight:600;letter-spacing:-.01em}
+.next__body p{margin-top:16px;font-size:clamp(15px,1.1vw,17px);color:var(--dim)}
+.next__foot{flex:0 0 auto;display:flex;justify-content:flex-end;padding-top:12px}
+.btn{height:44px;padding:0 20px;border-radius:var(--r-ctrl);border:1px solid var(--line);background:var(--glass);color:var(--text);font-size:13px;display:inline-flex;align-items:center;gap:8px;transition:background .15s,border-color .15s}
+.btn:hover{background:var(--glass-hi);border-color:var(--line-hi)}
+.btn svg{width:16px;height:16px}
+
+@keyframes enter{to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .card{opacity:1;transform:none}
+}
+/* ===== v3 glass pass：磨砂玻璃半透明质感（覆盖上面的平面白） ===== */
+.aura{filter:blur(40px)}
+.aura--a{opacity:.42}
+.aura--b{opacity:.38}
+.aura--c{opacity:.34}
+.card{
+  background:linear-gradient(152deg,rgba(255,255,255,.62) 0%,rgba(255,255,255,.34) 46%,rgba(255,255,255,.44) 100%);
+  backdrop-filter:blur(26px) saturate(1.8);
+  -webkit-backdrop-filter:blur(26px) saturate(1.8);
+  border:1px solid rgba(255,255,255,.72);
+  box-shadow:0 18px 44px -14px rgba(15,23,42,.30), inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(15,23,42,.05);
+}
+.card::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http&#58;//www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='.55'/></svg>");
+  background-size:160px 160px;opacity:.15;mix-blend-mode:overlay;
+}
+.card{transition:transform 260ms var(--ease),background 200ms var(--ease),box-shadow 260ms var(--ease),border-color 200ms var(--ease);will-change:transform}
+/* 悬停：轻微上浮 + 放大（克制，不加回弹） */
+.card:hover,.card:focus-visible{
+  transform:translateY(-5px) scale(1.013);
+  background:linear-gradient(152deg,rgba(255,255,255,.70) 0%,rgba(255,255,255,.42) 46%,rgba(255,255,255,.52) 100%);
+  border-color:rgba(255,255,255,.85);
+  box-shadow:0 26px 60px -16px rgba(15,23,42,.38), inset 0 1px 0 rgba(255,255,255,1), inset 0 -1px 0 rgba(15,23,42,.05);
+}
+.card:active{transform:translateY(-2px) scale(1.005);transition-duration:90ms}
+/* 禁用的视频卡不参与上浮放大（它不是可点入口） */
+.card--video:hover,.card--video:focus-visible{
+  transform:none;
+  background:linear-gradient(152deg,rgba(255,255,255,.46) 0%,rgba(255,255,255,.26) 50%,rgba(255,255,255,.34) 100%);
+  border-color:rgba(255,255,255,.55);
+  box-shadow:0 12px 30px -16px rgba(15,23,42,.22), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.card--video{
+  background:linear-gradient(152deg,rgba(255,255,255,.46) 0%,rgba(255,255,255,.26) 50%,rgba(255,255,255,.34) 100%);
+  border-color:rgba(255,255,255,.55);
+  box-shadow:0 12px 30px -16px rgba(15,23,42,.22), inset 0 1px 0 rgba(255,255,255,.8);
+}
+.card--video::after{opacity:.10}
+/* ===== v3 glass pass 2：给玻璃后面放"有内容"的背景，否则磨砂看不出来 ===== */
+.grid{position:relative}
+.grid::before{
+  content:"";position:absolute;inset:-10% -8%;z-index:0;pointer-events:none;border-radius:36px;
+  background:
+    radial-gradient(38% 44% at 16% 22%, rgba(14,159,110,.34), transparent 70%),
+    radial-gradient(44% 48% at 80% 24%, rgba(59,111,224,.32), transparent 72%),
+    radial-gradient(38% 42% at 28% 84%, rgba(201,123,18,.28), transparent 72%),
+    radial-gradient(42% 46% at 76% 82%, rgba(124,58,237,.24), transparent 74%);
+  filter:blur(24px) saturate(1.15);
+}
+.card{
+  position:relative;z-index:1;
+  background:linear-gradient(150deg,rgba(255,255,255,.74) 0%,rgba(255,255,255,.52) 50%,rgba(255,255,255,.62) 100%);
+  border:1px solid rgba(255,255,255,.68);
+  box-shadow:0 22px 50px -16px rgba(15,23,42,.34),
+             inset 0 1px 0 rgba(255,255,255,.98),
+             inset 0 -20px 34px -24px rgba(15,23,42,.28);
+}
+.card::after{opacity:.10;mix-blend-mode:normal}
+
+/* ===== v3 主题：深色档（同一套结构，只换材质与文字） ===== */
+:root[data-theme="dark"]{
+  --bg:#080B12; --bg2:#0C1119;
+  --glass:rgba(255,255,255,.06); --glass-hi:rgba(255,255,255,.10);
+  --line:rgba(255,255,255,.13); --line-hi:rgba(255,255,255,.22);
+  --text:#E8EEF7; --dim:#93A1B5; --muted:#5F6D80; --focus:#E8EEF7;
+  color-scheme:dark;
+}
+:root[data-theme="dark"] body{background:linear-gradient(180deg,#0B1019 0%,#080B12 52%,#0A0F17 100%)}
+:root[data-theme="dark"] .chip{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:var(--dim)}
+:root[data-theme="dark"] .chip:hover{background:rgba(255,255,255,.10);color:var(--text)}
+:root[data-theme="dark"] .chip--theme{color:var(--text)}
+:root[data-theme="dark"] .aura--a{opacity:.30}
+:root[data-theme="dark"] .aura--b{opacity:.26}
+:root[data-theme="dark"] .aura--c{opacity:.22}
+:root[data-theme="dark"] .grid::before{
+  background:
+    radial-gradient(38% 44% at 16% 22%, rgba(14,159,110,.46), transparent 70%),
+    radial-gradient(44% 48% at 80% 24%, rgba(59,111,224,.44), transparent 72%),
+    radial-gradient(38% 42% at 28% 84%, rgba(201,123,18,.36), transparent 72%),
+    radial-gradient(42% 46% at 76% 82%, rgba(124,58,237,.38), transparent 74%);
+  filter:blur(42px) saturate(1.25);
+}
+:root[data-theme="dark"] .card{
+  background:linear-gradient(150deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.035) 50%,rgba(255,255,255,.06) 100%);
+  border-color:rgba(255,255,255,.14);
+  box-shadow:0 22px 54px -18px rgba(0,0,0,.72),
+             inset 0 1px 0 rgba(255,255,255,.16),
+             inset 0 -20px 34px -24px rgba(0,0,0,.55);
+  backdrop-filter:blur(30px) saturate(1.45);
+  -webkit-backdrop-filter:blur(30px) saturate(1.45);
+}
+:root[data-theme="dark"] .card::before{background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent)}
+:root[data-theme="dark"] .card::after{opacity:.10;mix-blend-mode:overlay}
+:root[data-theme="dark"] .card:hover{
+  background:linear-gradient(150deg,rgba(255,255,255,.14) 0%,rgba(255,255,255,.06) 50%,rgba(255,255,255,.09) 100%);
+  border-color:rgba(255,255,255,.24);
+  box-shadow:0 26px 60px -18px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.22);
+}
+:root[data-theme="dark"] .card--video{
+  background:linear-gradient(152deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.02) 50%,rgba(255,255,255,.04) 100%);
+  border-color:rgba(255,255,255,.09);
+  box-shadow:0 14px 34px -18px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+}
+:root[data-theme="dark"] .card--video .card__title{color:#7D8AA2}
+:root[data-theme="dark"] .card--video .card__sub{color:#5F6D80}
+:root[data-theme="dark"] .state{color:var(--dim)}
+:root[data-theme="dark"] .foot{color:var(--muted)}
+:root[data-theme="dark"] .back{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:var(--text)}
+:root[data-theme="dark"] .btn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);color:var(--text)}
+:root[data-theme="dark"] .next__kicker{color:var(--muted)}
+/* ===== v3 互动布局：悬停的卡"吃掉"邻居空间，移走自动恢复 ===== */
+.card:hover,.card:focus-visible{
+  transform:translateY(-3px) scale(1);
+  box-shadow:0 30px 64px -18px rgba(15,23,42,.42), inset 0 1px 0 rgba(255,255,255,1);
+}
+/* 四卡定位：1=决策(左上) 2=LLM(右上) 3=生图(左下) 4=视频(右下，禁用不参与) */
+.grid:has(> .card:nth-child(1):hover) .card:nth-child(1) .icn,
+.grid:has(> .card:nth-child(2):hover) .card:nth-child(2) .icn,
+.grid:has(> .card:nth-child(3):hover) .card:nth-child(3) .icn{transform:scale(1.06);transition:transform 300ms var(--ease)}
+@media (prefers-reduced-motion: reduce){
+  .grid,.card{transition:none!important}
+}
+/* ===== v3 悬停挤占：被悬停卡独占一列(62%)+满高，其余三张在另一列纵堆 ===== */
+.grid{position:relative!important;display:block!important;overflow:visible}
+.card{
+  position:absolute;
+  transition:left 320ms var(--ease),top 320ms var(--ease),width 320ms var(--ease),height 320ms var(--ease),
+             transform 260ms var(--ease),box-shadow 260ms var(--ease),background 200ms var(--ease),border-color 200ms var(--ease);
+  min-height:0;
+}
+.card:hover,.card:focus-visible{transform:none}
+@media (prefers-reduced-motion: reduce){
+  .card{transition:none!important}
+}
+/* ===== v3 大字号 + 居中版式 ===== */
+.home__main{padding-top:clamp(18px,3.4vh,44px)}
+.title{
+  text-align:center;
+  font-size:clamp(40px,4.8vw,72px);
+  line-height:1.1;
+  letter-spacing:-.025em;
+  margin:clamp(6px,2.2vh,28px) auto clamp(10px,3vh,34px);
+}
+.grid{margin-top:0}
+.card{
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  padding:clamp(28px,3vw,48px);
+}
+.card__top{flex-direction:column;align-items:center;gap:clamp(16px,2.2vh,26px);width:100%}
+.card__top .state{position:absolute;top:clamp(18px,2.4vh,28px);right:clamp(20px,2.2vw,30px);padding-top:0}
+.icn{width:clamp(76px,6.4vw,104px);height:clamp(76px,6.4vw,104px)}
+.card__bottom{align-items:center;margin-top:clamp(18px,2.6vh,30px)}
+.card__title{font-size:clamp(30px,2.7vw,42px);line-height:1.15}
+.card__sub{font-size:clamp(16px,1.25vw,20px)}
+.card__cta{margin-top:clamp(14px,2vh,24px);font-size:13.5px;justify-content:center}
+.card--video .card__title{font-size:clamp(28px,2.5vw,38px)}
+/* ===== v3 决策第 1 步：选择底座（PPT 第 2 页） ===== */
+/* 安全模式：?safe=1 —— 关掉玻璃/光晕/颗粒/混合模式，用于排查"整页白屏"（GPU 合成层故障） */
+:root.safe .aura{display:none!important}
+:root.safe .card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:#FFFFFF!important;box-shadow:0 10px 30px rgba(15,23,42,.10)!important}
+:root.safe .card::after{display:none!important}
+:root.safe .grid::before{display:none!important}
+:root.safe .chart,:root.safe .log,:root.safe .opt,:root.safe .dz,:root.safe .tblwrap,:root.safe .report{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+/* 真·毛玻璃是可选增强（默认关，避免大窗口下 GPU 合成层整页发白）；想开就加 ?glass=1 */
+:root[data-glass="1"] .card,
+:root[data-glass="1"] .opt,
+:root[data-glass="1"] .chip{
+  backdrop-filter:blur(18px) saturate(1.5);
+  -webkit-backdrop-filter:blur(18px) saturate(1.5);
+}
+/* 兜底布局：量不到网格尺寸时退回普通 2×2（只失去"悬停挤占"，绝不白屏） */
+.grid--fallback{display:grid!important;grid-template-columns:1fr 1fr!important;grid-template-rows:1fr 1fr!important;gap:28px}
+.grid--fallback .card{position:static!important;width:auto!important;height:auto!important;min-height:28vh;opacity:1!important;transform:none!important}
+/* 分页由 JS 按页数算（页数会变），这里不再写死百分比 */
+.stepno{font-family:var(--cn);font-weight:400;font-size:12.5px;color:var(--dim);margin-left:10px}
+.dec1__body{flex:1;min-height:0;overflow:auto;width:100%;max-width:1000px;margin:0 auto;display:flex;flex-direction:column;justify-content:center;gap:clamp(14px,2.2vh,22px);padding:clamp(8px,2vh,18px) 2px}
+.dec1__title{font-size:clamp(30px,3.2vw,46px);line-height:1.15;font-weight:600;letter-spacing:-.02em;text-align:center}
+.dec1__hint{font-size:clamp(14px,1.1vw,16px);color:var(--dim);text-align:center;margin-top:-6px}
+.opts{display:flex;flex-direction:column;gap:14px;margin-top:clamp(8px,1.6vh,16px)}
+.opt{display:flex;align-items:center;gap:16px;width:100%;padding:clamp(16px,2vh,22px) clamp(18px,2vw,24px);border-radius:18px;border:1px solid rgba(15,23,42,.10);background:rgba(255,255,255,.62);text-align:left;transition:transform 200ms var(--ease),background 180ms var(--ease),border-color 180ms var(--ease),box-shadow 220ms var(--ease);cursor:pointer}
+.opt:hover{transform:translateY(-1px);background:rgba(255,255,255,.72);border-color:rgba(15,23,42,.18);box-shadow:0 14px 34px -20px rgba(15,23,42,.35)}
+.opt:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.opt[aria-checked="true"]{border-color:var(--laya);box-shadow:0 0 0 1px var(--laya) inset,0 16px 36px -22px rgba(14,159,110,.55);background:rgba(255,255,255,.78)}
+.opt__dot{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(15,23,42,.25);flex:0 0 auto;position:relative;transition:border-color 160ms}
+.opt[aria-checked="true"] .opt__dot{border-color:var(--laya)}
+.opt[aria-checked="true"] .opt__dot::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--laya)}
+.opt__main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.opt__name{font-size:clamp(16px,1.35vw,19px);font-weight:600;color:var(--text)}
+.opt__meta{font-size:clamp(12.5px,.95vw,14px);color:var(--dim)}
+.opt__size{font-family:var(--en);font-variant-numeric:tabular-nums;font-size:13px;color:var(--dim);white-space:nowrap}
+.tag{font-size:11.5px;line-height:1;padding:5px 9px;border-radius:999px;border:1px solid rgba(15,23,42,.12);color:var(--dim);white-space:nowrap}
+.tag--ok{color:#0E9F6E;border-color:rgba(14,159,110,.35);background:rgba(14,159,110,.08)}
+.tag--warn{color:#B4710A;border-color:rgba(201,123,18,.35);background:rgba(201,123,18,.08)}
+.next__foot{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:clamp(12px,2vh,20px)}
+.btn--primary{background:#0F172A;color:#fff;border-color:#0F172A}
+.btn--primary:hover{background:#1C2942;border-color:#1C2942}
+.btn[aria-disabled="true"]{opacity:.45;cursor:not-allowed;pointer-events:none}
+:root[data-theme="dark"] .opt{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
+:root[data-theme="dark"] .opt:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.22)}
+:root[data-theme="dark"] .opt[aria-checked="true"]{background:rgba(14,159,110,.14);border-color:#2BC48D;box-shadow:0 0 0 1px #2BC48D inset}
+:root[data-theme="dark"] .opt__dot{border-color:rgba(255,255,255,.3)}
+:root[data-theme="dark"] .opt[aria-checked="true"] .opt__dot::after{background:#2BC48D}
+:root[data-theme="dark"] .tag{border-color:rgba(255,255,255,.16)}
+:root[data-theme="dark"] .tag--ok{color:#4ED6A6;border-color:rgba(78,214,166,.35);background:rgba(78,214,166,.10)}
+:root[data-theme="dark"] .btn--primary{background:#E8EEF7;color:#0B1019;border-color:#E8EEF7}
+@media (prefers-reduced-motion: reduce){.opt,.pages{transition:none!important}}
+/* ===== v3 缺模型时：下载（多源依次尝试） ===== */
+.opt{flex-wrap:wrap}
+.opt__end{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.dl{height:34px;padding:0 14px;border-radius:10px;border:1px solid rgba(201,123,18,.45);background:rgba(201,123,18,.10);color:#B4710A;font-size:13px;font-weight:600;transition:background .15s,border-color .15s,transform .15s}
+.dl:hover{background:rgba(201,123,18,.18);border-color:rgba(201,123,18,.6);transform:translateY(-1px)}
+.opt.is-missing{border-color:rgba(201,123,18,.28);background:rgba(255,255,255,.45)}
+.opt.is-missing:hover{border-color:rgba(201,123,18,.45)}
+.dlpanel{display:none;flex-basis:100%;margin-top:14px;padding:14px 16px;border-radius:14px;border:1px solid rgba(15,23,42,.08);background:rgba(15,23,42,.035)}
+.opt.is-confirm .dlpanel,.opt.is-downloading .dlpanel{display:block}
+.dlpanel__src{font-size:12.5px;line-height:1.6;color:var(--dim)}
+.dlpanel__src b{color:var(--text);font-weight:600}
+.dlpanel__row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+.dlbar{flex:1;height:5px;border-radius:99px;background:rgba(15,23,42,.10);overflow:hidden}
+.dlbar>i{display:block;height:100%;width:0;background:var(--laya);transition:width .2s linear}
+.dlmsg{font-size:12.5px;color:var(--dim);margin-top:8px;min-height:18px}
+.dlmsg b{color:var(--text);font-weight:600}
+.dlacts{display:flex;gap:8px;margin-top:12px}
+.dlacts .btn{height:32px;padding:0 14px;font-size:12.5px}
+:root[data-theme="dark"] .dl{color:#F0B35A;border-color:rgba(240,179,90,.45);background:rgba(240,179,90,.10)}
+:root[data-theme="dark"] .dlpanel{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
+:root[data-theme="dark"] .dlbar{background:rgba(255,255,255,.12)}
+:root[data-theme="dark"] .opt.is-missing{border-color:rgba(240,179,90,.28);background:rgba(255,255,255,.04)}
+/* ===== v3 底座行的「推荐场景」与推荐标记 ===== */
+.opt__rec{font-size:12.5px;line-height:1.5;color:var(--dim);margin-top:4px;max-width:56ch}
+.opt__rec b{font-weight:600;color:var(--text)}
+.tag--rec{color:#0E9F6E;border-color:rgba(14,159,110,.35);background:rgba(14,159,110,.10)}
+:root[data-theme="dark"] .opt__rec{color:#A9B6CC}
+:root[data-theme="dark"] .opt__rec b{color:#E8EEF7}
+:root[data-theme="dark"] .tag--rec{color:#4ED6A6;border-color:rgba(78,214,166,.35);background:rgba(78,214,166,.10)}
+[hidden]{display:none!important}
+.page--dec4 .dec1__body{justify-content:flex-start;padding-top:4px;overflow:auto}
+.page--dec4 .tblwrap{max-height:168px}
+.page--dec4 .report{max-height:176px;overflow:auto}
+/* ===== v3 完成后的真实路径行（可复制） ===== */
+.pathrow{display:flex;align-items:center;gap:10px;margin-top:10px;padding:9px 12px;border:1px solid rgba(15,23,42,.10);border-radius:12px;background:rgba(255,255,255,.55);flex-wrap:wrap}
+.pathrow__k{font-size:11.5px;color:var(--dim);flex:0 0 auto}
+.pathrow__p{flex:1;min-width:220px;font-family:var(--en);font-size:12px;color:var(--text);background:rgba(15,23,42,.05);padding:6px 8px;border-radius:8px;word-break:break-all;user-select:all}
+.finishcard{margin-top:12px;border:1px solid rgba(14,159,110,.30);border-radius:14px;padding:12px 14px;background:rgba(14,159,110,.06)}
+.finishcard__t{font-size:13.5px;font-weight:600;color:var(--text)}
+.finishcard__hint{font-size:12px;color:var(--dim);margin-top:8px;line-height:1.7}
+.finishcard__hint code{font-family:var(--en);font-size:11.5px;background:rgba(15,23,42,.06);padding:1px 5px;border-radius:5px}
+:root[data-theme="dark"] .pathrow{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
+:root[data-theme="dark"] .pathrow__p{background:rgba(255,255,255,.08);color:#E8EEF7}
+:root[data-theme="dark"] .finishcard{background:rgba(78,214,166,.08);border-color:rgba(78,214,166,.30)}
+:root[data-theme="dark"] .finishcard__hint code{background:rgba(255,255,255,.10)}
+.llmpath{display:flex;gap:10px;max-width:860px;margin:4px auto 0;width:100%}
+.llmpath input{flex:1;height:46px;border-radius:12px;border:1px solid rgba(15,23,42,.14);
+  background:rgba(255,255,255,.72);padding:0 14px;font-family:var(--en);font-size:13px;color:var(--text)}
+.llmpath input::placeholder{color:#9AA6BF}
+.llmpath input:focus{outline:2px solid var(--laya);outline-offset:1px;background:#fff}
+:root[data-theme="dark"] .llmpath input{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);color:#E8EEF7}
+/* ===== v3 决策加训页（第二段训练） ===== */
+.page--dec5 .dec1__body{justify-content:flex-start;overflow:auto}
+.dec5__row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:4px}
+.dec5__cell{border:1px solid rgba(15,23,42,.10);border-radius:12px;padding:9px 12px;background:rgba(255,255,255,.5)}
+.dec5__k{font-size:11.5px;color:var(--dim)}
+.dec5__v{font-family:var(--en);font-size:14px;font-weight:600;margin-top:4px}
+.mini{height:30px;padding:0 10px;border-radius:9px;border:1px solid rgba(15,23,42,.14);background:rgba(255,255,255,.7);font-size:12px;color:var(--text);cursor:pointer}
+.mini:hover{background:#fff}
+:root[data-theme="dark"] .dec5__cell{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
+:root[data-theme="dark"] .mini{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);color:#E8EEF7}
+.dz--mini{padding:14px 18px;gap:6px;margin:2px auto;max-width:860px;width:100%}
+.dz--mini .dz__title{font-size:14px}
+.dz--mini .dz__sub{font-size:12px}
+.dz--mini .dz__acts{margin-top:4px}
+.dz--mini .btn{height:32px;padding:0 12px;font-size:12.5px}
+/* ===== v3 决策第 4 步：测试与效果（手动 / 交给 AI） ===== */
+.eval__params{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 auto;max-width:860px;width:100%}
+.eval__cell{border:1px solid rgba(15,23,42,.10);border-radius:12px;padding:9px 12px;background:rgba(255,255,255,.5)}
+.eval__k{font-size:11.5px;color:var(--dim)}
+.eval__v{font-family:var(--en);font-size:14.5px;font-weight:600;margin-top:2px;font-variant-numeric:tabular-nums}
+.eval__v small{font-size:11px;color:var(--dim);font-weight:400}
+.eval__acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.tblwrap{max-height:210px;overflow:auto;border:1px solid rgba(15,23,42,.10);border-radius:12px;margin-top:10px;background:#FBFCFF;position:relative}
+.evaltable{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px;table-layout:fixed}
+.evaltable th,.evaltable td{padding:7px 10px;border-bottom:1px solid rgba(15,23,42,.07);text-align:left;vertical-align:top;word-break:break-word}
+.evaltable th{font-weight:600;color:var(--dim);font-size:11.5px;position:sticky;top:0;z-index:2;background:#F2F5FA;box-shadow:inset 0 -1px 0 rgba(15,23,42,.14), 0 4px 10px -8px rgba(15,23,42,.35)}
+.evaltable td:nth-child(1){width:44%}
+.evaltable th:nth-child(5),.evaltable td:nth-child(5){text-align:right;font-variant-numeric:tabular-nums}
+.evaltable .ok{color:#0E9F6E;font-weight:600}
+.evaltable .bad{color:#C0392B;font-weight:600}
+.report{border:1px solid rgba(14,159,110,.30);border-radius:14px;padding:12px 16px;margin-top:10px;background:rgba(14,159,110,.06);font-size:12.8px;line-height:1.75;white-space:pre-wrap}
+.report h4{font-size:13px;margin:8px 0 4px}
+.aisteps{font-size:12.5px;color:var(--dim);margin-top:10px;min-height:20px;text-align:center}
+:root[data-theme="dark"] .eval__cell,:root[data-theme="dark"] .tblwrap{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
+:root[data-theme="dark"] .tblwrap{background:#101720}
+:root[data-theme="dark"] .evaltable th{background:#161E2B;color:#A9B6CC;box-shadow:inset 0 -1px 0 rgba(255,255,255,.14),0 4px 10px -8px rgba(0,0,0,.6)}
+:root[data-theme="dark"] .evaltable th,:root[data-theme="dark"] .evaltable td{border-color:rgba(255,255,255,.08)}
+:root[data-theme="dark"] .report{background:rgba(78,214,166,.08);border-color:rgba(78,214,166,.30)}
+:root[data-theme="dark"] .evaltable .ok{color:#4ED6A6}
+:root[data-theme="dark"] .evaltable .bad{color:#F08A8A}
+/* ===== v3 决策第 3 步：训练运行页（拟合曲线） ===== */
+.run__sum{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--dim);justify-content:center}
+.run__sum b{color:var(--text);font-weight:600}
+.progress{height:8px;border-radius:99px;background:rgba(15,23,42,.10);overflow:hidden;margin:12px auto 0;max-width:760px;width:100%}
+.progress>i{display:block;height:100%;width:0;background:var(--laya);transition:width .2s linear}
+.run__stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px auto 0;max-width:760px;width:100%}
+.stat{border:1px solid rgba(15,23,42,.10);border-radius:12px;padding:9px 12px;background:rgba(255,255,255,.5)}
+.stat__k{font-size:11.5px;color:var(--dim)}
+.stat__v{font-family:var(--en);font-size:17px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+.stat__v small{font-size:11px;color:var(--dim);font-weight:400}
+:root[data-theme="dark"] .stat{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
+:root[data-theme="dark"] .progress{background:rgba(255,255,255,.12)}
+.run__head{display:flex;align-items:baseline;gap:14px;justify-content:center;margin-top:2px}
+.run__big{font-family:var(--en);font-size:clamp(28px,3vw,38px);font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+.run__unit{font-size:13px;color:var(--dim)}
+.chart{width:100%;height:clamp(170px,26vh,240px);border:1px solid rgba(15,23,42,.10);border-radius:16px;background:rgba(255,255,255,.48);padding:8px 10px}
+.chart svg{width:100%;height:100%;overflow:visible}
+.chart .axis{stroke:rgba(15,23,42,.16);stroke-width:1}
+.chart .grid{stroke:rgba(15,23,42,.07);stroke-width:1}
+.chart .curve{fill:none;stroke:var(--laya);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.chart .tick{font-size:9px;fill:var(--dim)}
+.chart .lbl{font-size:10px;fill:var(--dim)}
+.log{margin-top:10px;height:104px;overflow:auto;font-family:var(--en);font-size:11.5px;line-height:1.75;color:var(--dim);border:1px solid rgba(15,23,42,.10);border-radius:12px;padding:8px 12px;background:rgba(255,255,255,.42)}
+.log b{color:var(--text);font-weight:600}
+.done__tbl{width:100%;border-collapse:collapse;font-size:13px}
+.done__tbl th,.done__tbl td{padding:8px 10px;border-bottom:1px solid rgba(15,23,42,.08);text-align:left}
+.done__tbl th{font-weight:600;color:var(--dim);font-size:12px}
+.done__tbl td.en{font-family:var(--en);font-variant-numeric:tabular-nums}
+.done__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.done__cell{border:1px solid rgba(15,23,42,.10);border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.5)}
+.done__k{font-size:11.5px;color:var(--dim)}
+.done__v{font-family:var(--en);font-size:17px;font-weight:600;margin-top:2px}
+[hidden]{display:none!important}
+:root[data-theme="dark"] .chart,:root[data-theme="dark"] .log,:root[data-theme="dark"] .done__cell{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
+:root[data-theme="dark"] .chart .axis{stroke:rgba(255,255,255,.18)}
+:root[data-theme="dark"] .chart .grid{stroke:rgba(255,255,255,.07)}
+:root[data-theme="dark"] .done__tbl th,:root[data-theme="dark"] .done__tbl td{border-color:rgba(255,255,255,.08)}
+/* ===== v3 决策第 2 步：选择训练数据 ===== */
+.dz{border:1.5px dashed rgba(15,23,42,.20);border-radius:20px;background:rgba(255,255,255,.42);padding:clamp(22px,3vh,34px);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;transition:border-color .18s,background .18s}
+.dz:hover,.dz.is-over{border-color:var(--laya);background:rgba(255,255,255,.62)}
+.dz__icon{color:var(--dim)}
+.dz__icon svg{width:52px;height:52px}
+.dz__title{font-size:clamp(16px,1.3vw,18px);font-weight:600}
+.dz__sub{font-size:12.5px;color:var(--dim)}
+.dz__acts{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;justify-content:center}
+.pick{display:flex;align-items:center;gap:16px;border:1px solid rgba(14,159,110,.35);background:rgba(255,255,255,.62);border-radius:18px;padding:16px 20px}
+.pick__main{flex:1;min-width:0}
+.pick__name{font-size:16px;font-weight:600}
+.pick__meta{font-size:12.5px;color:var(--dim);margin-top:3px;word-break:break-all}
+.note{border-radius:14px;padding:12px 16px;font-size:13px;line-height:1.6}
+.note--warn{color:#8A5A08;background:rgba(240,179,90,.16);border:1px solid rgba(201,123,18,.30)}
+.linkbtn{background:none;border:none;color:#8A5A08;text-decoration:underline;font-size:13px;padding:0 2px;font-weight:600}
+.fmt{border:1px solid rgba(15,23,42,.10);border-radius:14px;background:rgba(255,255,255,.42);padding:12px 16px;font-size:12.5px;color:var(--dim)}
+.fmt summary{cursor:pointer;color:var(--text);font-size:13px}
+.fmt code{font-family:var(--en);background:rgba(15,23,42,.06);padding:1px 5px;border-radius:5px;color:var(--text)}
+.fmt p{margin:8px 0 0}
+:root[data-theme="dark"] .dz{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.18)}
+:root[data-theme="dark"] .dz:hover,:root[data-theme="dark"] .dz.is-over{background:rgba(255,255,255,.07)}
+:root[data-theme="dark"] .pick{background:rgba(255,255,255,.05)}
+:root[data-theme="dark"] .note--warn{color:#F0C27A;background:rgba(240,179,90,.12);border-color:rgba(240,179,90,.30)}
+:root[data-theme="dark"] .linkbtn{color:#F0C27A}
+:root[data-theme="dark"] .fmt{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
+:root[data-theme="dark"] .fmt code{background:rgba(255,255,255,.10)}
+
+/* --- art polish (CSS only) --- */
+.card,.cell,.panel,.row{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease,background-color .22s ease}
+.card:hover,.panel:hover,.row:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(15,23,42,.12);border-color:rgba(201,123,18,.34)}
+.card::after,.panel::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.28),rgba(255,255,255,0) 42%,rgba(255,255,255,.16));opacity:.7}
+h1,h2{letter-spacing:-.012em}
+.cell .k{letter-spacing:.035em}
+hr,.divider{background-image:linear-gradient(90deg,rgba(15,23,42,.02),rgba(15,23,42,.16),rgba(15,23,42,.02))}
+
+/* --- environment panel --- */
+#envPanel{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:rgba(15,23,42,.30);backdrop-filter:blur(8px)}
+#envPanel[hidden]{display:none}
+.envcard{width:min(560px,calc(100vw - 40px));max-height:min(70vh,520px);overflow:auto;border-radius:18px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.75);box-shadow:0 24px 70px rgba(15,23,42,.28);padding:20px 22px 18px}
+.envcard__head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.envcard__head b{font-size:15px;letter-spacing:.02em}
+#envClose{width:30px;height:30px;border-radius:9px;border:1px solid rgba(15,23,42,.14);background:rgba(255,255,255,.7);color:#334155;font-size:18px;line-height:1;cursor:pointer}
+#envClose:hover{background:#F1F5F9}
+#envBody{font:12.5px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace;color:#334155;white-space:pre-wrap;word-break:break-word}
+.chip[data-env]{cursor:pointer}
+
+
+/* ===== task-113: fixed 2x2, no hover squeeze; scale + floating light ===== */
+#grid{display:grid!important;grid-template-columns:1fr 1fr!important;grid-template-rows:1fr 1fr!important;position:relative!important}
+#grid>.card{
+  position:relative!important;left:auto!important;top:auto!important;right:auto!important;bottom:auto!important;
+  width:auto!important;height:auto!important;min-height:0!important;opacity:1!important;
+  transform:translateZ(0)!important;
+  transition:transform .24s var(--ease),box-shadow .24s var(--ease),border-color .2s var(--ease),background .2s var(--ease);
+}
+#grid>.card:hover,#grid>.card:focus-visible{transform:scale(1.02) translateY(-2px)!important}
+#grid>.card::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.55),transparent 70%);
+  opacity:0;mix-blend-mode:normal;display:block;
+  transition:opacity .25s var(--ease);
+}
+#grid>.card:hover::after,#grid>.card:focus-visible::after{opacity:1}
+#grid>.card:hover{
+  box-shadow:0 34px 82px -24px rgba(15,23,42,.42),inset 0 1px 0 rgba(255,255,255,.98);
+}
+#grid>.card--decision:hover{box-shadow:0 32px 76px -22px rgba(14,159,110,.40),0 0 0 1px rgba(14,159,110,.14) inset,inset 0 1px 0 rgba(255,255,255,.98)}
+#grid>.card--llm:hover{box-shadow:0 32px 76px -22px rgba(59,111,224,.40),0 0 0 1px rgba(59,111,224,.14) inset,inset 0 1px 0 rgba(255,255,255,.98)}
+#grid>.card--image:hover{box-shadow:0 32px 76px -22px rgba(201,123,18,.42),0 0 0 1px rgba(201,123,18,.16) inset,inset 0 1px 0 rgba(255,255,255,.98)}
+#grid>.card--video:hover{box-shadow:0 30px 70px -24px rgba(100,116,139,.34),0 0 0 1px rgba(100,116,139,.14) inset,inset 0 1px 0 rgba(255,255,255,.92)}
+@media (prefers-reduced-motion: reduce){
+  #grid>.card{transition:none!important}
+  #grid>.card:hover,#grid>.card:focus-visible{transform:none!important}
+  #grid>.card::after{transition:none!important}
+}
+
+</style>
+</head>
+<body>
+<div class="aura aura--a" aria-hidden="true"></div>
+<div class="aura aura--b" aria-hidden="true"></div>
+<main class="deck" id="deck">
+  <div class="pages" id="pages">
+    <section class="page page--home" id="pageHome" aria-label="选择训练线">
+      <div class="page__in">
+        <header class="top">
+          <div class="brand">训练工坊</div>
+          <nav class="acts" aria-label="轻入口">
+            <button class="chip chip--theme" type="button" id="themeBtn" aria-pressed="false" title="在深色与浅色之间切换">深色</button>
+            <button class="chip" type="button" data-env="1">环境</button>
+          </nav>
+        </header>
+        <div class="home__main">
+          <h1 class="title">训练工坊</h1>
+          <div class="grid" id="grid">
+            <button class="card card--decision" data-flow="decision" style="--c:var(--laya);--i:0" type="button" aria-label="决策模型：Laya，快速判定">
+              <span class="card__top">
+                <span class="card__icon" aria-hidden="true">
+                  <svg class="icn" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 12v40M14 52h36M18 22h28M18 22l-8 18h16l-8-18Zm28 0-8 18h16l-8-18Z"/><circle cx="32" cy="32" r="2.6"/></svg>
+                </span>
+                <span class="state">可开始</span>
+              </span>
+              <span class="card__bottom">
+                <span class="card__title">决策模型</span>
+                <span class="card__sub">Laya &middot; 快速判定</span>
+                <span class="card__cta">进入 <svg class="arr" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span>
+              </span>
+            </button>
+            <button class="card card--llm" data-flow="llm" style="--c:var(--llm);--i:1" type="button" aria-label="LLM 微调：SFT，LoRA">
+              <span class="card__top">
+                <span class="card__icon" aria-hidden="true">
+                  <svg class="icn" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 15h38a4 4 0 0 1 4 4v20a4 4 0 0 1-4 4H31l-11 9v-9h-7a4 4 0 0 1-4-4V19a4 4 0 0 1 4-4Z"/><path d="M21 27h22M21 34h14"/></svg>
+                </span>
+                <span class="state">可开始</span>
+              </span>
+              <span class="card__bottom">
+                <span class="card__title">LLM 微调</span>
+                <span class="card__sub">SFT &middot; LoRA</span>
+                <span class="card__cta">进入 <svg class="arr" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span>
+              </span>
+            </button>
+            <button class="card card--image" data-flow="image" style="--c:var(--image);--i:2" type="button" aria-label="生图 LoRA：FLUX，Qwen-Image，SD1.5">
+              <span class="card__top">
+                <span class="card__icon" aria-hidden="true">
+                  <svg class="icn" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="11" y="14" width="42" height="36" rx="4"/><circle cx="23" cy="26" r="4"/><path d="M15 45l12-12 8 8 6-6 8 10"/></svg>
+                </span>
+                <span class="state">可开始</span>
+              </span>
+              <span class="card__bottom">
+                <span class="card__title">生图 LoRA</span>
+                <span class="card__sub">FLUX &middot; Qwen-Image &middot; SD1.5</span>
+                <span class="card__cta">进入 <svg class="arr" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg></span>
+              </span>
+            </button>
+            <button class="card card--video" data-flow="video" style="--c:var(--video);--i:3" type="button" aria-disabled="true" tabindex="-1" data-disabled="1" aria-label="视频 LoRA：暂未开放">
+              <span class="card__top">
+                <span class="card__icon" aria-hidden="true">
+                  <svg class="icn" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="11" y="14" width="42" height="36" rx="4"/><path d="M20 14v36M44 14v36M11 27h9M11 38h9M44 27h9M44 38h9"/><path d="M29 26v13l10-6.5z"/></svg>
+                </span>
+                <span class="state">暂未开放</span>
+              </span>
+              <span class="card__bottom">
+                <span class="card__title">视频 LoRA</span>
+                <span class="card__sub">Wan &middot; H3 &middot; LTX 动态风格</span>
+              </span>
+            </button>
+          </div>
+        </div>
+        <footer class="foot">
+          <span>训练工坊 v3 &middot; 单文件预览</span>
+          <span>本地 &middot; 无需联网</span>
+        </footer>
+      </div>
+    </section>
+
+    <section class="page page--dec1" id="pageDec1" aria-label="决策模型：选择底座" aria-hidden="true" inert>
+      <div class="page__in">
+        <div class="next__head">
+          <button class="back" id="dec1Back" type="button" aria-label="返回训练线选择">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+          </button>
+          <div class="brand">决策模型训练 <span class="stepno">第 1 步 / 共 5 步</span></div>
+          <div class="acts">
+            <button class="chip" type="button">环境</button>
+            
+          </div>
+        </div>
+
+        <div class="dec1__body">
+          <h2 class="dec1__title" tabindex="-1">选择 Laya 模型</h2>
+          <p class="dec1__hint">先选一个模型当起点。不确定就用第一个，先把流程跑通；以后随时能换。</p>
+          <div class="opts" id="dec1Opts" role="radiogroup" aria-label="底座">
+            <div class="opt" role="radio" tabindex="0" aria-checked="true" data-id="laya-standard" data-state="ready">
+              <span class="opt__dot" aria-hidden="true"></span>
+              <span class="opt__main">
+                <span class="opt__name">Laya 标准版</span>
+                <span class="opt__meta">已经装好，可以直接用</span>
+                <span class="opt__rec"><b>适合</b>：题目是英文，或者你只想先把流程跑通</span>
+              </span>
+              <span class="opt__end"><span class="opt__size">842 MB</span><span class="tag tag--ok">已装好</span></span>
+            </div>
+            <div class="opt" role="radio" tabindex="0" aria-checked="false" data-id="typed-decisions" data-state="ready">
+              <span class="opt__dot" aria-hidden="true"></span>
+              <span class="opt__main">
+                <span class="opt__name">Laya 题型版</span>
+                <span class="opt__meta">已经装好，可以直接用</span>
+                <span class="opt__rec"><b>适合</b>：每道题有固定几个答案可选（选 A/B/C、打 1–5 分、或者要判断该不该拒答）</span>
+              </span>
+              <span class="opt__end"><span class="opt__size">842 MB</span><span class="tag tag--ok">已装好</span></span>
+            </div>
+            <div class="opt is-missing" role="radio" tabindex="0" aria-checked="false" data-id="multilingual" data-state="missing"
+                 data-size="1.1 GB" data-bytes="1181116006" data-srcs="ModelScope 主站|HuggingFace|国内镜像 hf-mirror">
+              <span class="opt__dot" aria-hidden="true"></span>
+              <span class="opt__main">
+                <span class="opt__name">Laya 多语言版</span>
+                <span class="opt__meta">还没下载，点右边按钮下载</span>
+                <span class="opt__rec"><b>适合</b>：语料是中文，或者中英混在一起（本项目的业务语料就是这种）</span>
+              </span>
+              <span class="opt__end"><span class="opt__size">约 1.1 GB</span>
+                <span class="tag tag--rec">推荐</span>
+                <button class="dl" type="button" data-dl="multilingual">下载</button>
+              </span>
+              <div class="dlpanel" aria-live="polite"></div>
+            </div>
+            <div class="opt" role="radio" tabindex="0" aria-checked="false" data-id="local-dir" data-state="manual">
+              <span class="opt__dot" aria-hidden="true"></span>
+              <span class="opt__main">
+                <span class="opt__name">用我自己的模型文件夹</span>
+                <span class="opt__meta">指向你电脑上已有的 Laya 模型文件夹</span>
+                <span class="opt__rec"><b>适合</b>：你已经自己训过一版，或者从别处拿到了模型</span>
+              </span>
+              <span class="opt__end"><span class="opt__size">自己选</span><span class="tag">自选</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="next__foot">
+          <button class="btn" id="dec1Prev" type="button">上一步</button>
+          <button class="btn btn--primary" id="dec1Next" type="button">下一步：选择数据</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page page--dec2" id="pageDec2" aria-label="决策模型：选择训练数据" aria-hidden="true" inert>
+      <div class="page__in">
+        <div class="next__head">
+          <button class="back" id="dec2Back" type="button" aria-label="返回上一步">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+          </button>
+          <div class="brand">决策模型训练 <span class="stepno">第 2 步 / 共 5 步</span></div>
+          <div class="acts">
+            <button class="chip" type="button">环境</button>
+            
+          </div>
+        </div>
+
+        <div class="dec1__body">
+          <h2 class="dec1__title" tabindex="-1">选择训练数据</h2>
+          <p class="dec1__hint">一次训练用一份文件。不确定用哪份，就点「用示例数据试跑」，先把流程走完。</p>
+
+          <div class="dz" id="dec2Dz">
+            <span class="dz__icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 34h-3a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5h16l10 10v6"/><path d="M24 8v10h10"/><path d="M24 30v12M18 36l6-6 6 6"/></svg>
+            </span>
+            <div class="dz__title">把文件拖到这里</div>
+            <div class="dz__sub">支持 .jsonl 和 .csv，只能选一个文件</div>
+            <div class="dz__acts">
+              <button class="btn btn--primary" id="dec2Pick" type="button">选择文件</button>
+              <button class="btn" id="dec2Sample" type="button">用示例数据试跑</button>
+            </div>
+            <input id="dec2File" type="file" accept=".jsonl,.csv" hidden>
+          </div>
+
+          <div class="pick" id="dec2PickCard" hidden>
+            <div class="pick__main">
+              <div class="pick__name" id="dec2Name">—</div>
+              <div class="pick__meta" id="dec2Meta">—</div>
+            </div>
+            <button class="btn" id="dec2Clear" type="button">换一份</button>
+          </div>
+
+          <div class="note note--warn" id="dec2LangNote" hidden>
+            这份语料看起来是<b>中文</b>。底座建议换成「Laya 多语言版」，否则起点语言不匹配，效果会打折扣。
+            <button class="linkbtn" id="dec2GoBase" type="button">回上一步换底座</button>
+          </div>
+
+          <details class="fmt">
+            <summary>格式怎么写？（点开看）</summary>
+            <p><b>JSONL</b>：每行一条题目，形如 <code>{"state": "...", "questions": [...], "expected": "..."}</code>。</p>
+            <p><b>CSV</b>：必须有 <code>text</code> 和 <code>label</code> 两列，第一行是列名。</p>
+            <p>只读取这一个文件，不会自动扫文件夹。数据里的图片/附件请另放，本步只登记路径。</p>
+          </details>
+        </div>
+
+        <div class="next__foot">
+          <button class="btn" id="dec2Prev" type="button">上一步</button>
+          <button class="btn btn--primary" id="dec2Next" type="button" aria-disabled="true">下一步：数据体检</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page page--dec3" id="pageDec3" aria-label="决策模型：训练与拟合曲线" aria-hidden="true" inert>
+      <div class="page__in">
+        <div class="next__head">
+          <button class="back" id="dec3Back" type="button" aria-label="返回（训练继续）">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+          </button>
+          <div class="brand">决策模型训练 <span class="stepno">第 3 步 / 共 3 步 · 训练</span></div>
+          <div class="acts">
+            <button class="chip" type="button">环境</button>
+            
+          </div>
+        </div>
+
+        <div class="dec1__body">
+          <h2 class="dec1__title" id="dec3Title" tabindex="-1">正在训练</h2>
+          <div class="run__sum">
+            <span>模型 <b>Laya 标准版</b></span>
+            <span>数据 <b id="dec3Data">样例-闸门.train.jsonl</b></span>
+            <span>当前 loss <b id="dec3Loss">—</b></span>
+            <span>epoch <b id="dec3Ep">0</b> / 4</span>
+          </div>
+          <div class="progress"><i id="dec3Bar"></i></div>
+          <div class="run__stats">
+            <div class="stat"><div class="stat__k">步数（micro-step）</div><div class="stat__v" id="dec3Micro">0 <small>/ 704</small></div></div>
+            <div class="stat"><div class="stat__k">更新（optimizer）</div><div class="stat__v" id="dec3Upd2">0 <small>/ 88</small></div></div>
+            <div class="stat"><div class="stat__k">显存占用</div><div class="stat__v" id="dec3Vram">— <small>/ 32 GiB</small></div></div>
+            <div class="stat"><div class="stat__k">用时 / 预计</div><div class="stat__v" id="dec3Time">0:00 <small>/ 1:36</small></div></div>
+          </div>
+          <div class="chart" id="dec3Chart" role="img" aria-label="训练 loss 拟合曲线"></div>
+          <div class="log" id="dec3Log" aria-live="polite"></div>
+
+          <div id="dec3Done" hidden>
+            <h3 style="font-size:15px;margin:10px 0 8px">训练完成 · 校准切片 before / after（in-sample，不是泛化）</h3>
+            <table class="done__tbl" id="dec3Tbl"></table>
+            <div class="done__grid" id="dec3Cells"></div>
+            <div class="pathrow">
+              <span class="pathrow__k">产物目录</span>
+              <code class="pathrow__p" id="dec3Out">E:\视频\modelsmith\_runs\ui-laya-20261022-151203</code>
+              <button class="mini" id="dec3Copy" type="button">复制路径</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="next__foot">
+          <button class="btn" id="dec3Cancel" type="button">取消训练</button>
+          <button class="btn btn--primary" id="dec3Finish" type="button" aria-disabled="true">查看产物</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page page--dec4" id="pageDec4" aria-label="决策模型：测试与效果" aria-hidden="true" inert>
+      <div class="page__in">
+        <div class="next__head">
+          <button class="back" id="dec4Back" type="button" aria-label="返回训练页">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+          </button>
+          <div class="brand">决策模型训练 <span class="stepno">第 4 步 / 共 4 步 · 测试</span></div>
+          <div class="acts">
+            <button class="chip" type="button">环境</button>
+            
+          </div>
+        </div>
+
+        <div class="dec1__body">
+          <h2 class="dec1__title" id="dec4Title" tabindex="-1">测试与效果</h2>
+          <p class="dec1__hint">用一份<b>没参与训练</b>的数据看效果；没有就退回校准切片，会明确标注「in-sample，不是泛化」。</p>
+          <div class="note note--warn" id="dec4Banner" hidden style="max-width:860px;margin:0 auto">
+            这是<b>第 2 段训练后的复测</b>：报告末尾会给与上一版（Accuracy 0.79 · ECE 0.11）的对比。若仍不达标，可继续加训。
+          </div>
+
+          <div class="eval__params">
+            <div class="eval__cell"><div class="eval__k">测试数据</div><div class="eval__v">校准切片 <small>in-sample</small></div></div>
+            <div class="eval__cell"><div class="eval__k">样本数</div><div class="eval__v">96 <small>条</small></div></div>
+            <div class="eval__cell"><div class="eval__k">指标</div><div class="eval__v" style="font-size:12.5px">Accuracy · Loss · ECE · Brier</div></div>
+            <div class="eval__cell"><div class="eval__k">拒答阈值</div><div class="eval__v">0.42 <small>target_error 0.10</small></div></div>
+          </div>
+
+          <div class="eval__acts">
+            <button class="btn btn--primary" id="dec4Run" type="button">运行测试</button>
+            <button class="btn" id="dec4Ai" type="button">交给 AI 测试并出报告</button>
+            <button class="btn" id="dec4Export" type="button" hidden>导出报告（Markdown）</button>
+          </div>
+          <div class="aisteps" id="dec4Steps" aria-live="polite"></div>
+
+          <div id="dec4Result" hidden>
+            <div class="run__stats" style="margin-top:12px">
+              <div class="stat"><div class="stat__k">Accuracy</div><div class="stat__v" id="evAcc">—</div></div>
+              <div class="stat"><div class="stat__k">Loss</div><div class="stat__v" id="evLoss">—</div></div>
+              <div class="stat"><div class="stat__k">ECE</div><div class="stat__v" id="evEce">—</div></div>
+              <div class="stat"><div class="stat__k">拒答率</div><div class="stat__v" id="evAbs">—</div></div>
+            </div>
+            <div class="tblwrap"><table class="evaltable" id="dec4Tbl"></table></div>
+            <div class="report" id="dec4Report" hidden></div>
+            <div class="eval__acts" id="dec4NextActs" hidden>
+              <button class="btn btn--primary" id="dec4More" type="button">加训（续训）</button>
+              <button class="btn" id="dec4Scratch" type="button">补数据后从头重训</button>
+            </div>
+            <div class="finishcard" id="dec4FinishCard" hidden>
+              <div class="finishcard__t">训练完成 · 模型文件在这里</div>
+              <div class="pathrow">
+                <span class="pathrow__k">模型文件</span>
+                <code class="pathrow__p" id="dec4ModelPath">E:\视频\modelsmith\_runs\ui-laya-20261022-151203\model.safetensors</code>
+                <button class="mini" id="dec4CopyModel" type="button">复制路径</button>
+              </div>
+              <div class="pathrow">
+                <span class="pathrow__k">输出目录</span>
+                <code class="pathrow__p" id="dec4OutDir">E:\视频\modelsmith\_runs\ui-laya-20261022-151203</code>
+                <button class="mini" id="dec4CopyOut" type="button">复制目录</button>
+              </div>
+              <p class="finishcard__hint">目录里还有：<code>encoder\</code>、<code>tokenizer\</code>、<code>rl_agent_config.json</code>、<code>train_report.json</code>、<code>questions.json</code>、<code>checkpoint_latest\</code>。整目录拿去就能继续训（当作新起点）或部署。</p>
+              <div class="eval__acts">
+                <button class="btn" id="dec4Again" type="button">再训一次</button>
+                <button class="btn btn--primary" id="dec4Home" type="button">回到首屏</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="next__foot">
+          <button class="btn" id="dec4Prev" type="button">上一步</button>
+          <button class="btn btn--primary" id="dec4Done" type="button">完成</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page page--dec5" id="pageDec5" aria-label="决策模型：加训（第二段训练）" aria-hidden="true" inert>
+      <div class="page__in">
+        <div class="next__head">
+          <button class="back" id="dec5Back" type="button" aria-label="返回测试页">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+          </button>
+          <div class="brand">决策模型训练 <span class="stepno">加训 · 第二段训练</span></div>
+          <div class="acts">
+            <button class="chip" type="button">环境</button>
+            
+          </div>
+        </div>
+
+        <div class="dec1__body">
+          <h2 class="dec1__title" tabindex="-1">加训（第二段训练）</h2>
+          <p class="dec1__hint">补了数据、或者觉得上一版没训够，就在这里再训一段。它<b>不是</b>从上次的步数接着跑。</p>
+
+          <div class="note note--warn" style="max-width:860px;margin:0 auto">
+            续训 ≠ 恢复训练：不恢复步号与优化器；旧数据的分布会被新数据冲淡；校准温度与拒答阈值会<b>重新拟合</b>；两次的指标不能直接对比。
+          </div>
+
+          <div class="opts" id="dec5Start" role="radiogroup" aria-label="起点" style="margin-top:4px">
+            <div class="opt" role="radio" tabindex="0" aria-checked="true" data-id="last">
+              <span class="opt__dot" aria-hidden="true"></span>
+              <span class="opt__main">
+                <span class="opt__name">以本次训练结果为起点</span>
+                <span class="opt__meta">_runs\ui-laya-20261022-… · 上一版模型当新起点，再训 2 个 epoch</span>
+                <span class="opt__rec"><b>适合</b>：新数据只是同类补充、时间不够重跑全量</span>
+              </span>
+              <span class="opt__end"><span class="tag tag--ok">续训</span></span>
+            </div>
+            <div class="opt" role="radio" tabindex="0" aria-checked="false" data-id="scratch">
+              <span class="opt__dot" aria-hidden="true"></span>
+              <span class="opt__main">
+                <span class="opt__name">从原始底座重新开始</span>
+                <span class="opt__meta">Laya 标准版 + 旧数据 + 新数据，从头跑 4 个 epoch</span>
+                <span class="opt__rec"><b>适合</b>：想公正判断「补数据有没有用」（推荐先做这个）</span>
+              </span>
+              <span class="opt__end"><span class="tag">重训</span></span>
+            </div>
+          </div>
+
+          <div class="dz dz--mini" id="dec5Dz" role="button" tabindex="0" aria-label="选择新增语料">
+            <div class="dz__title">把新增语料拖到这里（.jsonl / .csv）</div>
+            <div class="dz__sub" id="dec5FileInfo">未选择 · 也可以点下面两个按钮</div>
+            <div class="dz__acts">
+              <button class="btn" id="dec5Pick" type="button">选择新增文件</button>
+              <button class="btn" id="dec5Sample2" type="button">用示例增量</button>
+            </div>
+            <input id="dec5File" type="file" accept=".jsonl,.csv" hidden>
+          </div>
+
+          <div class="dec5__row">
+            <div class="dec5__cell"><div class="dec5__k">新增条目</div><div class="dec5__v" id="dec5Data">—</div></div>
+            <div class="dec5__cell"><div class="dec5__k">旧数据回放</div><div class="dec5__v">20% <small style="font-weight:400;color:var(--dim)">防遗忘</small></div></div>
+            <div class="dec5__cell"><div class="dec5__k">epochs</div><div class="dec5__v" id="dec5Ep">2</div></div>
+            <div class="dec5__cell"><div class="dec5__k">batch / accum</div><div class="dec5__v">8 / 8</div></div>
+          </div>
+
+          <p class="dec1__hint" style="margin-top:2px">上一版：Accuracy <b>0.79</b> · ECE <b>0.11</b> · 训练于 2026-10-22。加训后会自动进入「再次 AI 检测」，报告里给对比。</p>
+        </div>
+
+        <div class="next__foot">
+          <button class="btn" id="dec5Prev" type="button">上一步</button>
+          <button class="btn btn--primary" id="dec5Run" type="button">开始加训</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page page--llm1" id="pageLlm1" aria-label="LLM 微调：选择模型" aria-hidden="true" inert>
+      <div class="page__in">
+        <div class="next__head">
+          <button class="back" id="llm1Back" type="button" aria-label="返回训练线选择">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+          </button>
+          <div class="brand">LLM 微调 <span class="stepno">第 1 步 / 共 3 步</span></div>
+          <div class="acts">
+            <button class="chip" type="button">环境</button>
+            
+          </div>
+        </div>
+
+        <div class="dec1__body">
+          <h2 class="dec1__title" tabindex="-1">选择 LLM 模型</h2>
+          <p class="dec1__hint">选一个模型当起点。LLM 线比决策线简单：<b>模型 → 数据 → 开训</b>，参数全用默认。</p>
+
+          <div class="llmpath">
+            <input id="llm1Path" type="text" spellcheck="false" autocomplete="off"
+                   placeholder="例如 E:\视频\modelsmith\models\Qwen2.5-0.5B-Instruct"
+                   aria-label="模型文件夹路径">
+            <button class="btn" id="llm1Need" type="button" hidden>示例</button>
+          </div>
+          <p class="dec1__hint" style="margin-top:2px">填一个<b>模型文件夹</b>：里面要有 <code>config.json</code> 和 <code>*.safetensors</code>（HF 格式）。放在 <code>models\</code> 下的文件夹也会被列出来。</p>
+
+          <div class="dec5__row" style="max-width:860px;margin:2px auto 0">
+            <div class="dec5__cell"><div class="dec5__k">对话模板</div><div class="dec5__v">qwen</div></div>
+            <div class="dec5__cell"><div class="dec5__k">微调方式</div><div class="dec5__v">LoRA</div></div>
+            <div class="dec5__cell"><div class="dec5__k">rank / alpha</div><div class="dec5__v">8 / 16</div></div>
+            <div class="dec5__cell"><div class="dec5__k">进度单位</div><div class="dec5__v">global_step</div></div>
+          </div>
+        </div>
+
+        <div class="next__foot">
+          <button class="btn" id="llm1Prev" type="button">上一步</button>
+          <button class="btn btn--primary" id="llm1Next" type="button">下一步：选择数据</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page page--next" id="pageNext" aria-label="第 2 页占位" aria-hidden="true" inert>
+      <div class="page__in">
+        <div class="next__head">
+          <button class="back" id="backBtn" type="button" aria-label="返回入口">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4L5 10l6 6M5 10h11"/></svg>
+          </button>
+          <div class="brand">训练工坊</div>
+        </div>
+        <div class="next__body">
+          <div class="next__kicker">第 2 页</div>
+          <h2 class="next__title">① 选择底座</h2>
+          <p>这一页待建。</p>
+        </div>
+        <div class="next__foot">
+          <button class="btn" id="backBtn2" type="button">
+            返回入口
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var deck=document.getElementById("deck");
+  var home=document.getElementById("pageHome");
+  var next=document.getElementById("pageNext");
+  var lastCard=null;
+
+  // 分页：按 DOM 顺序算索引（页数会变），不再依赖固定百分比
+  var pagesEl=document.querySelector(".pages");
+  var allPages=[].slice.call(pagesEl.children);
+  var N=allPages.length;
+  pagesEl.style.width=(N*100)+"%";
+  allPages.forEach(function(el){ el.style.flex="0 0 "+(100/N)+"%"; el.style.width=(100/N)+"%"; });
+  var pageIds={home:"pageHome",dec1:"pageDec1",dec2:"pageDec2",dec3:"pageDec3",
+               dec4:"pageDec4",dec5:"pageDec5",llm1:"pageLlm1",next:"pageNext"};
+  var pageIndex={};
+  allPages.forEach(function(el,i){ pageIndex[el.id]=i; });
+  function showPage(name){
+    var id=pageIds[name]||"pageHome";
+    var idx=(pageIndex[id]===undefined)?0:pageIndex[id];
+    pagesEl.style.transform="translateX(-"+(idx*100/N)+"%)";
+    allPages.forEach(function(el){
+      if(el.id===id){ el.removeAttribute("aria-hidden"); el.removeAttribute("inert"); }
+      else { el.setAttribute("aria-hidden","true"); el.setAttribute("inert",""); }
+    });
+    var fmap={home:lastCard,
+              dec1:document.getElementById("dec1Back"),dec2:document.getElementById("dec2Back"),
+              dec3:document.getElementById("dec3Back"),dec4:document.getElementById("dec4Back"),
+              dec5:document.getElementById("dec5Back"),llm1:document.getElementById("llm1Back"),
+              next:document.getElementById("backBtn")};
+    var target=fmap[name]||null;
+    if(target){ setTimeout(function(){ try{ target.focus(); }catch(e){} },40); }
+    if(name==="dec3" && window.__startRun){ window.__startRun(window.__decDataName, window.__runMode); }
+    if(name==="dec4" && window.__dec4Sync){ window.__dec4Sync(); }
+  }
+  function goNext(card){
+    lastCard=card||lastCard;
+    var flow=card&&card.dataset?card.dataset.flow:"";
+    showPage(flow==="decision" ? "dec1" : (flow==="llm" ? "llm1" : "next"));
+  }
+  function goHome(){ showPage("home"); }
+
+  // 决策第 1 步：底座单选 + 缺模型时「多源依次尝试」下载
+  (function(){
+    var opts=[].slice.call(document.querySelectorAll("#dec1Opts .opt"));
+    var nb=document.getElementById("dec1Next");
+    function panel(el){ return el.querySelector(".dlpanel"); }
+    function pick(el){
+      if(el.dataset.state==="missing"){ openConfirm(el); return; }
+      opts.forEach(function(o){ o.setAttribute("aria-checked", o===el?"true":"false"); });
+    }
+    function openConfirm(el){
+      var srcs=(el.dataset.srcs||"").split("|").filter(Boolean);
+      var p=panel(el); if(!p) return;
+      p.innerHTML='<div class="dlpanel__src">将从 <b>'+srcs.length+'</b> 个源<b>依次尝试</b>（前一个失败自动切下一个）：'
+        + srcs.map(function(s,i){ return '<br>'+(i+1)+'. '+s; }).join('')
+        + '<br>预计体积 <b>'+(el.dataset.size||"未知")+'</b>，保存到 <code>models\\'+(el.dataset.id||"")+'</code>；中断可续传。</div>'
+        + '<div class="dlacts"><button class="btn btn--primary" type="button" data-act="start">确定下载</button>'
+        + '<button class="btn" type="button" data-act="cancel">取消</button></div>';
+      el.classList.add("is-confirm");
+      p.querySelector('[data-act="start"]').addEventListener("click",function(){ startDownload(el); });
+      p.querySelector('[data-act="cancel"]').addEventListener("click",function(){ el.classList.remove("is-confirm"); p.innerHTML=""; });
+    }
+    function startDownload(el){
+      var srcs=(el.dataset.srcs||"").split("|").filter(Boolean);
+      var total=Number(el.dataset.bytes||0)||0;
+      var p=panel(el);
+      el.classList.remove("is-confirm"); el.classList.add("is-downloading");
+      p.innerHTML='<div class="dlbar"><i></i></div><div class="dlmsg" aria-live="polite"></div>'
+        + '<div class="dlacts"><button class="btn" type="button" data-act="stop">取消下载</button></div>';
+      var bar=p.querySelector(".dlbar>i"), msg=p.querySelector(".dlmsg");
+      var si=0, pct=0, timer=null, stopped=false;
+      var lastT=0, lastPct=0, speed=0, t0=Date.now();
+      function bytes(n){ var u=["B","KB","MB","GB"]; var i=0; while(n>=1024&&i<3){n/=1024;i++;} return (i?n.toFixed(n<10?2:1):Math.round(n))+" "+u[i]; }
+      function secs(s){ if(!isFinite(s)||s<=0) return "—"; var m=Math.floor(s/60), r=Math.round(s%60); return (m?m+" 分 ":"")+r+" 秒"; }
+      function line(t){ msg.innerHTML=t; }
+      function show(){
+        var got=total?total*pct/100:0;
+        var rest=(speed>0&&total)?(total-got)/speed:0;
+        line('正在尝试 <b>'+srcs[si]+'</b>（'+(si+1)+'/'+srcs.length+'）· <b>'+Math.round(pct)+'%</b>'
+          + (total?' · '+bytes(got)+' / '+bytes(total):'')
+          + ' · <b>'+(speed?bytes(speed)+'/s':'测速中…')+'</b>'
+          + (rest?' · 剩余 '+secs(rest):''));
+      }
+      function done(){
+        el.dataset.state="ready"; el.classList.remove("is-missing");
+        var end=el.querySelector(".opt__end");
+        if(end){ end.innerHTML='<span class="opt__size">'+(el.dataset.size||"")+'</span><span class="tag tag--ok">本机</span>'; }
+        p.innerHTML='<div class="dlmsg">下载完成：<b>'+(total?bytes(total):el.dataset.size||"")+'</b>，用时 '+Math.round((Date.now()-t0)/1000)+' 秒，已保存到 <code>models\\'+(el.dataset.id||"")+'</code></div>';
+        setTimeout(function(){ el.classList.remove("is-downloading"); pick(el); }, 900);
+      }
+      function fail(){ p.innerHTML='<div class="dlmsg">所有源都失败（已重试 '+(si+1)+' 个源）：可稍后重试，或在下面手动指定本地目录。</div>'; el.classList.remove("is-downloading"); }
+      function attempt(){
+        if(stopped) return;
+        if(si>=srcs.length){ fail(); return; }
+        lastT=Date.now(); lastPct=pct; speed=0;
+        show();
+        timer=setInterval(function(){
+          if(stopped) return;
+          var now=Date.now(), dt=Math.max(1,now-lastT);
+          pct += 1.4+Math.random()*1.2;
+          var inst = total ? (pct-lastPct)/100*total/(dt/1000) : 0;
+          speed = speed ? (speed*0.65 + inst*0.35) : inst;
+          lastT=now; lastPct=pct;
+          if(pct>=100){ bar.style.width="100%"; pct=100; show(); clearInterval(timer); done(); return; }
+          bar.style.width=pct+"%";
+          show();
+          if(pct>38 && si===0){
+            clearInterval(timer);
+            var got=bytes(total*pct/100);
+            pct=0; bar.style.width="0%"; si++;
+            line('<b>'+srcs[0]+'</b> 连接中断（已下 '+got+'），正在切换下一个源…');
+            setTimeout(attempt, 800);
+          }
+        }, 500);
+      }
+      p.querySelector('[data-act="stop"]').addEventListener("click",function(){
+        stopped=true; if(timer) clearInterval(timer);
+        el.classList.remove("is-downloading");
+        p.innerHTML='<div class="dlmsg">已取消（已下 '+(total?bytes(total*pct/100):"部分")+'），下次可续传。</div>';
+      });
+      attempt();
+    }
+    opts.forEach(function(o){
+      o.addEventListener("click",function(e){
+        if(e.target.closest(".dl")||e.target.closest(".dlpanel")) return;
+        pick(o);
+      });
+      o.addEventListener("keydown",function(e){
+        if(e.key===" "||e.key==="Enter"){ e.preventDefault(); pick(o); }
+      });
+      var dl=o.querySelector(".dl");
+      if(dl){ dl.addEventListener("click",function(e){ e.stopPropagation(); openConfirm(o); }); }
+      var pn=panel(o);
+      if(pn){ pn.addEventListener("click",function(e){ e.stopPropagation(); }); }
+    });
+    document.getElementById("dec1Back").addEventListener("click",goHome);
+    document.getElementById("dec1Prev").addEventListener("click",goHome);
+    if(nb){ nb.addEventListener("click",function(){ showPage("dec2"); }); }
+  })();
+
+  // 决策第 2 步：选择训练数据（单文件 JSONL/CSV；示例数据一键填充；语言提示）
+  (function(){
+    var dz=document.getElementById("dec2Dz");
+    var fileInput=document.getElementById("dec2File");
+    var card=document.getElementById("dec2PickCard");
+    var nameEl=document.getElementById("dec2Name");
+    var metaEl=document.getElementById("dec2Meta");
+    var note=document.getElementById("dec2LangNote");
+    var next=document.getElementById("dec2Next");
+    var CHINESE=/[\u4e00-\u9fa5]/;
+
+    function human(n){
+      if(!n && n!==0) return "—";
+      var u=["B","KB","MB","GB"], i=0;
+      while(n>=1024 && i<3){ n/=1024; i++; }
+      return (i?n.toFixed(n<10?2:1):Math.round(n))+" "+u[i];
+    }
+    function sizeHint(name){
+      if(/sample|样例|闸门/i.test(name)) return "约 1.2 MB · 约 1,310 条题目";
+      return "已读取 · 行数与字段将在下一步「数据体检」里统计";
+    }
+    function show(name, path, bytes){
+      card.hidden=false;
+      dz.style.display="none";
+      nameEl.textContent=name;
+      window.__decDataName=name;
+      metaEl.textContent=(path?path+" · ":"")+(bytes?human(bytes)+" · ":"")+sizeHint(name);
+      next.removeAttribute("aria-disabled");
+      if(CHINESE.test(name)||/样例|闸门|中文/i.test(name)){ note.hidden=false; } else { note.hidden=true; }
+    }
+    function reset(){
+      card.hidden=true; dz.style.display="";
+      dz.classList.remove("is-over");
+      next.setAttribute("aria-disabled","true");
+      note.hidden=true; fileInput.value="";
+    }
+    document.getElementById("dec2Pick").addEventListener("click",function(){ fileInput.click(); });
+    fileInput.addEventListener("change",function(){
+      var f=fileInput.files&&fileInput.files[0];
+      if(!f) return;
+      if(!/\.(jsonl|csv)$/i.test(f.name)){ alert("只支持 .jsonl 或 .csv"); fileInput.value=""; return; }
+      show(f.name, "本地文件", f.size);
+    });
+    document.getElementById("dec2Sample").addEventListener("click",function(){
+      show("样例-闸门.train.jsonl","E:\\视频\\拉亚决策模型\\数据\\样例-闸门.train.jsonl",1258291);
+    });
+    document.getElementById("dec2Clear").addEventListener("click",reset);
+    document.getElementById("dec2Prev").addEventListener("click",function(){ showPage("dec1"); });
+    document.getElementById("dec2Back").addEventListener("click",function(){ showPage("dec1"); });
+    document.getElementById("dec2GoBase").addEventListener("click",function(){ showPage("dec1"); });
+    document.getElementById("dec2Next").addEventListener("click",function(){
+      if(next.getAttribute("aria-disabled")==="true") return;
+      showPage("dec3");
+    });
+    dz.addEventListener("dragover",function(e){ e.preventDefault(); dz.classList.add("is-over"); });
+    dz.addEventListener("dragleave",function(){ dz.classList.remove("is-over"); });
+    dz.addEventListener("drop",function(e){
+      e.preventDefault(); dz.classList.remove("is-over");
+      var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+      if(!f) return;
+      if(!/\.(jsonl|csv)$/i.test(f.name)){ alert("只支持 .jsonl 或 .csv"); return; }
+      show(f.name,"拖入的文件",f.size);
+    });
+  })();
+
+  // 决策第 3 步：训练运行页（步数/进度/显存/时间 + 实时 loss 拟合曲线 + 完成态）
+  (function(){
+    var chart=document.getElementById("dec3Chart");
+    if(!chart) return;
+    var logEl=document.getElementById("dec3Log"), title=document.getElementById("dec3Title");
+    var updEl=document.getElementById("dec3Upd2"), lossEl=document.getElementById("dec3Loss"),
+        epEl=document.getElementById("dec3Ep"), dataEl=document.getElementById("dec3Data");
+    var microEl=document.getElementById("dec3Micro"), vramEl=document.getElementById("dec3Vram"),
+        timeEl=document.getElementById("dec3Time"), barEl=document.getElementById("dec3Bar");
+    var doneEl=document.getElementById("dec3Done"), tbl=document.getElementById("dec3Tbl"),
+        cells=document.getElementById("dec3Cells");
+    var finish=document.getElementById("dec3Finish"), cancelBtn=document.getElementById("dec3Cancel");
+
+    var TOTAL=88, EPOCHS=4, MB_PER_UPD=8, VRAM_TOTAL=32, EST_SEC=96;
+    var CURVE_A=1.06, CURVE_B=0.44;
+    var W=600,H=220,PL=46,PR=14,PT=14,PB=26, MIN=0.5, MAX=1.1;
+    var pts=[], u=0, timer=null, running=false, finished=false;
+
+    function sx(i){ return PL + (W-PL-PR)*(i/TOTAL); }
+    function sy(v){ var t=(v-MIN)/(MAX-MIN); t=Math.max(0,Math.min(1,t)); return PT+(H-PT-PB)*(1-t); }
+    function draw(){
+      var g='';
+      [0.6,0.8,1.0].forEach(function(v){ var y=sy(v);
+        g+='<line class="grid" x1="'+PL+'" y1="'+y+'" x2="'+(W-PR)+'" y2="'+y+'"/>';
+        g+='<text class="tick" x="'+(PL-6)+'" y="'+(y+3)+'" text-anchor="end">'+v.toFixed(1)+'</text>';
+      });
+      for(var e=0;e<=EPOCHS;e++){
+        var x=sx(e*TOTAL/EPOCHS);
+        g+='<text class="tick" x="'+x+'" y="'+(H-PB+15)+'" text-anchor="middle">'+(e?('e'+e):'0')+'</text>';
+      }
+      g+='<line class="axis" x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'"/>';
+      g+='<line class="axis" x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(H-PB)+'"/>';
+      g+='<text class="lbl" x="'+(PL+4)+'" y="'+(PT-3)+'">loss · 横轴 micro-step（每 100 条一个点，≠ 更新步）</text>';
+      if(pts.length>1){
+        g+='<polyline class="curve" points="'+pts.map(function(p){return sx(p.i).toFixed(1)+','+sy(p.v).toFixed(1);}).join(' ')+'"/>';
+      }
+      chart.innerHTML='<svg viewBox="0 0 '+W+' '+H+'">'+g+'</svg>';
+    }
+    function log(t){ var d=document.createElement("div"); d.innerHTML=t; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; }
+    function fmt(n){ return (Math.round(n*10000)/10000).toFixed(4); }
+    function fmtT(s){ s=Math.max(0,Math.round(s)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+    function tick(){
+      u++;
+      var base=CURVE_A - CURVE_B*(1-Math.exp(-u/26));
+      var loss=Math.max(0.55, base + (Math.random()-0.5)*0.018);
+      pts.push({i:u, v:loss});
+      if(u%3===0 || u===TOTAL) draw();
+      var prog=u/TOTAL;
+      updEl.innerHTML=u+' <small>/ '+TOTAL+'</small>';
+      microEl.innerHTML=(u*MB_PER_UPD)+' <small>/ '+(TOTAL*MB_PER_UPD)+'</small>';
+      lossEl.textContent=fmt(loss);
+      epEl.textContent=Math.min(EPOCHS, Math.ceil(u/(TOTAL/EPOCHS)));
+      var vram=16.1+Math.min(0.9,prog*0.6)+(Math.random()-0.5)*0.12;
+      vramEl.innerHTML=vram.toFixed(1)+' GiB <small>/ 32 GiB</small>';
+      barEl.style.width=(prog*100).toFixed(1)+'%';
+      var usedS=prog*EST_SEC;
+      timeEl.innerHTML=fmtT(usedS)+' <small>/ '+fmtT(EST_SEC)+' · 剩 '+fmtT(EST_SEC-usedS)+'</small>';
+      if(u%9===0){
+        log('update '+u+' / '+TOTAL+' · epoch '+Math.min(EPOCHS,Math.ceil(u/(TOTAL/EPOCHS)))+' · loss '+fmt(loss)+' · lr 1e-4');
+      }
+      if(u===TOTAL) finishRun();
+    }
+    function finishRun(){
+      clearInterval(timer); timer=null; running=false; finished=true;
+      title.textContent="训练完成";
+      cancelBtn.setAttribute("aria-disabled","true");
+      finish.removeAttribute("aria-disabled");
+      barEl.style.width="100%";
+      timeEl.innerHTML=fmtT(EST_SEC)+' <small>/ '+fmtT(EST_SEC)+' · 完成</small>';
+      doneEl.hidden=false;
+      var rows=[["Accuracy","0.5938","0.7917","+0.1979"],["Loss","1.0355","0.6288","-0.4067"],
+                ["ECE","0.2211","0.1145","-0.1066"],["Brier（多类）","0.3985","0.1749","-0.2236"],
+                ["Mean Confidence","0.8031","0.7241","-0.0790"]];
+      var h='<tr><th>指标</th><th>训练前</th><th>训练后</th><th>变化</th></tr>';
+      rows.forEach(function(r){ h+='<tr><td>'+r[0]+'</td><td class="en">'+r[1]+'</td><td class="en">'+r[2]+'</td><td class="en">'+r[3]+'</td></tr>'; });
+      tbl.innerHTML=h;
+      cells.innerHTML=
+        '<div class="done__cell"><div class="done__k">校准温度</div><div class="done__v">1.00</div><div class="done__k">校准项太少未拟合</div></div>'+
+        '<div class="done__cell"><div class="done__k">拒答阈值</div><div class="done__v">0.42</div><div class="done__k">target_error 0.10</div></div>'+
+        '<div class="done__cell"><div class="done__k">产物</div><div class="done__v" style="font-size:12px">model.safetensors</div><div class="done__k">+ encoder / tokenizer / config</div></div>';
+      log('<b>训练完成</b>：update 88 / 88 · 末步 loss '+lossEl.textContent+' · 产物已写入 _runs\\ui-laya-…');
+      log('注意：after 来自校准切片（96 条）= <b>in-sample，不是泛化数</b>');
+    }
+    function start(mode){
+      if(running || finished) return;
+      var retrain=(mode==="retrain");
+      TOTAL = retrain?44:88;
+      EPOCHS = retrain?2:4;
+      EST_SEC = retrain?54:96;
+      CURVE_A = retrain?0.70:1.06;
+      CURVE_B = retrain?0.10:0.44;
+      running=true; u=0; pts=[]; logEl.innerHTML=""; doneEl.hidden=true;
+      title.textContent = retrain ? "正在加训" : "正在训练";
+      window.__lastMode = retrain ? "retrain" : "train";
+      finish.textContent = retrain ? "再次 AI 检测" : "查看产物";
+      finish.setAttribute("aria-disabled","true");
+      cancelBtn.removeAttribute("aria-disabled");
+      barEl.style.width="0%";
+      draw();
+      if(retrain){
+        log('<b>开始加训</b>：起点 = 上一版模型（_runs\\ui-laya-…）· 新增 120 条 + 回放 20% · epochs 2');
+        log('续训 ≠ 恢复：不恢复步号/优化器；校准温度与拒答阈值会重新拟合');
+        log('train items 984（含回放）· 预算 44 updates（= 352 micro-step）');
+      }else{
+        log('<b>开始训练</b>：底座 Laya 标准版 · 数据 '+(dataEl.textContent||"样例数据")+' · epochs 4 · micro-batch 8 / grad-accum 8');
+        log('train items 864 · calibration items 96 · 预算 88 updates（= 704 micro-step）');
+      }
+      timer=setInterval(tick, 110);
+    }
+    cancelBtn.addEventListener("click",function(){
+      if(!running) return;
+      clearInterval(timer); timer=null; running=false;
+      title.textContent="已取消";
+      log('<b>已取消</b>：Laya 没有 resume，中断=从头再训；checkpoint_latest 只能拿回上一轮。');
+      cancelBtn.setAttribute("aria-disabled","true");
+      finish.removeAttribute("aria-disabled");
+    });
+    finish.addEventListener("click",function(){
+      if(finish.getAttribute("aria-disabled")==="true") return;
+      showPage("dec4");
+    });
+    document.getElementById("dec3Back").addEventListener("click",function(){ showPage("dec2"); });
+    window.__startRun=function(name,mode){ if(name) dataEl.textContent=name; start(mode); };
+  })();
+
+  // 决策第 4 步：测试与效果（手动运行 / 交给 AI 出完整报告 / 导出 Markdown）
+  (function(){
+    var runBtn=document.getElementById("dec4Run"), aiBtn=document.getElementById("dec4Ai"),
+        expBtn=document.getElementById("dec4Export"), stepsEl=document.getElementById("dec4Steps"),
+        result=document.getElementById("dec4Result"), tbl=document.getElementById("dec4Tbl"),
+        rep=document.getElementById("dec4Report");
+    if(!runBtn) return;
+    var SAMPLES=[
+      {q:"你们重复扣了我两笔钱，我要退款",ans:"动作=直接退款",exp:"动作=直接退款",ok:true,conf:0.91},
+      {q:"东西有点小瑕疵，退货太麻烦，给点补偿我就留着",ans:"动作=协商折中",exp:"动作=协商折中",ok:true,conf:0.84},
+      {q:"等了两个小时没人处理，就这服务？",ans:"动作=发红包安抚",exp:"动作=发红包安抚",ok:true,conf:0.72},
+      {q:"我想问下企业版套餐多少钱",ans:"动作=只解释规则",exp:"动作=只解释规则",ok:true,conf:0.88},
+      {q:"系统一直报错，客户都在投诉了",ans:"动作=只解释规则",exp:"动作=转人工",ok:false,conf:0.63},
+      {q:"你们这算欺诈吧，我要投诉",ans:"动作=转人工",exp:"动作=协商折中",ok:false,conf:0.51}
+    ];
+    function metrics(){
+      document.getElementById("evAcc").innerHTML="0.79";
+      document.getElementById("evLoss").textContent="0.63";
+      document.getElementById("evEce").textContent="0.11";
+      document.getElementById("evAbs").innerHTML='8.3% <small>8 / 96 拒答</small>';
+    }
+    function table(){
+      var h='<tr><th>题目（截断）</th><th>模型答案</th><th>标注</th><th>一致</th><th>置信度</th></tr>';
+      SAMPLES.forEach(function(s){
+        h+='<tr><td>'+s.q+'</td><td>'+s.ans+'</td><td>'+s.exp+'</td><td class="'+(s.ok?"ok":"bad")+'">'+(s.ok?"✓":"✗")+'</td><td>'+s.conf.toFixed(2)+'</td></tr>';
+      });
+      tbl.innerHTML=h;
+    }
+    function show(){ result.hidden=false; metrics(); table(); }
+    runBtn.addEventListener("click",function(){ stepsEl.textContent=""; rep.hidden=true; expBtn.hidden=true; show(); });
+    aiBtn.addEventListener("click",function(){
+      if(aiBtn.getAttribute("aria-disabled")==="true") return;
+      aiBtn.setAttribute("aria-disabled","true");
+      var steps=["AI 正在读取测试集（96 条）…","生成 96 条预测并对比标注…","计算校准误差（ECE / Brier）…","归因错例，按意图标签分组…","撰写报告…"];
+      var i=0;
+      (function nextStep(){
+        if(i<steps.length){ stepsEl.textContent=steps[i++]; setTimeout(nextStep,520); return; }
+        stepsEl.textContent="AI 报告已生成 · 可导出 Markdown";
+        show();
+        rep.hidden=false;
+        rep.textContent=[
+"## 决策模型测试报告（自动生成）",
+"",
+"数据：校准切片 96 条（in-sample，不是泛化）｜底座 Laya 标准版｜epochs 4",
+"",
+"### 总体",
+"- Accuracy 0.79（+0.19 vs 训练前）｜Loss 0.63｜ECE 0.11｜拒答 8/96（8.3%）",
+"",
+"### 错例（3 条）",
+"1. 「系统一直报错，客户都在投诉了」→ 模型选「只解释规则」，应「转人工」（置信度 0.63）",
+"2. 「你们这算欺诈吧，我要投诉」→ 模型选「转人工」，标注为「协商折中」（0.51，边界题）",
+"3. 另有 1 条语料里「要升级」标注与「动作」冲突（数据侧问题）",
+"",
+"### 归因",
+"- 错例集中在『技术故障 + 情绪愤怒』组合：训练集里这类样本只有 3 条，覆盖不足",
+"- 「转人工」与「只解释规则」的概率被打平在 0.5 附近，说明该决策头区分度不够",
+"",
+"### 建议",
+"1. 先补 30–50 条「技术故障 + 高情绪 → 转人工」样本（最省时间）",
+"2. 把「是否已影响客户」拆成独立的 noul 问题，减少与动作标签耦合",
+"3. 若补数据后 ECE 仍 >0.1，再 epochs 4→8、encoder_lr 2.5e-5→5e-5 重训一版",
+"4. 不要拿 in-sample 0.79 当泛化结论——需要一份 held-out 才能判断"
+].join("\n");
+        expBtn.hidden=false;
+        var na=document.getElementById("dec4NextActs"); if(na) na.hidden=false;
+        if(window.__lastMode==="retrain"){
+          rep.textContent += "\n\n### 与上一版对比\n- Accuracy 0.79 → 0.82（+0.03）｜ECE 0.11 → 0.09｜拒答 8.3% → 6.2%\n- 结论：这一段有效但幅度有限；若目标 ≥0.85，继续加训或补更多「技术故障 + 愤怒」样本。\n- 注意：本次仍为 in-sample 复测，泛化结论要等 held-out。";
+        }
+        aiBtn.removeAttribute("aria-disabled");
+      })();
+    });
+    expBtn.addEventListener("click",function(){
+      var text=(rep.textContent||"")+"\n";
+      var blob=new Blob([text],{type:"text/markdown;charset=utf-8"});
+      var a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+      a.download="laya-eval-report.md"; document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+    });
+    document.getElementById("dec4Back").addEventListener("click",function(){ showPage("dec3"); });
+    document.getElementById("dec4Prev").addEventListener("click",function(){ showPage("dec3"); });
+
+    // 报告出来后的两个去向：续训 / 从头重训
+    (function(){
+      var more=document.getElementById("dec4More"), scratch=document.getElementById("dec4Scratch");
+      if(more) more.addEventListener("click",function(){ if(window.__dec5Pick) window.__dec5Pick("last"); showPage("dec5"); });
+      if(scratch) scratch.addEventListener("click",function(){ if(window.__dec5Pick) window.__dec5Pick("scratch"); showPage("dec5"); });
+    })();
+
+    // 演示直达（控制台可用）：window.__openEval("ai"|"run")
+    window.__openEval=function(mode){ showPage("dec4"); setTimeout(function(){ (mode==="ai"?aiBtn:runBtn).click(); },80); };
+    window.__dec4Sync=function(){
+      var b=document.getElementById("dec4Banner");
+      if(b) b.hidden=(window.__lastMode!=="retrain");
+    };
+  })();
+
+  // 加训页（第二段训练）：选起点 → 开始加训（复用运行页的加训模式）
+  (function(){
+    var starts=[].slice.call(document.querySelectorAll("#dec5Start .opt"));
+    if(!starts.length) return;
+    var epEl=document.getElementById("dec5Ep"), runBtn=document.getElementById("dec5Run");
+    var fileEl=document.getElementById("dec5File"), infoEl=document.getElementById("dec5FileInfo"),
+        cntEl=document.getElementById("dec5Data"), dzEl=document.getElementById("dec5Dz");
+    function setFile(name,size){
+      infoEl.textContent=name+(size?(" · "+Math.max(1,Math.round(size/1024))+" KB"):" · 示例");
+      cntEl.textContent=/示例|增量/.test(name)?"120 条":"已读取";
+      window.__dec5File=name;
+    }
+    document.getElementById("dec5Pick").addEventListener("click",function(){ fileEl.click(); });
+    fileEl.addEventListener("change",function(){
+      var f=fileEl.files&&fileEl.files[0]; if(!f) return;
+      if(!/\.(jsonl|csv)$/i.test(f.name)){ alert("只支持 .jsonl 或 .csv"); fileEl.value=""; return; }
+      setFile(f.name,f.size);
+    });
+    document.getElementById("dec5Sample2").addEventListener("click",function(){ setFile("样例增量 120 条",0); });
+    dzEl.addEventListener("dragover",function(e){ e.preventDefault(); dzEl.classList.add("is-over"); });
+    dzEl.addEventListener("dragleave",function(){ dzEl.classList.remove("is-over"); });
+    dzEl.addEventListener("drop",function(e){
+      e.preventDefault(); dzEl.classList.remove("is-over");
+      var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(!f) return;
+      if(!/\.(jsonl|csv)$/i.test(f.name)){ alert("只支持 .jsonl 或 .csv"); return; }
+      setFile(f.name,f.size);
+    });
+    setFile("样例增量 120 条",0);
+    function pick(el){
+      starts.forEach(function(o){ o.setAttribute("aria-checked", o===el?"true":"false"); });
+      if(epEl) epEl.textContent = (el.dataset.id==="last") ? "2" : "4";
+    }
+    window.__dec5Pick=function(id){
+      var el=starts.filter(function(o){ return o.dataset.id===id; })[0];
+      if(el) pick(el);
+    };
+    starts.forEach(function(o){
+      o.addEventListener("click",function(){ pick(o); });
+      o.addEventListener("keydown",function(e){ if(e.key===" "||e.key==="Enter"){ e.preventDefault(); pick(o); } });
+    });
+    document.getElementById("dec5Back").addEventListener("click",function(){ showPage("dec4"); });
+    document.getElementById("dec5Prev").addEventListener("click",function(){ showPage("dec4"); });
+    runBtn.addEventListener("click",function(){
+      var sel=starts.filter(function(o){ return o.getAttribute("aria-checked")==="true"; })[0];
+      var mode=(sel && sel.dataset.id==="scratch") ? "scratch" : "retrain";
+      window.__runMode=mode;
+      window.__decDataName=(mode==="retrain") ? "加训 · 新增 120 条 + 回放 20%" : "全量重训 · 984 条";
+      showPage("dec3");
+    });
+  })();
+
+  // 完成后显示真实模型路径 + 一键复制
+  (function(){
+    function fallbackCopy(text){
+      var ta=document.createElement("textarea");
+      ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); }catch(e){}
+      ta.remove();
+    }
+    function copy(text,btn){
+      var flash=function(){ if(!btn) return; var old=btn.textContent; btn.textContent="已复制 ✓"; setTimeout(function(){ btn.textContent=old; },1200); };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(flash, function(){ fallbackCopy(text); flash(); });
+      }else{ fallbackCopy(text); flash(); }
+    }
+    function wire(btnId,valId){
+      var b=document.getElementById(btnId), v=document.getElementById(valId);
+      if(!b||!v) return;
+      b.addEventListener("click",function(){ copy(v.textContent.trim(), b); });
+    }
+    wire("dec3Copy","dec3Out");
+    wire("dec4CopyModel","dec4ModelPath");
+    wire("dec4CopyOut","dec4OutDir");
+    var done=document.getElementById("dec4Done"), card=document.getElementById("dec4FinishCard");
+    if(done && card){ done.addEventListener("click",function(){ card.hidden=false; card.scrollIntoView({block:"nearest"}); }); }
+    var home2=document.getElementById("dec4Home"); if(home2) home2.addEventListener("click",function(){ showPage("home"); });
+    var again=document.getElementById("dec4Again"); if(again) again.addEventListener("click",function(){ if(window.__dec5Pick) window.__dec5Pick("last"); showPage("dec5"); });
+  })();
+
+  // LLM 第 1 步：选择模型（只给自选路径）
+  (function(){
+    var inp=document.getElementById("llm1Path");
+    if(!inp) return;
+    var next=document.getElementById("llm1Next"), hintBtn=document.getElementById("llm1Need");
+    function sync(){
+      var ok=inp.value.trim().length>4;
+      if(ok) next.removeAttribute("aria-disabled"); else next.setAttribute("aria-disabled","true");
+      window.__llmModelPath=inp.value.trim();
+    }
+    inp.addEventListener("input",sync);
+    inp.addEventListener("keydown",function(e){ if(e.key==="Enter" && inp.value.trim().length>4) showPage("next"); });
+    if(hintBtn) hintBtn.addEventListener("click",function(){ inp.value="E:\\视频\\modelsmith\\models\\Qwen2.5-0.5B-Instruct"; inp.focus(); sync(); });
+    next.setAttribute("aria-disabled","true");
+    sync();
+    document.getElementById("llm1Prev").addEventListener("click",goHome);
+    document.getElementById("llm1Back").addEventListener("click",goHome);
+    next.addEventListener("click",function(){
+      if(next.getAttribute("aria-disabled")==="true") return;
+      showPage("next");
+    });
+  })();
+
+  document.getElementById("grid").addEventListener("click",function(e){
+    var card=e.target.closest(".card");
+    if(!card) return;
+    if(card.getAttribute("data-disabled")==="1" || card.getAttribute("aria-disabled")==="true") return;
+    var flow=card.dataset?card.dataset.flow:"";
+    // LLM / 生图走独立页面（不挤在同一个 deck 里，避免幻灯片容器出问题时整页发白）
+    if(flow==="llm"){ location.href="llm.html"; return; }
+    if(flow==="image"){ location.href="image.html"; return; }
+    goNext(card);
+  });
+  document.getElementById("backBtn").addEventListener("click",goHome);
+  document.getElementById("backBtn2").addEventListener("click",goHome);
+
+  // 悬停挤占布局：被悬停的卡独占一侧整列（约 62% 宽、满高），其余三张在另一列纵向堆叠；移走恢复 2×2
+  (function(){
+    var grid=document.getElementById("grid");
+    if(!grid) return;
+    var cards=[].slice.call(grid.querySelectorAll(".card"));
+    if(cards.length!==4) return;
+    var GAP=28, hi=-1, moved=false, tries=0;
+    function place(){
+      var W=grid.clientWidth, H=grid.clientHeight;
+      // 布局还没就绪时（窗口未显示/尺寸为 0）先别算——否则四卡会被写成 0×0，整页空白
+      if(W<40 || H<40){
+        tries++;
+        if(tries>40){ grid.classList.add("grid--fallback"); return; } // 3 秒还没尺寸：退回普通布局，宁可没动画也不能白屏
+        setTimeout(place, 80); return;
+      }
+      var rects=[], i, c, r;
+      if(hi<0){
+        var w=(W-GAP)/2, h=(H-GAP)/2;
+        for(i=0;i<4;i++){ c=i%2; r=(i/2)|0; rects.push({x:c*(w+GAP),y:r*(h+GAP),w:w,h:h}); }
+      }else{
+        var hc=hi%2, bigW=(W-GAP)*0.62, smallW=W-GAP, sy;
+        var bx=(hc===0)?0:smallW+GAP, sx=(hc===0)?bigW+GAP:0;
+        var sh=(H-2*GAP)/3, order=[], k=0;
+        for(i=0;i<4;i++){ if(i!==hi) order.push(i); }
+        rects[hi]={x:bx,y:0,w:bigW,h:H};
+        for(k=0;k<order.length;k++){ rects[order[k]]={x:sx,y:k*(sh+GAP),w:smallW,h:sh}; }
+        smallW=W-GAP-bigW;
+        if(hc===0){ bx=0; sx=bigW+GAP; } else { bx=W-bigW; sx=0; }
+        rects[hi]={x:bx,y:0,w:bigW,h:H};
+        for(k=0;k<order.length;k++){ rects[order[k]]={x:sx,y:k*(sh+GAP),w:smallW,h:sh}; }
+      }
+      cards.forEach(function(card,idx){
+        var t=rects[idx];
+        card.style.left=t.x+"px"; card.style.top=t.y+"px";
+        card.style.width=t.w+"px"; card.style.height=t.h+"px";
+      });
+    }
+    function setHover(idx){
+      hi=idx; place();
+      grid.classList.toggle("is-focus", idx>=0);
+    }
+    // 用「象限判定」而不是「卡片 hover」，避免放大后指针落到另一张卡上导致来回抖动；
+    // 中线加 3% 死区，边界附近保持当前状态。
+    function idxAt(ev){
+      var r=grid.getBoundingClientRect();
+      if(!r.width||!r.height) return -2;
+      var x=(ev.clientX-r.left)/r.width, y=(ev.clientY-r.top)/r.height;
+      var dead=0.03;
+      var col=x<(0.5-dead)?0:(x>(0.5+dead)?1:-1);
+      var row=y<(0.5-dead)?0:(y>(0.5+dead)?1:-1);
+      if(col<0||row<0) return -2;
+      return row*2+col;
+    }
+    grid.addEventListener("mousemove",function(ev){
+      if(!moved){ moved=true; return; }   // 首次移动不放大，避免载入时指针恰好停在卡上就"默认放大"
+      var idx=idxAt(ev);
+      if(idx<0||idx===hi) return;
+      var card=cards[idx];
+      if(!card) return;
+      if(card.getAttribute("aria-disabled")==="true"||card.getAttribute("data-disabled")==="1"){ if(hi!==-1) setHover(-1); return; }
+      setHover(idx);
+    });
+    cards.forEach(function(card,idx){
+      card.addEventListener("focus",function(){
+        if(card.getAttribute("aria-disabled")==="true") return;
+        setHover(idx);
+      });
+      card.addEventListener("blur",function(){ if(hi===idx) setHover(-1); });
+    });
+    grid.addEventListener("mouseleave",function(){ setHover(-1); });
+    window.addEventListener("resize",function(){ place(); });
+    window.addEventListener("load",function(){ place(); });
+    document.addEventListener("visibilitychange",function(){ if(!document.hidden) place(); });
+    if(window.ResizeObserver){ try{ new ResizeObserver(function(){ place(); }).observe(grid); }catch(e){} }
+    setTimeout(place, 120);
+    place();
+  })();
+
+  // 深色 / 浅色切换（记住选择；标签显示"点一下会切到哪个"）
+  (function(){
+    var btn=document.getElementById("themeBtn");
+    function paint(t){
+      document.documentElement.setAttribute("data-theme",t);
+      try{ localStorage.setItem("ms-theme",t); }catch(e){}
+      if(btn){
+        btn.textContent = (t==="dark") ? "浅色" : "深色";
+        btn.setAttribute("aria-pressed", t==="dark" ? "true" : "false");
+        btn.setAttribute("title", (t==="dark") ? "切到浅色（白色磨砂玻璃）" : "切到深色（深夜工作室）");
+      }
+    }
+    paint(document.documentElement.getAttribute("data-theme")||"light");
+    if(btn){
+      btn.addEventListener("click",function(){
+        paint(document.documentElement.getAttribute("data-theme")==="dark" ? "light" : "dark");
+      });
+    }
+  })();
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape" && deck.classList.contains("is-next")) goHome();
+  });
+
+  // 载入即归位到首屏：防止浏览器恢复上次滚动/历史状态把 deck 停在中间（曾出现过"纯白"）
+  showPage("home");
+  try{ document.querySelector(".pages").scrollLeft = 0; }catch(e){}
+  window.addEventListener("load", function(){ showPage("home"); });
+})();
+</script>
+
+<div id="envPanel" hidden>
+  <div class="envcard" role="dialog" aria-modal="true" aria-labelledby="envTitle">
+    <div class="envcard__head"><b id="envTitle">环境检测</b><button id="envClose" type="button" aria-label="关闭环境面板">×</button></div>
+    <div id="envBody">核心未连接</div>
+  </div>
+</div>
+<script>
+(function(){var p=document.getElementById("envPanel"),b=document.getElementById("envBody"),c=document.getElementById("envClose");
+function close(){if(p)p.hidden=true;}
+var chips=document.querySelectorAll("[data-env], .chip");
+for(var i=0;i<chips.length;i++){if(String(chips[i].textContent).trim()!=="环境")continue;chips[i].addEventListener("click",function(){if(p)p.hidden=false;});}
+if(c)c.addEventListener("click",close);
+document.addEventListener("keydown",function(e){if(e.key==="Escape")close();});
+})();
+</script>
+
+</body>
+</html>

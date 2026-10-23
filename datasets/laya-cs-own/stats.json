@@ -1,0 +1,67 @@
+{
+  "name": "laya-cs-own",
+  "version": "v2-20261023-rebalanced",
+  "built_from": "datasets/laya-cs-v8 minus 80 rows picked from waimai_10k / ChnSentiCorp; labels rebalanced per ACTIONS.md §3",
+  "train_rows": 414,
+  "train_rows_before_balance": 791,
+  "balanced": {
+    "class": "安抚话术",
+    "from": 480,
+    "to": 103
+  },
+  "eval_rows": 115,
+  "train_templates": 281,
+  "relabeled_rows": {
+    "train": 459,
+    "eval": 78
+  },
+  "removed_rows": 80,
+  "removed_from": {
+    "waimai_10k": 70,
+    "ChnSentiCorp": 10
+  },
+  "train_eval_message_overlap": 0,
+  "sha256": {
+    "train.jsonl": "593abf08cd2f0b1c8e85fa6f39ea87a13d9be34a661e07c2a6b0f75a371199f4",
+    "eval.jsonl": "50bb996e10fc26f869e0f1e6b2551e17ad4ec82b52718e214640e974f98734a1"
+  },
+  "distribution": {
+    "情绪": {
+      "平静": 159,
+      "不满": 152,
+      "愤怒": 31,
+      "焦虑": 27,
+      "失望": 24,
+      "威胁投诉": 21
+    },
+    "目的": {
+      "其他": 123,
+      "物流查询": 78,
+      "退款": 66,
+      "转人工": 38,
+      "商品质量": 28,
+      "售后换货": 22,
+      "账号": 19,
+      "发票": 14,
+      "红包": 14,
+      "询问功能": 12
+    },
+    "动作": {
+      "安抚话术": 103,
+      "转人工": 102,
+      "退款": 57,
+      "补发": 52,
+      "换货": 35,
+      "拒绝并解释": 31,
+      "发红包": 21,
+      "运费补偿": 13
+    }
+  },
+  "questions": [
+    "情绪",
+    "目的",
+    "动作"
+  ],
+  "gold": "argmax 0.9 / 其余均分 0.1",
+  "license": "自有（人工撰写/标注），不继承任何第三方许可"
+}
